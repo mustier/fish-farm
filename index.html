@@ -1424,19 +1424,28 @@ function moveTooltip(e) {
 }
 
 // ── UPDATE UI ─────────────────────────────────────────────────
+function initStatsBar() {
+  document.getElementById('stats-bar').innerHTML = `
+    <span>Total Earned: <strong id="stat-total"></strong></span>
+    <span>Catched Relics: <strong id="stat-relics"></strong></span>
+    <span>Total Clicks: <strong id="stat-clicks"></strong></span>
+    <span>Click Earnings: <strong id="stat-click-earn"></strong></span>
+    <span>Buildings: <strong id="stat-buildings"></strong></span>
+    <span>Upgrades: <strong id="stat-upgrades"></strong></span>`;
+}
+
 function updateUI() {
   document.getElementById('fish-count').textContent = fmt(state.fish);
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
   document.getElementById('click-power').textContent = fmtFps(state.fishPerClick * state.clickMultiplier);
 
   const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
-  document.getElementById('stats-bar').innerHTML = `
-    <span>Total Earned: <strong>${fmt(state.totalFish)}</strong></span>
-    <span>Catched Relics: <strong>${caughtFishEmojis.length}</strong></span>
-    <span>Total Clicks: <strong>${fmt(state.totalClicks)}</strong></span>
-    <span>Click Earnings: <strong>${fmt(state.fishFromClicks)}</strong></span>
-    <span>Buildings: <strong>${totalBuildings}</strong></span>
-    <span>Upgrades: <strong>${state.purchasedUpgrades.size}</strong></span>`;
+  document.getElementById('stat-total').textContent      = fmt(state.totalFish);
+  document.getElementById('stat-relics').textContent     = caughtFishEmojis.length;
+  document.getElementById('stat-clicks').textContent     = fmt(state.totalClicks);
+  document.getElementById('stat-click-earn').textContent = fmt(state.fishFromClicks);
+  document.getElementById('stat-buildings').textContent  = totalBuildings;
+  document.getElementById('stat-upgrades').textContent   = state.purchasedUpgrades.size;
 }
 
 // ── ACTIVE BOOSTS ─────────────────────────────────────────────
@@ -1918,6 +1927,7 @@ function renderLoop() {
 
   document.getElementById('fish-count').textContent = fmt(state.fish);
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
+  document.getElementById('stat-total').textContent = fmt(state.totalFish);
 
   if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); updateUI(); }
   if(frameCount % 60 === 0 && state.crisisActive) updateCrisisUI();
@@ -2301,6 +2311,7 @@ function handleZoneClick(e) {
 // ── INIT ──────────────────────────────────────────────────────
 loadGame();
 createBubbles();
+initStatsBar();
 renderBuildings();
 renderUpgrades();
 requestAnimationFrame(()=>{ renderScene(); });
@@ -2337,6 +2348,6 @@ scheduleCrisis();
 let crisesEnabled = true;
 </script>
 
-<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.2</div>
+<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.3</div>
 </body>
 </html>
