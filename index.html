@@ -143,7 +143,7 @@
     display:flex; flex-direction:column; gap:10px;
   }
   .share-right-title {
-    font-family:'Fredoka One',cursive; font-size:0.85rem; color:rgba(125,211,248,0.6);
+    font-family:'Fredoka One',cursive; font-size:0.85rem; color:var(--light);
     letter-spacing:1px;
   }
   .share-text-area {
@@ -319,13 +319,14 @@
   .building-scene {
     width: 100%; background: rgba(0,0,0,0.3);
     border: 1px solid var(--border); border-radius: 12px;
-    padding: 8px; display:flex; flex-direction:column; gap:0;
+    padding: 0; display:flex; flex-direction:column; gap:0;
     flex: 1; min-height: 0; overflow: hidden;
   }
   .scene-title {
-    font-family:'Fredoka One',cursive; font-size:0.75rem;
-    color: rgba(125,211,248,0.5); text-align:center; letter-spacing:1px;
-    padding-bottom: 4px; flex-shrink:0;
+    font-family:'Fredoka One',cursive; font-size:1rem;
+    color: var(--light); text-align:center; letter-spacing:1px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); flex-shrink:0;
   }
   .scene-row {
     display:flex; align-items:center; gap:0;
@@ -735,7 +736,7 @@
     <!-- Building Scene -->
     <div class="building-scene" id="building-scene">
       <div class="scene-title">◈ FARM ◈</div>
-      <div id="scene-content" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;"><div class="scene-empty">Buy a building to see it here...</div></div>
+      <div id="scene-content" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;padding:6px 8px;"><div class="scene-empty">Buy a building to see it here...</div></div>
     </div>
   </div>
 
@@ -827,67 +828,67 @@ const BUILDINGS = [
 // ── UPGRADES ─────────────────────────────────────────────────
 const UPGRADES = [
   // Click upgrades
-  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',         cost:100,       req:()=>state.totalFish>=50,                    effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
-  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x2 fish per click!',               cost:500,       req:()=>state.totalFish>=200,                   effect:()=>{ state.clickMultiplier *= 2; } },
-  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+5 fish per click.',               cost:3000,      req:()=>state.totalFish>=1000,                  effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
-  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+10 fish per click.',              cost:50000,     req:()=>state.totalFish>=10000,                 effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
-  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x3.', cost:5000000,  req:()=>state.totalFish>=1000000,      effect:()=>{ state.clickMultiplier *= 3; } },
-  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+50 fish per click + x1.5 multiplier.', cost:20000000, req:()=>state.totalFish>=5000000,         effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
+  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',         cost:200,       req:()=>state.totalFish>=150,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x2 fish per click!',               cost:1500,      req:()=>state.totalFish>=600,                   effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+5 fish per click.',               cost:8000,      req:()=>state.totalFish>=3000,                  effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
+  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+10 fish per click.',              cost:150000,    req:()=>state.totalFish>=40000,                 effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
+  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x3.', cost:12000000, req:()=>state.totalFish>=3000000,      effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+50 fish per click + x1.5 multiplier.', cost:60000000, req:()=>state.totalFish>=15000000,        effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
 
   // Building upgrades - Rod
-  { id:'rod_x2',        name:'Double Rod',           icon:'🎣', desc:'Fishing rods are twice as efficient.',     cost:200,       req:()=>(state.buildings.rod||0)>=5,      effect:()=>{ boostBuilding('rod',2); } },
-  { id:'rod_x3',        name:'Carbon Fiber Rod',     icon:'🎣', desc:'Fishing rods are 3x as efficient.',       cost:2000,      req:()=>(state.buildings.rod||0)>=25,     effect:()=>{ boostBuilding('rod',3); } },
+  { id:'rod_x2',        name:'Double Rod',           icon:'🎣', desc:'Fishing rods are twice as efficient.',     cost:500,       req:()=>(state.buildings.rod||0)>=10,     effect:()=>{ boostBuilding('rod',2); } },
+  { id:'rod_x3',        name:'Carbon Fiber Rod',     icon:'🎣', desc:'Fishing rods are 3x as efficient.',       cost:5000,      req:()=>(state.buildings.rod||0)>=40,     effect:()=>{ boostBuilding('rod',3); } },
 
   // Building upgrades - Granny
-  { id:'granny_tea',    name:'Granny\'s Tea',        icon:'🍵', desc:'Fisher grannies are 2x more productive.',  cost:1000,      req:()=>(state.buildings.granny||0)>=5,   effect:()=>{ boostBuilding('granny',2); } },
-  { id:'granny_boots',  name:'Rubber Boots',         icon:'👢', desc:'Grannies wade deeper: 3x production.',     cost:10000,     req:()=>(state.buildings.granny||0)>=25,  effect:()=>{ boostBuilding('granny',3); } },
+  { id:'granny_tea',    name:'Granny\'s Tea',        icon:'🍵', desc:'Fisher grannies are 2x more productive.',  cost:3000,      req:()=>(state.buildings.granny||0)>=10,  effect:()=>{ boostBuilding('granny',2); } },
+  { id:'granny_boots',  name:'Rubber Boots',         icon:'👢', desc:'Grannies wade deeper: 3x production.',     cost:30000,     req:()=>(state.buildings.granny||0)>=40,  effect:()=>{ boostBuilding('granny',3); } },
 
   // Building upgrades - Boat
-  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,      req:()=>(state.buildings.boat||0)>=5,     effect:()=>{ boostBuilding('boat',2); } },
-  { id:'turbo_boat',    name:'Turbo Engine',         icon:'💨', desc:'Boats are now 3x faster.',                 cost:50000,     req:()=>(state.buildings.boat||0)>=25,    effect:()=>{ boostBuilding('boat',3); } },
+  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:15000,     req:()=>(state.buildings.boat||0)>=10,    effect:()=>{ boostBuilding('boat',2); } },
+  { id:'turbo_boat',    name:'Turbo Engine',         icon:'💨', desc:'Boats are now 3x faster.',                 cost:150000,    req:()=>(state.buildings.boat||0)>=40,    effect:()=>{ boostBuilding('boat',3); } },
 
   // Building upgrades - Dock
-  { id:'dock_crane',    name:'Dock Crane',           icon:'🏗️', desc:'Dock efficiency x2.',                      cost:8000,      req:()=>(state.buildings.dock||0)>=5,     effect:()=>{ boostBuilding('dock',2); } },
+  { id:'dock_crane',    name:'Dock Crane',           icon:'🏗️', desc:'Dock efficiency x2.',                      cost:25000,     req:()=>(state.buildings.dock||0)>=10,    effect:()=>{ boostBuilding('dock',2); } },
 
   // Building upgrades - Farm
-  { id:'fish_food',     name:'Special Fish Feed',    icon:'🍤', desc:'Fish farms produce 2x more.',              cost:20000,     req:()=>(state.buildings.farm||0)>=5,     effect:()=>{ boostBuilding('farm',2); } },
-  { id:'biotech_feed',  name:'BioTech Feed',         icon:'🧬', desc:'Fish farms produce 4x more.',              cost:250000,    req:()=>(state.buildings.farm||0)>=25,    effect:()=>{ boostBuilding('farm',4); } },
+  { id:'fish_food',     name:'Special Fish Feed',    icon:'🍤', desc:'Fish farms produce 2x more.',              cost:60000,     req:()=>(state.buildings.farm||0)>=10,    effect:()=>{ boostBuilding('farm',2); } },
+  { id:'biotech_feed',  name:'BioTech Feed',         icon:'🧬', desc:'Fish farms produce 4x more.',              cost:800000,    req:()=>(state.buildings.farm||0)>=40,    effect:()=>{ boostBuilding('farm',4); } },
 
   // Building upgrades - Hatchery
-  { id:'egg_incubator', name:'Egg Incubator',        icon:'🥚', desc:'Hatcheries are 2x more efficient.',        cost:40000,     req:()=>(state.buildings.hatchery||0)>=5, effect:()=>{ boostBuilding('hatchery',2); } },
+  { id:'egg_incubator', name:'Egg Incubator',        icon:'🥚', desc:'Hatcheries are 2x more efficient.',        cost:120000,    req:()=>(state.buildings.hatchery||0)>=10, effect:()=>{ boostBuilding('hatchery',2); } },
 
   // Building upgrades - Trawler
-  { id:'mega_net',      name:'Mega Net',             icon:'🕸️', desc:'Trawlers are 2x more efficient.',          cost:80000,     req:()=>(state.buildings.trawler||0)>=5,  effect:()=>{ boostBuilding('trawler',2); } },
-  { id:'deep_trawl',    name:'Deep Sea Trawl',       icon:'🕸️', desc:'Trawlers are 4x more efficient.',          cost:800000,    req:()=>(state.buildings.trawler||0)>=25, effect:()=>{ boostBuilding('trawler',4); } },
+  { id:'mega_net',      name:'Mega Net',             icon:'🕸️', desc:'Trawlers are 2x more efficient.',          cost:250000,    req:()=>(state.buildings.trawler||0)>=10, effect:()=>{ boostBuilding('trawler',2); } },
+  { id:'deep_trawl',    name:'Deep Sea Trawl',       icon:'🕸️', desc:'Trawlers are 4x more efficient.',          cost:2500000,   req:()=>(state.buildings.trawler||0)>=40, effect:()=>{ boostBuilding('trawler',4); } },
 
   // Building upgrades - Submarine
-  { id:'sub_sonar',     name:'Sub Sonar',            icon:'🤿', desc:'Submarines find 2x more fish.',            cost:200000,    req:()=>(state.buildings.submarine||0)>=5, effect:()=>{ boostBuilding('submarine',2); } },
+  { id:'sub_sonar',     name:'Sub Sonar',            icon:'🤿', desc:'Submarines find 2x more fish.',            cost:600000,    req:()=>(state.buildings.submarine||0)>=10, effect:()=>{ boostBuilding('submarine',2); } },
 
   // Building upgrades - Sonar
-  { id:'ai_sonar',      name:'AI Sonar',             icon:'🤖', desc:'Sonar stations are 3x more efficient.',    cost:300000,    req:()=>(state.buildings.sonar||0)>=5,    effect:()=>{ boostBuilding('sonar',3); } },
+  { id:'ai_sonar',      name:'AI Sonar',             icon:'🤖', desc:'Sonar stations are 3x more efficient.',    cost:1000000,   req:()=>(state.buildings.sonar||0)>=10,   effect:()=>{ boostBuilding('sonar',3); } },
 
   // Building upgrades - Reef
-  { id:'reef_seeds',    name:'Coral Seeds',          icon:'🪸', desc:'Coral reefs are 2x more productive.',      cost:600000,    req:()=>(state.buildings.reef||0)>=5,     effect:()=>{ boostBuilding('reef',2); } },
+  { id:'reef_seeds',    name:'Coral Seeds',          icon:'🪸', desc:'Coral reefs are 2x more productive.',      cost:2000000,   req:()=>(state.buildings.reef||0)>=10,    effect:()=>{ boostBuilding('reef',2); } },
 
   // Building upgrades - Lab
-  { id:'gene_splice',   name:'Gene Splicing',        icon:'🔬', desc:'Labs produce 3x more.',                    cost:1500000,   req:()=>(state.buildings.lab||0)>=5,      effect:()=>{ boostBuilding('lab',3); } },
+  { id:'gene_splice',   name:'Gene Splicing',        icon:'🔬', desc:'Labs produce 3x more.',                    cost:5000000,   req:()=>(state.buildings.lab||0)>=10,     effect:()=>{ boostBuilding('lab',3); } },
 
   // Building upgrades - Factory
-  { id:'auto_factory',  name:'Automation',           icon:'🏭', desc:'Factories run 2x faster.',                 cost:3000000,   req:()=>(state.buildings.factory||0)>=5,  effect:()=>{ boostBuilding('factory',2); } },
+  { id:'auto_factory',  name:'Automation',           icon:'🏭', desc:'Factories run 2x faster.',                 cost:10000000,  req:()=>(state.buildings.factory||0)>=10, effect:()=>{ boostBuilding('factory',2); } },
 
   // Building upgrades - Satellite
-  { id:'quantum_scan',  name:'Quantum Scanner',      icon:'🛸', desc:'Satellite coverage x3.',                   cost:8000000,   req:()=>(state.buildings.satellite||0)>=5, effect:()=>{ boostBuilding('satellite',3); } },
+  { id:'quantum_scan',  name:'Quantum Scanner',      icon:'🛸', desc:'Satellite coverage x3.',                   cost:25000000,  req:()=>(state.buildings.satellite||0)>=10, effect:()=>{ boostBuilding('satellite',3); } },
 
   // Global boosts
-  { id:'ocean_song',    name:'Ocean Song',           icon:'🎵', desc:'All buildings are 50% more productive.',   cost:1000000,   req:()=>state.totalFish>=500000,              effect:()=>{ globalBoost(1.5); } },
-  { id:'fish_god',      name:'Fish God\'s Blessing', icon:'🔱', desc:'All production x2!',                       cost:50000000,  req:()=>state.totalFish>=10000000,            effect:()=>{ globalBoost(2); } },
-  { id:'poseidon_pact', name:'Poseidon Pact',        icon:'🌊', desc:'All production x3 — ocean debt forgiven!', cost:500000000, req:()=>state.totalFish>=100000000,           effect:()=>{ globalBoost(3); } },
+  { id:'ocean_song',    name:'Ocean Song',           icon:'🎵', desc:'All buildings are 50% more productive.',   cost:3000000,   req:()=>state.totalFish>=1500000,             effect:()=>{ globalBoost(1.5); } },
+  { id:'fish_god',      name:'Fish God\'s Blessing', icon:'🔱', desc:'All production x2!',                       cost:150000000, req:()=>state.totalFish>=30000000,            effect:()=>{ globalBoost(2); } },
+  { id:'poseidon_pact', name:'Poseidon Pact',        icon:'🌊', desc:'All production x3 — ocean debt forgiven!', cost:800000000, req:()=>state.totalFish>=200000000,           effect:()=>{ globalBoost(3); } },
 
   // Synergy upgrades
-  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:2000,      req:()=>(state.buildings.rod||0)>=1,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
-  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:100000,    req:()=>(state.buildings.boat||0)>=1,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
-  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:2000000,   req:()=>(state.buildings.trawler||0)>=1,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
-  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:25000000,  req:()=>(state.buildings.submarine||0)>=1,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
+  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:5000,      req:()=>(state.buildings.rod||0)>=5,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:250000,    req:()=>(state.buildings.boat||0)>=5,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:5000000,   req:()=>(state.buildings.trawler||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:60000000,  req:()=>(state.buildings.submarine||0)>=5,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
 ];
 
 // ── CRISIS DEFINITIONS ────────────────────────────────────────
@@ -1086,7 +1087,7 @@ function boostBuilding(id, factor) { buildingMult[id] = (buildingMult[id]||1) * 
 function globalBoost(factor) { BUILDINGS.forEach(b => buildingMult[b.id] *= factor); recalcFPS(); }
 
 function getBuildingCost(b) {
-  return Math.ceil(b.baseCost * Math.pow(1.15, state.buildings[b.id]||0));
+  return Math.ceil(b.baseCost * Math.pow(1.22, state.buildings[b.id]||0));
 }
 
 // ── FORMAT ────────────────────────────────────────────────────
@@ -1533,43 +1534,43 @@ function createBoostBar(type, emoji, label, mult, durationMs) {
 // boostDur:  duration in ms (only for frenzy/harvest)
 const BONUS_FISH_TYPES = [
   // common — instant
-  { emoji:'🐠', label:'Clownfish',    mult:2,    color:'#ff6b35', rarity:'common',    minFish:0,       boostType:'instant' },
-  { emoji:'🦐', label:'Shrimp',       mult:1.5,  color:'#f9c74f', rarity:'common',    minFish:0,       boostType:'instant' },
-  { emoji:'🐟', label:'Wild Fish',    mult:2.5,  color:'#4dc3ff', rarity:'common',    minFish:50,      boostType:'instant' },
-  { emoji:'🦀', label:'Crab',         mult:3,    color:'#f94144', rarity:'common',    minFish:100,     boostType:'instant' },
+  { emoji:'🐠', label:'Clownfish',    mult:0.8,  color:'#ff6b35', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🦐', label:'Shrimp',       mult:0.6,  color:'#f9c74f', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🐟', label:'Wild Fish',    mult:1,    color:'#4dc3ff', rarity:'common',    minFish:50,      boostType:'instant' },
+  { emoji:'🦀', label:'Crab',         mult:1.2,  color:'#f94144', rarity:'common',    minFish:100,     boostType:'instant' },
   // common — frenzy
-  { emoji:'🐡', label:'Puffer Fish',  mult:3,    color:'#f9c74f', rarity:'common',    minFish:200,     boostType:'frenzy',  boostMult:2,  boostDur:8000  },
+  { emoji:'🐡', label:'Puffer Fish',  mult:1,    color:'#f9c74f', rarity:'common',    minFish:200,     boostType:'frenzy',  boostMult:1.3, boostDur:8000  },
   // common — harvest
-  { emoji:'🐚', label:'Sea Snail',    mult:3,    color:'#7dd3f8', rarity:'common',    minFish:150,     boostType:'harvest', boostMult:2,  boostDur:8000  },
+  { emoji:'🐚', label:'Sea Snail',    mult:1,    color:'#7dd3f8', rarity:'common',    minFish:150,     boostType:'harvest', boostMult:1.3, boostDur:8000  },
 
   // rare — instant
-  { emoji:'🦞', label:'Lobster',      mult:5,    color:'#f77f00', rarity:'rare',      minFish:500,     boostType:'instant' },
-  { emoji:'🦑', label:'Baby Squid',   mult:7,    color:'#c77dff', rarity:'rare',      minFish:800,     boostType:'instant' },
+  { emoji:'🦞', label:'Lobster',      mult:2,    color:'#f77f00', rarity:'rare',      minFish:500,     boostType:'instant' },
+  { emoji:'🪼', label:'Jellyfish',     mult:2.5,  color:'#c77dff', rarity:'rare',      minFish:800,     boostType:'instant' },
   // rare — frenzy
-  { emoji:'🐙', label:'Octopus',      mult:5,    color:'#9b5de5', rarity:'rare',      minFish:1000,    boostType:'frenzy',  boostMult:3,  boostDur:12000 },
-  { emoji:'🦈', label:'Baby Shark',   mult:10,   color:'#6a4fcf', rarity:'rare',      minFish:2000,    boostType:'frenzy',  boostMult:2,  boostDur:15000 },
+  { emoji:'🐙', label:'Octopus',      mult:2,    color:'#9b5de5', rarity:'rare',      minFish:1000,    boostType:'frenzy',  boostMult:1.5, boostDur:12000 },
+  { emoji:'🫧', label:'Manta Ray',    mult:3,    color:'#6a4fcf', rarity:'rare',      minFish:2000,    boostType:'frenzy',  boostMult:1.3, boostDur:15000 },
   // rare — harvest
-  { emoji:'🦭', label:'Seal',         mult:10,   color:'#43aa8b', rarity:'rare',      minFish:1500,    boostType:'harvest', boostMult:2,  boostDur:18000 },
-  { emoji:'🐢', label:'Sea Turtle',   mult:8,    color:'#2d7a63', rarity:'rare',      minFish:3000,    boostType:'harvest', boostMult:2,  boostDur:20000 },
+  { emoji:'🦭', label:'Seal',         mult:3,    color:'#43aa8b', rarity:'rare',      minFish:1500,    boostType:'harvest', boostMult:1.3, boostDur:18000 },
+  { emoji:'🐢', label:'Sea Turtle',   mult:2.5,  color:'#2d7a63', rarity:'rare',      minFish:3000,    boostType:'harvest', boostMult:1.3, boostDur:20000 },
 
   // epic — instant
-  { emoji:'🦈', label:'Shark',        mult:12,   color:'#6a4fcf', rarity:'epic',      minFish:5000,    boostType:'instant' },
-  { emoji:'🐊', label:'Crocodile',    mult:10,   color:'#2d7a63', rarity:'epic',      minFish:8000,    boostType:'instant' },
+  { emoji:'🦈', label:'Shark',        mult:5,    color:'#6a4fcf', rarity:'epic',      minFish:5000,    boostType:'instant' },
+  { emoji:'🦎', label:'Sea Lizard',   mult:4,    color:'#2d7a63', rarity:'epic',      minFish:8000,    boostType:'instant' },
   // epic — frenzy
-  { emoji:'🦅', label:'Sea Eagle',    mult:15,   color:'#f77f00', rarity:'epic',      minFish:10000,   boostType:'frenzy',  boostMult:4,  boostDur:12000 },
-  { emoji:'🐊', label:'Croc Frenzy',  mult:20,   color:'#1a5a3a', rarity:'epic',      minFish:20000,   boostType:'frenzy',  boostMult:5,  boostDur:10000 },
+  { emoji:'🦅', label:'Sea Eagle',    mult:6,    color:'#f77f00', rarity:'epic',      minFish:10000,   boostType:'frenzy',  boostMult:2,  boostDur:12000 },
+  { emoji:'🐊', label:'Croc Frenzy',  mult:7,    color:'#1a5a3a', rarity:'epic',      minFish:20000,   boostType:'frenzy',  boostMult:2,  boostDur:10000 },
   // epic — harvest
-  { emoji:'🐬', label:'Dolphin',      mult:30,   color:'#43aa8b', rarity:'epic',      minFish:15000,   boostType:'harvest', boostMult:3,  boostDur:18000 },
-  { emoji:'🦑', label:'Giant Squid',  mult:50,   color:'#c77dff', rarity:'epic',      minFish:50000,   boostType:'harvest', boostMult:4,  boostDur:15000 },
+  { emoji:'🐬', label:'Dolphin',      mult:10,   color:'#43aa8b', rarity:'epic',      minFish:15000,   boostType:'harvest', boostMult:1.5, boostDur:18000 },
+  { emoji:'🦑', label:'Giant Squid',  mult:15,   color:'#c77dff', rarity:'epic',      minFish:50000,   boostType:'harvest', boostMult:2,  boostDur:15000 },
 
   // legendary — instant
-  { emoji:'🐳', label:'Blue Whale',   mult:60,   color:'#1a8fd1', rarity:'legendary', minFish:500000,  boostType:'instant' },
+  { emoji:'🐳', label:'Blue Whale',   mult:20,   color:'#1a8fd1', rarity:'legendary', minFish:500000,  boostType:'instant' },
   // legendary — frenzy
-  { emoji:'🐲', label:'Sea Dragon',   mult:60,   color:'#ff4d6d', rarity:'legendary', minFish:100000,  boostType:'frenzy',  boostMult:8,  boostDur:20000 },
-  { emoji:'☄️',  label:'Meteor Fish',  mult:80,   color:'#ff9500', rarity:'legendary', minFish:1000000, boostType:'frenzy',  boostMult:10, boostDur:15000 },
+  { emoji:'🐲', label:'Sea Dragon',   mult:20,   color:'#ff4d6d', rarity:'legendary', minFish:100000,  boostType:'frenzy',  boostMult:3,  boostDur:20000 },
+  { emoji:'☄️',  label:'Meteor Fish',  mult:25,   color:'#ff9500', rarity:'legendary', minFish:1000000, boostType:'frenzy',  boostMult:4,  boostDur:15000 },
   // legendary — harvest
-  { emoji:'🌊', label:'Tsunami Fish', mult:150,  color:'#00d4ff', rarity:'legendary', minFish:200000,  boostType:'harvest', boostMult:6,  boostDur:25000 },
-  { emoji:'🔱', label:'Poseidon\'s Gift', mult:200, color:'#f9c74f', rarity:'legendary', minFish:5000000, boostType:'harvest', boostMult:10, boostDur:30000 },
+  { emoji:'🌊', label:'Tsunami Fish', mult:40,   color:'#00d4ff', rarity:'legendary', minFish:200000,  boostType:'harvest', boostMult:2.5, boostDur:25000 },
+  { emoji:'🔱', label:'Poseidon\'s Gift', mult:60, color:'#f9c74f', rarity:'legendary', minFish:5000000, boostType:'harvest', boostMult:4,  boostDur:30000 },
 ];
 
 const RARITY_COLORS = {
