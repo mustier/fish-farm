@@ -664,15 +664,16 @@ function updateUI() {
 // ── GAME LOOP ─────────────────────────────────────────────────
 let lastTick = Date.now();
 let frameCount = 0;
-function gameLoop() {
+let bgInterval = null;
+
+function tick() {
   const now = Date.now();
-  const dt  = Math.min((now - lastTick) / 1000, 0.1); // cap dt to avoid huge jumps
+  const dt  = Math.min((now - lastTick) / 1000, 0.5); // cap dt; allow longer gaps when in background
   lastTick  = now;
   state.fish      += state.fishPerSec * dt;
   state.totalFish += state.fishPerSec * dt;
 
   frameCount++;
-  // Refresh affordability every frame using data-id (safe when some buildings are hidden)
   document.querySelectorAll('.building-card').forEach(card => {
     const b = BUILDINGS.find(x => x.id === card.dataset.id);
     if(!b) return;
@@ -685,11 +686,24 @@ function gameLoop() {
   document.getElementById('fish-count').textContent = fmt(state.fish);
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
 
-  // Check upgrade unlock / re-render upgrades every 30 frames
   if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); }
+}
 
+function gameLoop() {
+  tick();
   requestAnimationFrame(gameLoop);
 }
+
+// When tab is hidden switch to setInterval so production keeps running
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) {
+    if(!bgInterval) bgInterval = setInterval(tick, 1000);
+  } else {
+    if(bgInterval) { clearInterval(bgInterval); bgInterval = null; }
+    lastTick = Date.now(); // reset so no huge dt spike on return
+    requestAnimationFrame(gameLoop);
+  }
+});
 
 // ── BUBBLES ───────────────────────────────────────────────────
 function createBubbles() {
