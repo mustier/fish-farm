@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐟 Fish Clicker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ocean: #0a1628;
+    --deep: #071020;
+    --mid: #0d2444;
+    --surface: #1a3a6b;
+    --foam: #2a6fa8;
+    --wave: #3d9cd4;
+    --light: #7dd3f8;
+    --white: #e8f4fd;
+    --gold: #f9c74f;
+    --orange: #f77f00;
+    --coral: #f94144;
+    --green: #43aa8b;
+    --panel: rgba(13,36,68,0.85);
+    --border: rgba(61,156,212,0.25);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--ocean);
+    font-family: 'Nunito', sans-serif;
+    color: var(--white);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(61,156,212,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(10,22,40,0.8) 0%, transparent 50%),
+      linear-gradient(180deg, #071020 0%, #0a1628 40%, #0d2444 100%);
+    z-index:0; pointer-events:none;
+  }
+  .bubbles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .bubble {
+    position:absolute; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, rgba(125,211,248,0.6), rgba(61,156,212,0.1));
+    border: 1px solid rgba(125,211,248,0.3);
+    animation: rise linear infinite;
+    bottom: -40px;
+  }
+  @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
+
+  header {
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    padding: 8px 20px;
+    background: linear-gradient(90deg, var(--deep), var(--mid), var(--deep));
+    border-bottom: 2px solid var(--border);
+    gap: 12px;
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--light);
+    text-shadow: 0 0 20px rgba(125,211,248,0.6);
+    letter-spacing: 2px;
+  }
+  .fish-emoji { font-size: 2rem; animation: swim 2s ease-in-out infinite; display:inline-block; }
+  @keyframes swim { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-4px) rotate(5deg)} }
+
+  .game {
+    position:relative; z-index:5;
+    display:grid;
+    grid-template-columns: 280px 1fr 300px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .panel-title {
+    font-family:'Fredoka One',cursive; font-size:1rem; color: var(--light);
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); display:flex; align-items:center; gap:6px;
+  }
+
+  /* CENTER */
+  .panel-center {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: 14px; padding: 14px 20px;
+    position: relative; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--foam) transparent;
+  }
+  .fish-counter { text-align: center; }
+  .fish-count {
+    font-family: 'Fredoka One', cursive; font-size: 2.8rem;
+    color: var(--gold); text-shadow: 0 0 30px rgba(249,199,79,0.5); line-height: 1;
+  }
+  .fish-count-label { font-size: 0.85rem; color: var(--light); opacity: 0.7; margin-top: 4px; }
+  .fish-per-sec { font-size: 0.9rem; color: var(--wave); margin-top: 2px; }
+
+  .fish-btn-wrap {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .fish-btn {
+    width: 170px; height: 170px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #4dc3ff 0%, #1a8fd1 40%, #0d5fa0 70%, #083d6e 100%);
+    border: 4px solid rgba(125,211,248,0.5);
+    box-shadow: 0 0 40px rgba(61,156,212,0.4), 0 0 80px rgba(61,156,212,0.15), inset 0 2px 8px rgba(255,255,255,0.2);
+    cursor: pointer; transition: transform 0.08s, box-shadow 0.08s;
+    font-size: 4.5rem; display: flex; align-items:center; justify-content:center;
+    user-select: none; -webkit-user-select: none; position: relative; overflow: hidden;
+  }
+  .fish-btn::after {
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 38% 30%, rgba(255,255,255,0.25), transparent 60%);
+    pointer-events:none;
+  }
+  .fish-btn:hover { transform: scale(1.04); box-shadow: 0 0 60px rgba(61,156,212,0.6), 0 0 100px rgba(61,156,212,0.2), inset 0 2px 8px rgba(255,255,255,0.2); }
+  .fish-btn:active { transform: scale(0.94); }
+  .glow-ring {
+    position:absolute; width:190px; height:190px; border-radius:50%;
+    border: 2px solid rgba(125,211,248,0.2); animation: pulse-ring 2s ease-in-out infinite; pointer-events:none;
+  }
+  .glow-ring2 { width:220px; height:220px; animation-delay:0.5s; border-color:rgba(125,211,248,0.1); }
+  @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.05);opacity:1} }
+
+  /* BUILDING SCENE */
+  .building-scene {
+    width: 100%; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 8px; display:flex; flex-direction:column; gap:0;
+    /* grows to fill remaining center space */
+    flex: 1; min-height: 0; overflow: hidden;
+  }
+  .scene-title {
+    font-family:'Fredoka One',cursive; font-size:0.75rem;
+    color: rgba(125,211,248,0.5); text-align:center; letter-spacing:1px;
+    padding-bottom: 4px; flex-shrink:0;
+  }
+  /* each building row: fixed height, never wraps */
+  .scene-row {
+    display:flex; align-items:center; gap:0;
+    height: var(--row-h); flex-shrink:0;
+    border-bottom: 1px solid rgba(61,156,212,0.07);
+    overflow: hidden;
+  }
+  .scene-row-label {
+    font-size:0.6rem; color:rgba(125,211,248,0.35);
+    width: 80px; flex-shrink:0; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; padding-left:2px;
+  }
+  .scene-row-icons {
+    flex:1; display:flex; align-items:center;
+    overflow:hidden; gap:1px;
+  }
+  .scene-unit {
+    display:inline-block; flex-shrink:0; line-height:1;
+    animation: bob 1.5s ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  .scene-overflow {
+    font-family:'Fredoka One',cursive; font-size:0.7rem;
+    color:var(--gold); flex-shrink:0; margin-left:2px;
+  }
+  .scene-row-count {
+    font-family:'Fredoka One',cursive; font-size:0.75rem;
+    color:var(--wave); flex-shrink:0; width:28px; text-align:right;
+    padding-right:4px;
+  }
+  @keyframes bob {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)}
+  }
+  .scene-empty { font-size:0.7rem; color:rgba(125,211,248,0.2); text-align:center; padding:12px 0; }
+
+  .click-info { font-size:0.8rem; color:rgba(125,211,248,0.4); text-align:center; }
+
+  /* PARTICLES */
+  .particle {
+    position:fixed; pointer-events:none; font-size:1.4rem;
+    font-family:'Fredoka One',cursive; color: var(--gold);
+    text-shadow: 0 0 10px rgba(249,199,79,0.8);
+    animation: float-up 0.9s ease-out forwards; z-index:999;
+  }
+  @keyframes float-up { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-80px) scale(0.5);opacity:0} }
+
+  .milestone {
+    position:fixed; top:70px; left:50%; transform:translateX(-50%);
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: var(--deep); font-family:'Fredoka One',cursive; font-size:1.1rem;
+    padding: 8px 24px; border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(249,199,79,0.5); z-index:999;
+    animation: banner-in 0.4s ease, banner-out 0.4s ease 2.5s forwards;
+  }
+  @keyframes banner-in{ from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+  @keyframes banner-out{ to{opacity:0;transform:translateX(-50%) translateY(-20px)} }
+
+  /* RIGHT PANEL */
+  .panel-right {
+    background: var(--panel); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .scroll-list {
+    flex:1; overflow-y: auto; padding: 8px;
+    scrollbar-width: thin; scrollbar-color: var(--foam) transparent;
+  }
+  .scroll-list::-webkit-scrollbar { width:4px; }
+  .scroll-list::-webkit-scrollbar-thumb { background:var(--foam); border-radius:2px; }
+
+  /* BUILDING CARD */
+  @keyframes unlock-slide {
+    from { opacity:0; transform: translateX(30px) scale(0.95); }
+    to   { opacity:1; transform: translateX(0)    scale(1); }
+  }
+  .building-card {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 10px; margin-bottom: 5px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s; position:relative; overflow:hidden;
+  }
+  .building-card.unlocked-new {
+    animation: unlock-slide 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .building-card::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(125,211,248,0.05), transparent);
+    transform:translateX(-100%); transition:transform 0.3s;
+  }
+  .building-card:hover::before { transform:translateX(100%); }
+  .building-card:hover { background: rgba(61,156,212,0.12); border-color: rgba(61,156,212,0.4); transform:translateX(2px); }
+  .building-card.affordable { border-color: rgba(67,170,139,0.5); background: rgba(67,170,139,0.06); }
+  .building-card.affordable:hover { background: rgba(67,170,139,0.14); border-color: var(--green); }
+  .building-card.cant-afford { opacity:0.5; }
+  .building-icon { font-size:1.7rem; flex-shrink:0; }
+  .building-info { flex:1; min-width:0; }
+  .building-name { font-weight:800; font-size:0.82rem; color: var(--light); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .building-desc { font-size:0.68rem; color: rgba(125,211,248,0.6); line-height:1.3; }
+  .building-fps { font-size:0.65rem; color:rgba(125,211,248,0.5); }
+  .building-right { text-align:right; flex-shrink:0; }
+  .building-cost { font-family:'Fredoka One',cursive; font-size:0.85rem; color: var(--gold); }
+  .building-count { font-family:'Fredoka One',cursive; font-size:1.1rem; color: var(--wave); }
+
+  /* UPGRADE CARD */
+  .upgrade-card {
+    display:flex; align-items:center; gap:10px; padding:7px 10px; margin-bottom:4px;
+    border-radius:8px; cursor:pointer; transition:all 0.15s; position:relative;
+  }
+  .upgrade-card.available {
+    background:rgba(249,199,79,0.07); border:1px solid rgba(249,199,79,0.3);
+  }
+  .upgrade-card.available:hover {
+    background:rgba(249,199,79,0.18); border-color:rgba(249,199,79,0.7);
+    transform:translateX(2px);
+  }
+  .upgrade-card.cant-afford-upg {
+    background:rgba(249,199,79,0.03); border:1px solid rgba(249,199,79,0.1);
+    opacity:0.55; cursor:not-allowed;
+  }
+  .upgrade-card.purchased {
+    background:rgba(67,170,139,0.08); border:1px solid rgba(67,170,139,0.25);
+    cursor:default; opacity:0.55;
+  }
+  .upgrade-icon { font-size:1.4rem; flex-shrink:0; }
+  .upgrade-info { flex:1; }
+  .upgrade-name { font-weight:800; font-size:0.8rem; color:var(--gold); }
+  .upgrade-desc { font-size:0.67rem; color:rgba(249,199,79,0.6); }
+  .upgrade-cost-lbl { font-family:'Fredoka One',cursive; font-size:0.78rem; color:var(--gold); text-align:right; flex-shrink:0; }
+
+  .stats-bar {
+    padding:6px 14px; border-top:1px solid var(--border); background:rgba(0,0,0,0.3);
+    display:flex; gap:16px; font-size:0.72rem; color:rgba(125,211,248,0.6); flex-wrap:wrap;
+  }
+  .stat-item strong { color:var(--light); }
+
+  .tooltip {
+    position:fixed; z-index:9999; background:rgba(7,16,32,0.97);
+    border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+    font-size:0.78rem; max-width:220px; pointer-events:none;
+    backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none;
+  }
+  .tooltip-title { font-family:'Fredoka One',cursive; color:var(--light); margin-bottom:4px; }
+  .tooltip-body { color:rgba(125,211,248,0.7); line-height:1.5; }
+  .tooltip-bonus { color:var(--green); font-size:0.75rem; margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="bubbles" id="bubbles"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-body" id="tt-body"></div>
+  <div class="tooltip-bonus" id="tt-bonus"></div>
+</div>
+
+<header>
+  <span class="fish-emoji">🐟</span>
+  <h1>FISH CLICKER</h1>
+  <span class="fish-emoji" style="animation-delay:.5s">🐠</span>
+</header>
+
+<div class="game">
+
+  <!-- LEFT: Upgrades -->
+  <div class="panel-left">
+    <div class="panel-title">⚡ Upgrades</div>
+    <div class="scroll-list" id="upgrades-list"></div>
+    <div class="stats-bar" id="stats-bar"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="panel-center">
+    <div class="fish-counter">
+      <div class="fish-count" id="fish-count">0</div>
+      <div class="fish-count-label">🐟 fish</div>
+      <div class="fish-per-sec" id="fish-ps">0 fish/sec</div>
+    </div>
+
+    <div class="fish-btn-wrap">
+      <div class="glow-ring"></div>
+      <div class="glow-ring glow-ring2"></div>
+      <button class="fish-btn" id="fish-btn">🐟</button>
+    </div>
+
+    <div class="click-info">
+      per click <span id="click-power" style="color:var(--light)">1</span> fish
+    </div>
+
+    <!-- Building Scene -->
+    <div class="building-scene" id="building-scene">
+      <div class="scene-title">◈ FARM ◈</div>
+      <div id="scene-content" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;"><div class="scene-empty">Buy a building to see it here...</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Buildings -->
+  <div class="panel-right">
+    <div class="panel-title">🏗️ Buildings</div>
+    <div class="scroll-list" id="buildings-list"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────
+const state = {
+  fish: 0,
+  totalFish: 0,
+  fishPerClick: 1,
+  fishPerSec: 0,
+  clickMultiplier: 1,
+  buildings: {},
+  purchasedUpgrades: new Set(),
+};
+
+// ── BUILDINGS ────────────────────────────────────────────────
+const BUILDINGS = [
+  { id:'rod',         name:'Fishing Rod',       icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',          baseCost:10,       baseFps:0.1,   req:()=>true },
+  { id:'granny',      name:'Fisher Granny',      icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',               baseCost:100,      baseFps:0.5,   req:()=>(state.buildings.rod||0)>=1 },
+  { id:'boat',        name:'Boat',               icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',       baseCost:500,      baseFps:2,     req:()=>(state.buildings.granny||0)>=1 },
+  { id:'farm',        name:'Fish Farm',          icon:'🐠', sceneIcon:'🏗️', desc:'Fresh fish raised in a controlled environment.',       baseCost:2000,     baseFps:8,     req:()=>(state.buildings.boat||0)>=1 },
+  { id:'trawler',     name:'Trawler',            icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',        baseCost:8000,     baseFps:25,    req:()=>(state.buildings.farm||0)>=1 },
+  { id:'sonar',       name:'Sonar Station',      icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',          baseCost:30000,    baseFps:80,    req:()=>(state.buildings.trawler||0)>=1 },
+  { id:'lab',         name:'Aquarium Lab',       icon:'🔬', sceneIcon:'🧪', desc:'Scientists engineer ultra-productive fish.',           baseCost:100000,   baseFps:250,   req:()=>(state.buildings.sonar||0)>=1 },
+  { id:'portal',      name:'Ocean Portal',       icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',      baseCost:500000,   baseFps:1000,  req:()=>(state.buildings.lab||0)>=1 },
+  { id:'timemachine', name:'Time Machine',       icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',baseCost:2000000,  baseFps:4000,  req:()=>(state.buildings.portal||0)>=1 },
+  { id:'poseidon',    name:'Poseidon\'s Palace', icon:'🔱', sceneIcon:'🏛️', desc:'You struck a deal with the god of the sea.',           baseCost:10000000, baseFps:15000, req:()=>(state.buildings.timemachine||0)>=1 },
+];
+
+// ── UPGRADES ─────────────────────────────────────────────────
+const UPGRADES = [
+  { id:'sharp_hook',    name:'Sharp Hook',          icon:'🪝', desc:'+1 extra fish per click.',       cost:100,      req:()=>state.totalFish>=50,                   effect:()=>{ state.fishPerClick += 1; } },
+  { id:'titanium_hook', name:'Titanium Hook',         icon:'⚓', desc:'x2 fish per click!',              cost:500,      req:()=>state.totalFish>=200,                  effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'rod_x2',        name:'Double Rod',              icon:'🎣', desc:'Fishing rods are twice as efficient.',    cost:200,      req:()=>(state.buildings.rod||0)>=5,           effect:()=>{ boostBuilding('rod',2); } },
+  { id:'granny_tea',    name:'Granny\'s Tea',          icon:'🍵', desc:'Fisher grannies are 2x more productive.',           cost:1000,     req:()=>(state.buildings.granny||0)>=5,        effect:()=>{ boostBuilding('granny',2); } },
+  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,     req:()=>(state.buildings.boat||0)>=5,          effect:()=>{ boostBuilding('boat',2); } },
+  { id:'fish_food',     name:'Special Fish Feed',         icon:'🍤', desc:'Fish farms produce 2x more.',          cost:20000,    req:()=>(state.buildings.farm||0)>=5,          effect:()=>{ boostBuilding('farm',2); } },
+  { id:'mega_net',      name:'Mega Net',                 icon:'🕸️', desc:'Trawlers are 2x more efficient.',             cost:80000,    req:()=>(state.buildings.trawler||0)>=5,       effect:()=>{ boostBuilding('trawler',2); } },
+  { id:'ai_sonar',      name:'AI Sonar',        icon:'🤖', desc:'Sonar stations are 3x more efficient.',        cost:300000,   req:()=>(state.buildings.sonar||0)>=5,         effect:()=>{ boostBuilding('sonar',3); } },
+  { id:'click_frenzy',  name:'Click Frenzy',     icon:'💥', desc:'+10 fish per click.',                cost:50000,    req:()=>state.totalFish>=10000,                effect:()=>{ state.fishPerClick += 10; } },
+  { id:'ocean_song',    name:'Ocean Song',         icon:'🎵', desc:'All buildings are 50% more productive.',         cost:1000000,  req:()=>state.totalFish>=500000,               effect:()=>{ globalBoost(1.5); } },
+  { id:'ancient_map',   name:'Ancient Map',            icon:'🗺️', desc:'Discover hidden fish grounds: click x3.',  cost:5000000,  req:()=>state.totalFish>=1000000,              effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'fish_god',      name:'Fish God\'s Blessing',icon:'🔱', desc:'All production x2!',                       cost:50000000, req:()=>state.totalFish>=10000000,             effect:()=>{ globalBoost(2); } },
+];
+
+// ── MULTIPLIERS ───────────────────────────────────────────────
+const buildingMult = {};
+BUILDINGS.forEach(b => buildingMult[b.id] = 1);
+const unlockedBuildings = new Set(['rod']); // rod always visible
+
+function boostBuilding(id, factor) { buildingMult[id] = (buildingMult[id]||1) * factor; recalcFPS(); }
+function globalBoost(factor) { BUILDINGS.forEach(b => buildingMult[b.id] *= factor); recalcFPS(); }
+
+function getBuildingCost(b) {
+  return Math.ceil(b.baseCost * Math.pow(1.15, state.buildings[b.id]||0));
+}
+
+function recalcFPS() {
+  let fps = 0;
+  BUILDINGS.forEach(b => { fps += (state.buildings[b.id]||0) * b.baseFps * buildingMult[b.id]; });
+  state.fishPerSec = fps;
+}
+
+// ── FORMAT ────────────────────────────────────────────────────
+function fmt(n) {
+  if(n >= 1e12) return (n/1e12).toFixed(2) + ' trillion';
+  if(n >= 1e9)  return (n/1e9).toFixed(2)  + ' billion';
+  if(n >= 1e6)  return (n/1e6).toFixed(2)  + ' million';
+  if(n >= 1e3)  return (n/1e3).toFixed(1)  + 'k';
+  return Math.floor(n).toString();
+}
+
+// FPS: always show decimals if non-integer, never round to 0
+function fmtFps(n) {
+  if(n === 0) return '0';
+  if(n >= 1e6) return (n/1e6).toFixed(2) + ' million';
+  if(n >= 1e3) return (n/1e3).toFixed(2) + 'k';
+  if(n >= 100) return n.toFixed(1);
+  if(n >= 1)   return n.toFixed(2);
+  // small: show enough decimals so it's not "0"
+  if(n >= 0.01) return n.toFixed(2);
+  return n.toFixed(4);
+}
+
+// ── CLICK ─────────────────────────────────────────────────────
+let lastMilestone = 0;
+const MILESTONES   = [100,1000,10000,100000,1000000,10000000,100000000];
+const MILESTONE_MSGS = ['100 Fish! 🎉','1,000 Fish! 🐟','10,000! 🌊','100,000! ⛵','One Million! 🚢','Ten Million! 🔱','100 Million! 🌀'];
+
+document.getElementById('fish-btn').addEventListener('click', function(e) {
+  const gained = state.fishPerClick * state.clickMultiplier;
+  state.fish += gained;
+  state.totalFish += gained;
+  spawnParticle(e.clientX, e.clientY, '+' + fmt(gained));
+  for(let i=0;i<MILESTONES.length;i++){
+    if(state.totalFish >= MILESTONES[i] && lastMilestone < MILESTONES[i]){
+      lastMilestone = MILESTONES[i];
+      showMilestone(MILESTONE_MSGS[i]);
+    }
+  }
+  updateUI();
+});
+
+function spawnParticle(x, y, txt) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = txt;
+  p.style.left = (x - 20 + Math.random()*40) + 'px';
+  p.style.top  = (y - 10) + 'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(), 900);
+}
+function showMilestone(msg) {
+  const el = document.createElement('div');
+  el.className = 'milestone'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+// ── BUY BUILDING ──────────────────────────────────────────────
+function buyBuilding(id) {
+  const b = BUILDINGS.find(x=>x.id===id);
+  const cost = getBuildingCost(b);
+  if(state.fish < cost) return;
+  state.fish -= cost;
+  state.buildings[id] = (state.buildings[id]||0) + 1;
+  recalcFPS();
+  renderBuildings();
+  renderUpgrades();
+  renderScene();
+  updateUI();
+}
+
+// ── BUY UPGRADE ───────────────────────────────────────────────
+function buyUpgrade(id) {
+  const u = UPGRADES.find(x=>x.id===id);
+  if(!u || state.purchasedUpgrades.has(id)) return;
+  if(state.fish < u.cost) return;
+  state.fish -= u.cost;
+  state.purchasedUpgrades.add(id);
+  u.effect();
+  recalcFPS(); // ensure fps recalculated after building boosts
+  renderUpgrades();
+  updateUI();
+}
+
+// ── RENDER BUILDINGS ──────────────────────────────────────────
+function renderBuildings() {
+  const list = document.getElementById('buildings-list');
+  list.innerHTML = '';
+  BUILDINGS.forEach(b => {
+    if(!b.req()) return;
+    const isNew = !unlockedBuildings.has(b.id);
+    if(isNew) unlockedBuildings.add(b.id);
+    const cost      = getBuildingCost(b);
+    const count     = state.buildings[b.id] || 0;
+    const canAfford = state.fish >= cost;
+    const fps       = (b.baseFps * buildingMult[b.id]);
+    const card = document.createElement('div');
+    card.className = 'building-card' + (canAfford ? ' affordable' : ' cant-afford') + (isNew ? ' unlocked-new' : '');
+    card.dataset.id = b.id;
+    card.innerHTML = `
+      <div class="building-icon">${b.icon}</div>
+      <div class="building-info">
+        <div class="building-name">${b.name}</div>
+        <div class="building-desc">${b.desc}</div>
+        <div class="building-fps">+${fmtFps(fps)} fish/sec each</div>
+      </div>
+      <div class="building-right">
+        <div class="building-count">${count}</div>
+        <div class="building-cost">🐟 ${fmt(cost)}</div>
+      </div>`;
+    card.addEventListener('click', ()=>buyBuilding(b.id));
+    card.addEventListener('mouseenter', e=>showTooltip(e, b.name, b.desc,
+      count > 0 ? `Total: ${fmtFps(count*fps)}/sec` : ''));
+    card.addEventListener('mouseleave', hideTooltip);
+    card.addEventListener('mousemove',  moveTooltip);
+    list.appendChild(card);
+  });
+}
+
+// ── RENDER UPGRADES ───────────────────────────────────────────
+function renderUpgrades() {
+  const list = document.getElementById('upgrades-list');
+  list.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const purchased = state.purchasedUpgrades.has(u.id);
+    const unlocked  = u.req();
+    if(!unlocked && !purchased) return;
+
+    const canAfford = state.fish >= u.cost;
+    const card = document.createElement('div');
+
+    let cls = 'upgrade-card ';
+    if(purchased) cls += 'purchased';
+    else if(canAfford) cls += 'available';
+    else cls += 'cant-afford-upg';
+
+    card.className = cls;
+    card.innerHTML = `
+      <div class="upgrade-icon">${u.icon}</div>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${u.name}</div>
+        <div class="upgrade-desc">${u.desc}</div>
+      </div>
+      <div class="upgrade-cost-lbl">${purchased ? '✓' : '🐟 '+fmt(u.cost)}</div>`;
+
+    if(!purchased && canAfford) {
+      card.addEventListener('click', ()=>buyUpgrade(u.id));
+    }
+    card.addEventListener('mouseenter', e=>showTooltip(e, u.icon+' '+u.name, u.desc,
+      purchased ? '✓ Purchased' : (canAfford ? '⬅ Click to buy!' : `Not enough fish (need ${fmt(u.cost - state.fish)} more)`)));
+    card.addEventListener('mouseleave', hideTooltip);
+    card.addEventListener('mousemove',  moveTooltip);
+    list.appendChild(card);
+  });
+}
+
+// ── RENDER SCENE ─────────────────────────────────────────────
+function renderScene() {
+  const scene = document.getElementById('building-scene');
+  const container = document.getElementById('scene-content');
+  const owned = BUILDINGS.filter(b => (state.buildings[b.id]||0) > 0);
+
+  if(owned.length === 0) {
+    container.innerHTML = '<div class="scene-empty">Buy a building to see it here...</div>';
+    scene.style.setProperty('--row-h', '28px');
+    return;
+  }
+
+  // Calculate available height for rows
+  // scene height - title height (~26px) - padding (16px)
+  const sceneH = scene.clientHeight || 200;
+  const availH = sceneH - 30;
+  const rowH = Math.max(18, Math.min(28, Math.floor(availH / owned.length)));
+  scene.style.setProperty('--row-h', rowH + 'px');
+
+  // Icon size based on row height
+  const iconPx = Math.max(10, rowH - 4);
+  // Available width for icons: scene width - label(80) - count badge(28) - padding(16)
+  const sceneW = scene.clientWidth || 260;
+  const iconAreaW = sceneW - 80 - 28 - 16;
+  // Each icon takes roughly iconPx * 0.85 width (emoji are roughly square)
+  const iconSlotW = Math.max(iconPx * 0.85, 12);
+  // Reserve ~28px for possible overflow badge
+  const maxIcons = Math.max(1, Math.floor((iconAreaW - 28) / iconSlotW));
+
+  container.innerHTML = '';
+  owned.forEach(b => {
+    const count = state.buildings[b.id];
+    const show  = Math.min(count, maxIcons);
+    const overflow = count - show;
+
+    const row = document.createElement('div');
+    row.className = 'scene-row';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'scene-row-label';
+    lbl.textContent = b.name;
+    row.appendChild(lbl);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'scene-row-icons';
+
+    for(let i = 0; i < show; i++){
+      const s = document.createElement('span');
+      s.className = 'scene-unit';
+      s.style.fontSize = iconPx + 'px';
+      s.style.setProperty('--delay', (i * 0.08) % 1.5 + 's');
+      s.textContent = b.sceneIcon;
+      wrap.appendChild(s);
+    }
+    if(overflow > 0){
+      const ovr = document.createElement('span');
+      ovr.className = 'scene-overflow';
+      ovr.textContent = '+' + overflow;
+      wrap.appendChild(ovr);
+    }
+    row.appendChild(wrap);
+
+    const badge = document.createElement('span');
+    badge.className = 'scene-row-count';
+    badge.textContent = count;
+    row.appendChild(badge);
+
+    container.appendChild(row);
+  });
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, title, body, bonus='') {
+  document.getElementById('tt-title').textContent = title;
+  document.getElementById('tt-body').textContent  = body;
+  document.getElementById('tt-bonus').textContent = bonus;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+function hideTooltip() { tooltip.style.display = 'none'; }
+function moveTooltip(e) {
+  let x = e.clientX+14, y = e.clientY-10;
+  if(x+230 > window.innerWidth) x = e.clientX-230;
+  tooltip.style.left = x+'px'; tooltip.style.top = y+'px';
+}
+
+// ── UPDATE UI ─────────────────────────────────────────────────
+function updateUI() {
+  document.getElementById('fish-count').textContent = fmt(state.fish);
+  document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
+  document.getElementById('click-power').textContent = fmtFps(state.fishPerClick * state.clickMultiplier);
+
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  document.getElementById('stats-bar').innerHTML = `
+    <span>Total: <strong>${fmt(state.totalFish)} 🐟</strong></span>
+    <span>Buildings: <strong>${totalBuildings}</strong></span>
+    <span>Upgrades: <strong>${state.purchasedUpgrades.size}</strong></span>`;
+}
+
+// ── GAME LOOP ─────────────────────────────────────────────────
+let lastTick = Date.now();
+let frameCount = 0;
+function gameLoop() {
+  const now = Date.now();
+  const dt  = Math.min((now - lastTick) / 1000, 0.1); // cap dt to avoid huge jumps
+  lastTick  = now;
+  state.fish      += state.fishPerSec * dt;
+  state.totalFish += state.fishPerSec * dt;
+
+  frameCount++;
+  // Refresh affordability every frame using data-id (safe when some buildings are hidden)
+  document.querySelectorAll('.building-card').forEach(card => {
+    const b = BUILDINGS.find(x => x.id === card.dataset.id);
+    if(!b) return;
+    const cost = getBuildingCost(b);
+    const can  = state.fish >= cost;
+    card.classList.toggle('affordable',  can);
+    card.classList.toggle('cant-afford', !can);
+  });
+
+  document.getElementById('fish-count').textContent = fmt(state.fish);
+  document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
+
+  // Check upgrade unlock / re-render upgrades every 30 frames
+  if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); }
+
+  requestAnimationFrame(gameLoop);
+}
+
+// ── BUBBLES ───────────────────────────────────────────────────
+function createBubbles() {
+  const c = document.getElementById('bubbles');
+  for(let i=0;i<18;i++){
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 4+Math.random()*14;
+    b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${6+Math.random()*12}s;animation-delay:${Math.random()*8}s;--drift:${(Math.random()-0.5)*60}px;opacity:${0.3+Math.random()*0.5};`;
+    c.appendChild(b);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+createBubbles();
+renderBuildings();
+renderUpgrades();
+// Wait one frame so layout is settled before measuring scene dimensions
+requestAnimationFrame(()=>{ renderScene(); });
+updateUI();
+gameLoop();
+
+// Re-render scene if window is resized
+const sceneEl = document.getElementById('building-scene');
+if(window.ResizeObserver) {
+  new ResizeObserver(()=>renderScene()).observe(sceneEl);
+}
+</script>
+</body>
+</html>
