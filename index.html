@@ -271,42 +271,11 @@
     z-index: 1;
     border-radius: 16px;
   }
-  .tank-fish {
-    position: absolute;
+  #tank-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
-    font-size: 13px;
-    line-height: 1;
-    animation: tank-swim var(--swim-dur, 14s) linear infinite;
-    opacity: 0.75;
-  }
-  .tank-fish.flip {
-    animation: tank-swim-flip var(--swim-dur, 14s) linear infinite;
-  }
-  .tank-bubble {
-    position: absolute;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    border: 1px solid rgba(125,211,248,0.4);
-    background: rgba(125,211,248,0.07);
-    animation: tank-bubble-rise var(--bub-dur, 5s) ease-in infinite;
-  }
-  @keyframes tank-swim {
-    0%   { transform: translateX(var(--start-x)) translateY(var(--start-y)); }
-    25%  { transform: translateX(var(--mid1-x))  translateY(var(--mid1-y));  }
-    50%  { transform: translateX(var(--mid2-x))  translateY(var(--mid2-y));  }
-    75%  { transform: translateX(var(--mid3-x))  translateY(var(--mid3-y));  }
-    100% { transform: translateX(var(--start-x)) translateY(var(--start-y)); }
-  }
-  @keyframes tank-swim-flip {
-    0%   { transform: scaleX(-1) translateX(var(--start-x)) translateY(var(--start-y)); }
-    25%  { transform: scaleX(-1) translateX(var(--mid1-x))  translateY(var(--mid1-y));  }
-    50%  { transform: scaleX(-1) translateX(var(--mid2-x))  translateY(var(--mid2-y));  }
-    75%  { transform: scaleX(-1) translateX(var(--mid3-x))  translateY(var(--mid3-y));  }
-    100% { transform: scaleX(-1) translateX(var(--start-x)) translateY(var(--start-y)); }
-  }
-  @keyframes tank-bubble-rise {
-    0%   { bottom: 5%; opacity: 0.5; }
-    100% { bottom: 95%; opacity: 0; }
+    border-radius: 16px;
   }
   .click-zone-particle {
     position: absolute; pointer-events: none;
@@ -722,7 +691,7 @@
     </div>
 
     <div class="fish-btn-wrap">
-      <div class="tank-anim" id="tank-bg"></div>
+      <div class="tank-anim" id="tank-bg"><canvas id="tank-canvas"></canvas></div>
       <div class="click-zone" id="click-zone-main"></div>
       <div class="glow-ring"></div>
       <div class="glow-ring glow-ring2"></div>
@@ -1449,7 +1418,7 @@ function updateUI() {
 
   const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
   document.getElementById('stat-total').textContent      = fmtShort(state.totalFish);
-  document.getElementById('stat-relics').textContent     = caughtFishEmojis.length;
+  document.getElementById('stat-relics').textContent     = fmtShort(state.catchedBonusFish);
   document.getElementById('stat-clicks').textContent     = fmtShort(state.totalClicks);
   document.getElementById('stat-click-earn').textContent = fmtShort(state.fishFromClicks);
   document.getElementById('stat-buildings').textContent  = totalBuildings;
@@ -2226,61 +2195,97 @@ const TANK_FISH_EMOJIS = ['🐟','🐠','🐡','🦐','🦀'];
 
 function rnd(min, max) { return min + Math.random() * (max - min); }
 
-function createTankFish(container, emoji) {
-  const el = document.createElement('div');
-  el.className = 'tank-fish' + (Math.random() < 0.5 ? ' flip' : '');
-  el.textContent = emoji || TANK_FISH_EMOJIS[Math.floor(Math.random() * TANK_FISH_EMOJIS.length)];
-  el.style.left = rnd(5, 88).toFixed(0) + '%';
-  el.style.top  = rnd(8, 78).toFixed(0) + '%';
-  el.style.setProperty('--swim-dur', rnd(14, 28).toFixed(1) + 's');
-  el.style.animationDelay = '-' + rnd(0, 20).toFixed(1) + 's';
-  const makeCoord = () => (rnd(-35, 35).toFixed(0) + 'px');
-  ['start-x','mid1-x','mid2-x','mid3-x'].forEach(k => el.style.setProperty('--'+k, makeCoord()));
-  ['start-y','mid1-y','mid2-y','mid3-y'].forEach(k => el.style.setProperty('--'+k, makeCoord()));
-  el.style.fontSize = rnd(10, 15).toFixed(0) + 'px';
-  container.appendChild(el);
-  return el;
-}
-
-function createTankBubble(container) {
-  const el = document.createElement('div');
-  el.className = 'tank-bubble';
-  const size = rnd(3, 7).toFixed(0);
-  el.style.width = size + 'px';
-  el.style.height = size + 'px';
-  el.style.left = rnd(5, 90).toFixed(0) + '%';
-  el.style.bottom = rnd(2, 20).toFixed(0) + '%';
-  el.style.setProperty('--bub-dur', rnd(3, 7).toFixed(1) + 's');
-  el.style.animationDelay = '-' + rnd(0, 6).toFixed(1) + 's';
-  container.appendChild(el);
-  return el;
-}
-
-let tankContainer = null;
-let tankFishEls = [];
+// ── CANVAS TANK ───────────────────────────────────────────────
+let tankCanvas = null, tankCtx = null;
 let caughtFishEmojis = [];
-const MAX_TANK_FISH = 30;
+const tankFishData = [];   // { emoji, x, y, vx, vy, size, flip, t }
+const tankBubbles  = [];   // { x, y, size, speed, opacity }
+let tankRafId = null;
+
+function mkFish(emoji, w, h) {
+  const size = rnd(10, 15);
+  const vx   = rnd(0.1, 0.35) * (Math.random() < 0.5 ? 1 : -1);
+  const vy   = rnd(0.05, 0.15) * (Math.random() < 0.5 ? 1 : -1);
+  return { emoji, x: rnd(size, w - size), y: rnd(size, h - size), vx, vy, size, t: Math.random() * 1000 };
+}
+
+function mkBubble(w, h) {
+  return { x: rnd(4, w - 4), y: rnd(h * 0.1, h), size: rnd(2, 5), speed: rnd(0.3, 0.8), opacity: rnd(0.2, 0.5) };
+}
+
+function resizeTankCanvas() {
+  const wrap = tankCanvas.parentElement;
+  const dpr  = window.devicePixelRatio || 1;
+  const w = wrap.offsetWidth  || 200;
+  const h = wrap.offsetHeight || 200;
+  tankCanvas.width  = w * dpr;
+  tankCanvas.height = h * dpr;
+  tankCanvas.style.width  = w + 'px';
+  tankCanvas.style.height = h + 'px';
+  tankCtx = tankCanvas.getContext('2d');
+  tankCtx.scale(dpr, dpr);
+  return { w, h };
+}
 
 function initTankZone() {
-  tankContainer = document.getElementById('tank-bg');
-  if(!tankContainer) return;
-  for(let i = 0; i < 5; i++) createTankBubble(tankContainer);
-  // Restore caught fish saved before this function ran
-  caughtFishEmojis.forEach(emoji => {
-    tankFishEls.push(createTankFish(tankContainer, emoji));
-  });
+  tankCanvas = document.getElementById('tank-canvas');
+  if(!tankCanvas) return;
+  const { w, h } = resizeTankCanvas();
+
+  for(let i = 0; i < 8; i++) tankBubbles.push(mkBubble(w, h));
+  caughtFishEmojis.forEach(e => tankFishData.push(mkFish(e, w, h)));
+
+  new ResizeObserver(() => resizeTankCanvas()).observe(tankCanvas.parentElement);
+
+  tankRafId = requestAnimationFrame(tankLoop);
 }
 
-function updateTankZone() { /* no-op: tank only fills from caught bonus fish */ }
+function tankLoop() {
+  if(!tankCtx) return;
+  const w = parseInt(tankCanvas.style.width)  || tankCanvas.width;
+  const h = parseInt(tankCanvas.style.height) || tankCanvas.height;
+  tankCtx.clearRect(0, 0, w, h);
+
+  // bubbles
+  for(const b of tankBubbles) {
+    b.y -= b.speed;
+    if(b.y < 0) { b.y = h; b.x = rnd(4, w - 4); }
+    tankCtx.beginPath();
+    tankCtx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+    tankCtx.strokeStyle = `rgba(125,211,248,${b.opacity})`;
+    tankCtx.lineWidth = 1;
+    tankCtx.stroke();
+  }
+
+  // fish — gentle sine drift
+  for(const f of tankFishData) {
+    f.t += 0.006;
+    f.x += f.vx + Math.sin(f.t * 1.3) * 0.12;
+    f.y += f.vy + Math.cos(f.t)        * 0.08;
+    if(f.x < f.size)     { f.x = f.size;     f.vx =  Math.abs(f.vx); }
+    if(f.x > w - f.size) { f.x = w - f.size; f.vx = -Math.abs(f.vx); }
+    if(f.y < f.size)     { f.y = f.size;     f.vy =  Math.abs(f.vy); }
+    if(f.y > h - f.size) { f.y = h - f.size; f.vy = -Math.abs(f.vy); }
+
+    tankCtx.save();
+    tankCtx.globalAlpha = 0.8;
+    tankCtx.font = `${f.size}px serif`;
+    tankCtx.textAlign = 'center';
+    tankCtx.textBaseline = 'middle';
+    if(f.vx < 0) { tankCtx.scale(-1, 1); tankCtx.fillText(f.emoji, -f.x, f.y); }
+    else            tankCtx.fillText(f.emoji,  f.x, f.y);
+    tankCtx.restore();
+  }
+
+  tankRafId = requestAnimationFrame(tankLoop);
+}
+
+function updateTankZone() {}
 
 function addCaughtFishToTank(emoji) {
-  if(!tankContainer) return;
-  if(tankFishEls.length >= MAX_TANK_FISH) {
-    tankContainer.removeChild(tankFishEls.shift());
-    caughtFishEmojis.shift();
-  }
   caughtFishEmojis.push(emoji);
-  tankFishEls.push(createTankFish(tankContainer, emoji));
+  if(!tankCanvas) return;
+  tankFishData.push(mkFish(emoji, tankCanvas.width, tankCanvas.height));
 }
 
 function spawnZoneParticle(zone, x, y, txt) {
@@ -2356,6 +2361,6 @@ scheduleCrisis();
 let crisesEnabled = true;
 </script>
 
-<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.4</div>
+<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.5</div>
 </body>
 </html>
