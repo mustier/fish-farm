@@ -809,20 +809,20 @@ const BUILDINGS = [
   { id:'granny',      name:'Fisher Granny',       icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',                  baseCost:100,       baseFps:0.5,    req:()=>(state.buildings.rod||0)>=3 },
   { id:'boat',        name:'Boat',                icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',          baseCost:500,       baseFps:2,      req:()=>(state.buildings.granny||0)>=2 && (state.buildings.rod||0)>=5 },
   { id:'dock',        name:'Fishing Dock',        icon:'🪝', sceneIcon:'🪝', desc:'A proper dock where fishermen gather and trade.',          baseCost:1200,      baseFps:5,      req:()=>(state.buildings.boat||0)>=2 && (state.buildings.granny||0)>=4 },
-  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🏗️', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:8,      req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
+  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🐠', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:8,      req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
   { id:'hatchery',    name:'Hatchery',            icon:'🥚', sceneIcon:'🥚', desc:'Spawning millions of fish from carefully laid eggs.',      baseCost:5000,      baseFps:18,     req:()=>(state.buildings.farm||0)>=2 && (state.buildings.dock||0)>=3 },
   { id:'trawler',     name:'Trawler',             icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',           baseCost:8000,      baseFps:25,     req:()=>(state.buildings.hatchery||0)>=2 && (state.buildings.farm||0)>=4 },
   { id:'submarine',   name:'Submarine',           icon:'🤿', sceneIcon:'🤿', desc:'Deep-sea fishing where the big ones hide.',               baseCost:20000,     baseFps:55,     req:()=>(state.buildings.trawler||0)>=2 && (state.buildings.hatchery||0)>=3 },
   { id:'sonar',       name:'Sonar Station',       icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',             baseCost:30000,     baseFps:80,     req:()=>(state.buildings.submarine||0)>=2 && (state.buildings.trawler||0)>=3 },
   { id:'reef',        name:'Coral Reef Farm',     icon:'🪸', sceneIcon:'🪸', desc:'An artificial reef teeming with exotic species.',         baseCost:75000,     baseFps:160,    req:()=>(state.buildings.sonar||0)>=2 && (state.buildings.submarine||0)>=4 },
-  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🧪', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:250,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
+  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🔬', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:250,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
   { id:'factory',     name:'Processing Factory',  icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale fish processing and cloning.',           baseCost:300000,    baseFps:600,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.reef||0)>=4 },
   { id:'satellite',   name:'Fish Satellite',      icon:'🛸', sceneIcon:'🛸', desc:'Orbital scanner detects fish migrations globally.',       baseCost:800000,    baseFps:1500,   req:()=>(state.buildings.factory||0)>=2 && (state.buildings.lab||0)>=3 },
   { id:'portal',      name:'Ocean Portal',        icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',         baseCost:500000,    baseFps:1000,   req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.factory||0)>=4 },
   { id:'volcano',     name:'Volcano Aquafarm',    icon:'🌋', sceneIcon:'🌋', desc:'Geothermal vents breed impossible fish lifeforms.',       baseCost:2000000,   baseFps:3000,   req:()=>(state.buildings.portal||0)>=2 && (state.buildings.satellite||0)>=3 },
   { id:'timemachine', name:'Time Machine',        icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',   baseCost:5000000,   baseFps:6000,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.portal||0)>=4 },
   { id:'blackhole',   name:'Black Hole Fisher',   icon:'⚫', sceneIcon:'⚫', desc:'Siphoning fish from across the universe.',               baseCost:20000000,  baseFps:20000,  req:()=>(state.buildings.timemachine||0)>=2 && (state.buildings.volcano||0)>=3 },
-  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🏛️', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
+  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🔱', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
 ];
 
 // ── UPGRADES ─────────────────────────────────────────────────
@@ -2337,6 +2337,6 @@ scheduleCrisis();
 let crisesEnabled = true;
 </script>
 
-<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.1</div>
+<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-2</div>
 </body>
 </html>
