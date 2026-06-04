@@ -59,6 +59,15 @@
     border-bottom: 2px solid var(--border);
     gap: 12px;
   }
+  .reset-btn {
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    background:transparent; border:none;
+    color:var(--coral); font-family:'Fredoka One',cursive; font-size:0.85rem;
+    letter-spacing:1px; padding:4px 8px; cursor:pointer;
+    transition:color 0.2s, text-shadow 0.2s;
+    text-shadow: 0 0 8px rgba(249,65,68,0.4);
+  }
+  .reset-btn:hover { color:#ff6b6e; text-shadow:0 0 14px rgba(249,65,68,0.8); }
   header h1 {
     font-family: 'Fredoka One', cursive;
     font-size: 2rem;
@@ -276,7 +285,7 @@
 
   .stats-bar {
     padding:6px 14px; border-top:1px solid var(--border); background:rgba(0,0,0,0.3);
-    display:flex; gap:16px; font-size:0.72rem; color:rgba(125,211,248,0.6); flex-wrap:wrap;
+    display:grid; grid-template-columns:1fr 1fr; gap:4px 16px; font-size:0.72rem; color:rgba(125,211,248,0.6);
   }
   .stat-item strong { color:var(--light); }
 
@@ -303,6 +312,7 @@
   <span class="fish-emoji">🐟</span>
   <h1>FISH FARM</h1>
   <span class="fish-emoji" style="animation-delay:.5s">🐠</span>
+  <button class="reset-btn" id="reset-btn">RESET GAME</button>
 </header>
 
 <div class="game">
@@ -352,10 +362,14 @@ const state = {
   fish: 0,
   totalFish: 0,
   fishPerClick: 1,
-  fishPerSec: 0,
+  baseClickPower: 1,   // flat additive clicks (unaffected by synergy)
   clickMultiplier: 1,
+  clickSynergyRate: 0, // fraction of fishPerSec added to each click
+  fishPerSec: 0,
   buildings: {},
   purchasedUpgrades: new Set(),
+  totalClicks: 0,
+  fishFromClicks: 0,
 };
 
 // ── BUILDINGS ────────────────────────────────────────────────
@@ -374,18 +388,22 @@ const BUILDINGS = [
 
 // ── UPGRADES ─────────────────────────────────────────────────
 const UPGRADES = [
-  { id:'sharp_hook',    name:'Sharp Hook',          icon:'🪝', desc:'+1 extra fish per click.',       cost:100,      req:()=>state.totalFish>=50,                   effect:()=>{ state.fishPerClick += 1; } },
-  { id:'titanium_hook', name:'Titanium Hook',         icon:'⚓', desc:'x2 fish per click!',              cost:500,      req:()=>state.totalFish>=200,                  effect:()=>{ state.clickMultiplier *= 2; } },
-  { id:'rod_x2',        name:'Double Rod',              icon:'🎣', desc:'Fishing rods are twice as efficient.',    cost:200,      req:()=>(state.buildings.rod||0)>=5,           effect:()=>{ boostBuilding('rod',2); } },
-  { id:'granny_tea',    name:'Granny\'s Tea',          icon:'🍵', desc:'Fisher grannies are 2x more productive.',           cost:1000,     req:()=>(state.buildings.granny||0)>=5,        effect:()=>{ boostBuilding('granny',2); } },
-  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,     req:()=>(state.buildings.boat||0)>=5,          effect:()=>{ boostBuilding('boat',2); } },
-  { id:'fish_food',     name:'Special Fish Feed',         icon:'🍤', desc:'Fish farms produce 2x more.',          cost:20000,    req:()=>(state.buildings.farm||0)>=5,          effect:()=>{ boostBuilding('farm',2); } },
-  { id:'mega_net',      name:'Mega Net',                 icon:'🕸️', desc:'Trawlers are 2x more efficient.',             cost:80000,    req:()=>(state.buildings.trawler||0)>=5,       effect:()=>{ boostBuilding('trawler',2); } },
-  { id:'ai_sonar',      name:'AI Sonar',        icon:'🤖', desc:'Sonar stations are 3x more efficient.',        cost:300000,   req:()=>(state.buildings.sonar||0)>=5,         effect:()=>{ boostBuilding('sonar',3); } },
-  { id:'click_frenzy',  name:'Click Frenzy',     icon:'💥', desc:'+10 fish per click.',                cost:50000,    req:()=>state.totalFish>=10000,                effect:()=>{ state.fishPerClick += 10; } },
-  { id:'ocean_song',    name:'Ocean Song',         icon:'🎵', desc:'All buildings are 50% more productive.',         cost:1000000,  req:()=>state.totalFish>=500000,               effect:()=>{ globalBoost(1.5); } },
-  { id:'ancient_map',   name:'Ancient Map',            icon:'🗺️', desc:'Discover hidden fish grounds: click x3.',  cost:5000000,  req:()=>state.totalFish>=1000000,              effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'sharp_hook',    name:'Sharp Hook',          icon:'🪝', desc:'+1 extra fish per click.',       cost:100,      req:()=>state.totalFish>=50,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'titanium_hook', name:'Titanium Hook',       icon:'⚓', desc:'x2 fish per click!',              cost:500,      req:()=>state.totalFish>=200,                  effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'rod_x2',        name:'Double Rod',          icon:'🎣', desc:'Fishing rods are twice as efficient.',    cost:200,      req:()=>(state.buildings.rod||0)>=5,           effect:()=>{ boostBuilding('rod',2); } },
+  { id:'granny_tea',    name:'Granny\'s Tea',       icon:'🍵', desc:'Fisher grannies are 2x more productive.',           cost:1000,     req:()=>(state.buildings.granny||0)>=5,        effect:()=>{ boostBuilding('granny',2); } },
+  { id:'motor_boat',    name:'Motor Boat',          icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,     req:()=>(state.buildings.boat||0)>=5,          effect:()=>{ boostBuilding('boat',2); } },
+  { id:'fish_food',     name:'Special Fish Feed',   icon:'🍤', desc:'Fish farms produce 2x more.',          cost:20000,    req:()=>(state.buildings.farm||0)>=5,          effect:()=>{ boostBuilding('farm',2); } },
+  { id:'mega_net',      name:'Mega Net',            icon:'🕸️', desc:'Trawlers are 2x more efficient.',             cost:80000,    req:()=>(state.buildings.trawler||0)>=5,       effect:()=>{ boostBuilding('trawler',2); } },
+  { id:'ai_sonar',      name:'AI Sonar',            icon:'🤖', desc:'Sonar stations are 3x more efficient.',        cost:300000,   req:()=>(state.buildings.sonar||0)>=5,         effect:()=>{ boostBuilding('sonar',3); } },
+  { id:'click_frenzy',  name:'Click Frenzy',        icon:'💥', desc:'+10 fish per click.',                cost:50000,    req:()=>state.totalFish>=10000,                effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
+  { id:'ocean_song',    name:'Ocean Song',          icon:'🎵', desc:'All buildings are 50% more productive.',         cost:1000000,  req:()=>state.totalFish>=500000,               effect:()=>{ globalBoost(1.5); } },
+  { id:'ancient_map',   name:'Ancient Map',         icon:'🗺️', desc:'Discover hidden fish grounds: click x3.',  cost:5000000,  req:()=>state.totalFish>=1000000,              effect:()=>{ state.clickMultiplier *= 3; } },
   { id:'fish_god',      name:'Fish God\'s Blessing',icon:'🔱', desc:'All production x2!',                       cost:50000000, req:()=>state.totalFish>=10000000,             effect:()=>{ globalBoost(2); } },
+  // Synergy upgrades: click power scales with passive fish/sec
+  { id:'synergy1', name:'Fisher\'s Intuition', icon:'🌊', desc:'Each click gains +1% of your fish/sec.',   cost:2000,    req:()=>(state.buildings.rod||0)>=1,           effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2', name:'Ocean Harmony',       icon:'🐋', desc:'Each click gains +5% of your fish/sec.',   cost:100000,  req:()=>(state.buildings.boat||0)>=1,          effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3', name:'Tidal Mastery',       icon:'🌀', desc:'Each click gains +15% of your fish/sec.',  cost:2000000, req:()=>(state.buildings.trawler||0)>=1,       effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
 ];
 
 // ── MULTIPLIERS ───────────────────────────────────────────────
@@ -404,6 +422,8 @@ function recalcFPS() {
   let fps = 0;
   BUILDINGS.forEach(b => { fps += (state.buildings[b.id]||0) * b.baseFps * buildingMult[b.id]; });
   state.fishPerSec = fps;
+  // Synergy upgrades: click power gets a bonus from passive production
+  state.fishPerClick = state.baseClickPower + Math.floor(fps * state.clickSynergyRate);
 }
 
 // ── FORMAT ────────────────────────────────────────────────────
@@ -509,6 +529,8 @@ document.getElementById('fish-btn').addEventListener('click', function(e) {
   const gained = state.fishPerClick * state.clickMultiplier;
   state.fish += gained;
   state.totalFish += gained;
+  state.totalClicks++;
+  state.fishFromClicks += gained;
   spawnParticle(e.clientX, e.clientY, '+' + fmt(gained));
   for(let i=0;i<MILESTONES.length;i++){
     if(state.totalFish >= MILESTONES[i] && lastMilestone < MILESTONES[i]){
@@ -615,6 +637,7 @@ function renderUpgrades() {
     else cls += 'cant-afford-upg';
 
     card.className = cls;
+    card.dataset.id = u.id;
     card.innerHTML = `
       <div class="upgrade-icon">${u.icon}</div>
       <div class="upgrade-info">
@@ -729,7 +752,10 @@ function updateUI() {
 
   const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
   document.getElementById('stats-bar').innerHTML = `
-    <span>Total: <strong>${fmt(state.totalFish)} 🐟</strong></span>
+    <span>Total Earned: <strong>${fmt(state.totalFish)} 🐟</strong></span>
+    <span></span>
+    <span>Clicks: <strong>${fmt(state.totalClicks)}</strong></span>
+    <span>Click earnings: <strong>${fmt(state.fishFromClicks)} 🐟</strong></span>
     <span>Buildings: <strong>${totalBuildings}</strong></span>
     <span>Upgrades: <strong>${state.purchasedUpgrades.size}</strong></span>`;
 }
@@ -763,10 +789,22 @@ function renderLoop() {
     card.classList.toggle('cant-afford', !can);
   });
 
+  // Upgrade affordability: update card classes every frame without full re-render
+  document.querySelectorAll('.upgrade-card:not(.purchased)').forEach(card => {
+    const u = UPGRADES.find(x => x.id === card.dataset.id);
+    if(!u) return;
+    const can = state.fish >= u.cost;
+    if(can && card.classList.contains('cant-afford-upg')) {
+      card.classList.remove('cant-afford-upg');
+      card.classList.add('available');
+      card.addEventListener('click', ()=>buyUpgrade(u.id));
+    }
+  });
+
   document.getElementById('fish-count').textContent = fmt(state.fish);
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
 
-  if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); }
+  if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); updateUI(); }
 
   requestAnimationFrame(renderLoop);
 }
@@ -822,10 +860,10 @@ function saveGame() {
   const data = {
     fish: state.fish,
     totalFish: state.totalFish,
-    fishPerClick: state.fishPerClick,
-    clickMultiplier: state.clickMultiplier,
     buildings: state.buildings,
     purchasedUpgrades: [...state.purchasedUpgrades],
+    totalClicks: state.totalClicks,
+    fishFromClicks: state.fishFromClicks,
     savedAt: Date.now(),
   };
   data._c = _checksum(data);
@@ -847,12 +885,17 @@ function loadGame() {
 
     state.fish            = data.fish || 0;
     state.totalFish       = data.totalFish || 0;
-    state.fishPerClick    = data.fishPerClick || 1;
-    state.clickMultiplier = data.clickMultiplier || 1;
     state.buildings       = data.buildings || {};
     state.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+    state.totalClicks     = data.totalClicks || 0;
+    state.fishFromClicks  = data.fishFromClicks || 0;
 
-    // Re-apply upgrade effects (multipliers) without spending fish
+    // Recalculate from scratch to avoid stacking on reload
+    state.fishPerClick      = 1;
+    state.baseClickPower    = 1;
+    state.clickMultiplier   = 1;
+    state.clickSynergyRate  = 0;
+    BUILDINGS.forEach(b => buildingMult[b.id] = 1);
     UPGRADES.forEach(u => {
       if(state.purchasedUpgrades.has(u.id)) u.effect();
     });
@@ -860,6 +903,14 @@ function loadGame() {
 
   } catch(e) { localStorage.removeItem(SAVE_KEY); }
 }
+
+function resetGame() {
+  if(!confirm('Reset all progress and start over? This cannot be undone.')) return;
+  window.removeEventListener('beforeunload', saveGame);
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+document.getElementById('reset-btn').addEventListener('click', resetGame);
 
 // Auto-save every 10 seconds
 setInterval(saveGame, 10000);
