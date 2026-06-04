@@ -432,7 +432,7 @@ const clickGuard = {
   // Rolling window: timestamps of last N clicks
   times: [],
   window: 2000,   // ms to look back
-  maxClicks: 20,  // max legitimate clicks in that window (~10 CPS)
+  maxClicks: 30,  // max legitimate clicks in that window (~15 CPS)
   // Penalty state
   penalised: false,
   penaltyUntil: 0,
@@ -737,16 +737,23 @@ function updateUI() {
 // ── GAME LOOP ─────────────────────────────────────────────────
 let lastTick = Date.now();
 let frameCount = 0;
-let bgInterval = null;
 
+// Core production tick — runs via setInterval always, regardless of tab visibility
 function tick() {
   const now = Date.now();
-  const dt  = Math.min((now - lastTick) / 1000, 0.5); // cap dt; allow longer gaps when in background
+  const dt  = Math.min((now - lastTick) / 1000, 5); // allow up to 5s catch-up
   lastTick  = now;
   state.fish      += state.fishPerSec * dt;
   state.totalFish += state.fishPerSec * dt;
-
   frameCount++;
+}
+
+// Visual update — only runs when tab is visible via rAF
+let rafRunning = false;
+function renderLoop() {
+  if(document.hidden) { rafRunning = false; return; }
+  rafRunning = true;
+
   document.querySelectorAll('.building-card').forEach(card => {
     const b = BUILDINGS.find(x => x.id === card.dataset.id);
     if(!b) return;
@@ -760,22 +767,16 @@ function tick() {
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
 
   if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); }
+
+  requestAnimationFrame(renderLoop);
 }
 
-function gameLoop() {
-  tick();
-  requestAnimationFrame(gameLoop);
-}
+// Production: every 250ms regardless of tab state
+setInterval(tick, 250);
 
-// When tab is hidden switch to setInterval so production keeps running
+// Re-start visual loop when tab becomes visible again
 document.addEventListener('visibilitychange', () => {
-  if(document.hidden) {
-    if(!bgInterval) bgInterval = setInterval(tick, 1000);
-  } else {
-    if(bgInterval) { clearInterval(bgInterval); bgInterval = null; }
-    lastTick = Date.now(); // reset so no huge dt spike on return
-    requestAnimationFrame(gameLoop);
-  }
+  if(!document.hidden && !rafRunning) requestAnimationFrame(renderLoop);
 });
 
 // ── BUBBLES ───────────────────────────────────────────────────
@@ -797,7 +798,7 @@ renderUpgrades();
 // Wait one frame so layout is settled before measuring scene dimensions
 requestAnimationFrame(()=>{ renderScene(); });
 updateUI();
-gameLoop();
+requestAnimationFrame(renderLoop);
 
 // Re-render scene if window is resized
 const sceneEl = document.getElementById('building-scene');
