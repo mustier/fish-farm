@@ -791,7 +791,83 @@ function createBubbles() {
   }
 }
 
+// ── SAVE / LOAD ───────────────────────────────────────────────
+const SAVE_KEY = 'fishfarm_save';
+const _XK = [0x46,0x49,0x53,0x48,0x46,0x41,0x52,0x4d]; // FISHFARM
+
+function _encode(obj) {
+  const str = JSON.stringify(obj);
+  let out = '';
+  for(let i = 0; i < str.length; i++)
+    out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i % _XK.length]);
+  return btoa(out);
+}
+
+function _decode(encoded) {
+  const str = atob(encoded);
+  let out = '';
+  for(let i = 0; i < str.length; i++)
+    out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i % _XK.length]);
+  return JSON.parse(out);
+}
+
+function _checksum(data) {
+  // Simple hash: sum of fish + totalFish + building counts, stored alongside data
+  const s = Math.floor(data.fish) + Math.floor(data.totalFish) +
+    Object.values(data.buildings).reduce((a,b)=>a+b,0);
+  return (s * 31 + 7) % 999983;
+}
+
+function saveGame() {
+  const data = {
+    fish: state.fish,
+    totalFish: state.totalFish,
+    fishPerClick: state.fishPerClick,
+    clickMultiplier: state.clickMultiplier,
+    buildings: state.buildings,
+    purchasedUpgrades: [...state.purchasedUpgrades],
+    savedAt: Date.now(),
+  };
+  data._c = _checksum(data);
+  localStorage.setItem(SAVE_KEY, _encode(data));
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
+    const data = _decode(raw);
+
+    // Checksum doğrulama — değiştirilmişse sıfırla
+    if(data._c !== _checksum(data)) {
+      localStorage.removeItem(SAVE_KEY);
+      showMilestone('Save data corrupted — starting fresh 🐟');
+      return;
+    }
+
+    state.fish            = data.fish || 0;
+    state.totalFish       = data.totalFish || 0;
+    state.fishPerClick    = data.fishPerClick || 1;
+    state.clickMultiplier = data.clickMultiplier || 1;
+    state.buildings       = data.buildings || {};
+    state.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+
+    // Re-apply upgrade effects (multipliers) without spending fish
+    UPGRADES.forEach(u => {
+      if(state.purchasedUpgrades.has(u.id)) u.effect();
+    });
+    recalcFPS();
+
+  } catch(e) { localStorage.removeItem(SAVE_KEY); }
+}
+
+// Auto-save every 10 seconds
+setInterval(saveGame, 10000);
+// Save on page unload
+window.addEventListener('beforeunload', saveGame);
+
 // ── INIT ──────────────────────────────────────────────────────
+loadGame();
 createBubbles();
 renderBuildings();
 renderUpgrades();
