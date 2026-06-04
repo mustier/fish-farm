@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐟 Fish Farm</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --ocean: #0a1628;
@@ -19,6 +20,7 @@
     --orange: #f77f00;
     --coral: #f94144;
     --green: #43aa8b;
+    --purple: #9b5de5;
     --panel: rgba(13,36,68,0.85);
     --border: rgba(61,156,212,0.25);
   }
@@ -59,8 +61,25 @@
     border-bottom: 2px solid var(--border);
     gap: 12px;
   }
-  .reset-btn {
+  .header-right {
     position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    display:flex; align-items:center; gap:10px;
+  }
+  .share-btn-fixed {
+    position: fixed; top: 12px; left: 16px; z-index: 100;
+    background: transparent;
+    border: 1px solid rgba(61,156,212,0.35);
+    color: var(--light); font-family:'Fredoka One',cursive; font-size:0.82rem;
+    letter-spacing:1px; padding:5px 14px; cursor:pointer; border-radius:20px;
+    transition:all 0.2s;
+  }
+  .share-btn-fixed:hover {
+    background: rgba(61,156,212,0.15);
+    border-color: rgba(61,156,212,0.7);
+    color:#fff;
+    box-shadow: 0 2px 14px rgba(61,156,212,0.3);
+  }
+  .reset-btn {
     background:transparent; border:none;
     color:var(--coral); font-family:'Fredoka One',cursive; font-size:0.85rem;
     letter-spacing:1px; padding:4px 8px; cursor:pointer;
@@ -68,6 +87,98 @@
     text-shadow: 0 0 8px rgba(249,65,68,0.4);
   }
   .reset-btn:hover { color:#ff6b6e; text-shadow:0 0 14px rgba(249,65,68,0.8); }
+
+  /* SHARE MODAL */
+  .share-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.75);
+    z-index:10000; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(8px);
+    animation: fade-in 0.2s ease;
+  }
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+  .share-modal {
+    background: linear-gradient(135deg, #071020, #0d2444);
+    border: 2px solid rgba(61,156,212,0.4);
+    border-radius: 20px; padding: 24px 28px;
+    width: min(860px, 94vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: modal-pop 0.3s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+  }
+  @keyframes modal-pop { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+  .share-modal-title {
+    font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--light);
+    text-align:center; margin-bottom:18px; text-shadow:0 0 20px rgba(125,211,248,0.5);
+  }
+
+  /* Two-column body */
+  .share-body {
+    display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:16px;
+  }
+
+  /* Left: stat card */
+  .share-card {
+    background: linear-gradient(135deg, #0a1628, #1a3a6b);
+    border: 1px solid rgba(61,156,212,0.3);
+    border-radius: 14px; padding: 16px 18px;
+    font-family:'Fredoka One',cursive;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .share-card-header {
+    display:flex; align-items:center; gap:8px;
+    font-size:1.1rem; color:var(--light);
+  }
+  .share-stat-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; flex:1;
+  }
+  .share-stat {
+    background:rgba(0,0,0,0.3); border-radius:10px; padding:9px 10px;
+    text-align:center;
+  }
+  .share-stat-val { font-size:1rem; color:var(--gold); }
+  .share-stat-lbl { font-size:0.65rem; color:rgba(125,211,248,0.6); margin-top:2px; font-family:'Nunito',sans-serif; }
+
+  /* Right: text area */
+  .share-right {
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .share-right-title {
+    font-family:'Fredoka One',cursive; font-size:0.85rem; color:rgba(125,211,248,0.6);
+    letter-spacing:1px;
+  }
+  .share-text-area {
+    flex:1; width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(61,156,212,0.3);
+    border-radius:10px; color:var(--light); font-family:'Nunito',sans-serif;
+    font-size:0.78rem; line-height:1.7; padding:10px 12px; resize:none;
+    outline:none; min-height:160px;
+    scrollbar-width:thin; scrollbar-color:var(--foam) transparent;
+  }
+  .share-text-area::-webkit-scrollbar { width:3px; }
+  .share-text-area::-webkit-scrollbar-thumb { background:var(--foam); border-radius:2px; }
+
+  /* Actions row */
+  .share-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .share-copy-btn {
+    flex:1; min-width:120px; background:linear-gradient(135deg,#43aa8b,#2d7a63);
+    border:none; color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-copy-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(67,170,139,0.5); }
+  .share-screenshot-btn {
+    flex:1; min-width:140px;
+    background:linear-gradient(135deg,#2a6fa8,#1a5a8a);
+    border:1px solid rgba(125,211,248,0.3);
+    color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-screenshot-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(61,156,212,0.5); }
+  .share-close-btn {
+    background:rgba(249,65,68,0.15); border:1px solid rgba(249,65,68,0.3);
+    color:var(--coral); font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 16px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-close-btn:hover { background:rgba(249,65,68,0.3); }
+
   header h1 {
     font-family: 'Fredoka One', cursive;
     font-size: 2rem;
@@ -118,6 +229,7 @@
   .fish-btn-wrap {
     position: relative; display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
+    width: 100%; height: 220px;
   }
   .fish-btn {
     width: 170px; height: 170px; border-radius: 50%;
@@ -127,6 +239,7 @@
     cursor: pointer; transition: transform 0.08s, box-shadow 0.08s;
     font-size: 4.5rem; display: flex; align-items:center; justify-content:center;
     user-select: none; -webkit-user-select: none; position: relative; overflow: hidden;
+    z-index: 4;
   }
   .fish-btn::after {
     content:''; position:absolute; inset:0; border-radius:50%;
@@ -138,16 +251,75 @@
   .glow-ring {
     position:absolute; width:190px; height:190px; border-radius:50%;
     border: 2px solid rgba(125,211,248,0.2); animation: pulse-ring 2s ease-in-out infinite; pointer-events:none;
+    z-index: 2;
   }
   .glow-ring2 { width:220px; height:220px; animation-delay:0.5s; border-color:rgba(125,211,248,0.1); }
   @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.05);opacity:1} }
+
+  /* SINGLE CLICK ZONE — full wrap, button punched out via pointer-events on btn */
+  .click-zone {
+    position: absolute; inset: 0;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    z-index: 3;
+  }
+
+  /* UNIFIED TANK — full wrap width, behind button */
+  .tank-anim {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 16px;
+  }
+  .tank-fish {
+    position: absolute;
+    pointer-events: none;
+    font-size: 13px;
+    line-height: 1;
+    animation: tank-swim var(--swim-dur, 14s) linear infinite;
+    opacity: 0.75;
+  }
+  .tank-fish.flip {
+    animation: tank-swim-flip var(--swim-dur, 14s) linear infinite;
+  }
+  .tank-bubble {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    border: 1px solid rgba(125,211,248,0.4);
+    background: rgba(125,211,248,0.07);
+    animation: tank-bubble-rise var(--bub-dur, 5s) ease-in infinite;
+  }
+  @keyframes tank-swim {
+    0%   { transform: translateX(var(--start-x)) translateY(var(--start-y)); }
+    25%  { transform: translateX(var(--mid1-x))  translateY(var(--mid1-y));  }
+    50%  { transform: translateX(var(--mid2-x))  translateY(var(--mid2-y));  }
+    75%  { transform: translateX(var(--mid3-x))  translateY(var(--mid3-y));  }
+    100% { transform: translateX(var(--start-x)) translateY(var(--start-y)); }
+  }
+  @keyframes tank-swim-flip {
+    0%   { transform: scaleX(-1) translateX(var(--start-x)) translateY(var(--start-y)); }
+    25%  { transform: scaleX(-1) translateX(var(--mid1-x))  translateY(var(--mid1-y));  }
+    50%  { transform: scaleX(-1) translateX(var(--mid2-x))  translateY(var(--mid2-y));  }
+    75%  { transform: scaleX(-1) translateX(var(--mid3-x))  translateY(var(--mid3-y));  }
+    100% { transform: scaleX(-1) translateX(var(--start-x)) translateY(var(--start-y)); }
+  }
+  @keyframes tank-bubble-rise {
+    0%   { bottom: 5%; opacity: 0.5; }
+    100% { bottom: 95%; opacity: 0; }
+  }
+  .click-zone-particle {
+    position: absolute; pointer-events: none;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    color: var(--gold); text-shadow: 0 0 8px rgba(249,199,79,0.8);
+    animation: float-up 0.8s ease-out forwards;
+  }
 
   /* BUILDING SCENE */
   .building-scene {
     width: 100%; background: rgba(0,0,0,0.3);
     border: 1px solid var(--border); border-radius: 12px;
     padding: 8px; display:flex; flex-direction:column; gap:0;
-    /* grows to fill remaining center space */
     flex: 1; min-height: 0; overflow: hidden;
   }
   .scene-title {
@@ -155,7 +327,6 @@
     color: rgba(125,211,248,0.5); text-align:center; letter-spacing:1px;
     padding-bottom: 4px; flex-shrink:0;
   }
-  /* each building row: fixed height, never wraps */
   .scene-row {
     display:flex; align-items:center; gap:0;
     height: var(--row-h); flex-shrink:0;
@@ -298,6 +469,221 @@
   .tooltip-title { font-family:'Fredoka One',cursive; color:var(--light); margin-bottom:4px; }
   .tooltip-body { color:rgba(125,211,248,0.7); line-height:1.5; }
   .tooltip-bonus { color:var(--green); font-size:0.75rem; margin-top:4px; }
+
+  /* BONUS FISH */
+  .bonus-fish {
+    position: fixed;
+    cursor: pointer;
+    z-index: 200;
+    pointer-events: all;
+    user-select: none;
+    animation: bonus-swim var(--swim-dur) linear forwards;
+    transition: transform 0.12s;
+    transform-origin: center;
+  }
+  .bonus-fish:hover { transform: scale(1.35) rotate(10deg) !important; }
+  .bonus-fish:active { transform: scale(0.85) !important; }
+
+  /* Each bonus fish type has its own animation personality */
+  .bonus-fish.type-common {
+    font-size: 2rem;
+    animation: bonus-swim-wobble var(--swim-dur) ease-in-out forwards;
+  }
+  .bonus-fish.type-rare {
+    font-size: 2.4rem;
+    animation: bonus-swim-spiral var(--swim-dur) linear forwards;
+  }
+  .bonus-fish.type-epic {
+    font-size: 2.8rem;
+    animation: bonus-swim-bounce var(--swim-dur) ease-in-out forwards;
+  }
+  .bonus-fish.type-legendary {
+    font-size: 3.4rem;
+    animation: bonus-swim-flash var(--swim-dur) linear forwards;
+  }
+
+  @keyframes bonus-swim-wobble {
+    0%   { opacity:0; transform: scale(0.4) rotate(-10deg); }
+    8%   { opacity:1; transform: scale(1) rotate(5deg); }
+    30%  { transform: scale(1.05) rotate(-5deg) translateY(-8px); }
+    60%  { transform: scale(1) rotate(5deg) translateY(5px); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-spiral {
+    0%   { opacity:0; transform: scale(0.3) rotate(0deg); }
+    8%   { opacity:1; transform: scale(1) rotate(180deg); }
+    50%  { transform: scale(1.1) rotate(360deg) translateY(var(--mid-y,0px)); }
+    90%  { opacity:1; transform: scale(1) rotate(540deg); }
+    100% { opacity:0; transform: scale(0.5) rotate(720deg) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-bounce {
+    0%   { opacity:0; transform: scale(0.2); }
+    5%   { opacity:1; transform: scale(1.3); }
+    15%  { transform: scale(0.9); }
+    25%  { transform: scale(1.15) translateY(-15px); }
+    40%  { transform: scale(1) translateY(0); }
+    60%  { transform: scale(1.1) translateY(-10px); }
+    80%  { transform: scale(1) translateY(0); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.7) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-flash {
+    0%   { opacity:0; transform: scale(0) rotate(0deg); }
+    6%   { opacity:1; transform: scale(1.4) rotate(-15deg); }
+    12%  { transform: scale(1) rotate(10deg); }
+    25%  { transform: scale(1.2) rotate(-5deg); filter: brightness(1.5); }
+    50%  { transform: scale(1) rotate(5deg); filter: brightness(1); }
+    75%  { transform: scale(1.15) rotate(-8deg); filter: brightness(2); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+
+  /* Badge label under bonus fish */
+  .bonus-fish-label {
+    position: absolute;
+    bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-family:'Fredoka One',cursive; font-size: 0.65rem;
+    white-space: nowrap; padding: 1px 6px; border-radius: 8px;
+    pointer-events: none;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bonus-fish-wrap {
+    position: fixed; z-index: 200; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ── CRISIS SYSTEM ─────────────────────────────────────────── */
+
+  /* Screen-edge danger vignette */
+  .crisis-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 490;
+    box-shadow: inset 0 0 80px 20px rgba(249,65,68,0.22);
+    animation: vignette-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes vignette-pulse {
+    0%,100% { opacity: 0.6; }
+    50%      { opacity: 1;   }
+  }
+
+  /* Main crisis panel — slides up from bottom */
+  .crisis-banner {
+    position: fixed;
+    bottom: 70px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-family:'Fredoka One',cursive;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    z-index: 500; width: 370px;
+    animation: crisis-in 0.45s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+  @keyframes crisis-in {
+    from { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  }
+  @keyframes crisis-out {
+    to   { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+  }
+  .crisis-banner.resolving { animation: crisis-out 0.35s ease forwards; }
+
+  /* Top header row with icon + animated bg */
+  .crisis-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px 10px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .crisis-icon-wrap {
+    font-size: 2.2rem; flex-shrink: 0;
+    animation: crisis-icon-anim var(--icon-anim, shake) 0.5s infinite;
+  }
+  @keyframes shake {
+    0%,100%{ transform:translateX(0) rotate(0deg); }
+    20%    { transform:translateX(-4px) rotate(-6deg); }
+    40%    { transform:translateX(4px) rotate(6deg); }
+    60%    { transform:translateX(-3px) rotate(-4deg); }
+    80%    { transform:translateX(3px) rotate(4deg); }
+  }
+  @keyframes spin-crisis {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes bob-crisis {
+    0%,100%{ transform: translateY(0); }
+    50%    { transform: translateY(-6px); }
+  }
+  @keyframes flash-crisis {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%    { opacity:0.4; transform:scale(1.3); }
+  }
+  @keyframes swim-crisis {
+    0%,100%{ transform:translateX(0) scaleX(1); }
+    45%    { transform:translateX(8px) scaleX(1); }
+    50%    { transform:translateX(8px) scaleX(-1); }
+    95%    { transform:translateX(0) scaleX(-1); }
+  }
+  .crisis-titles { flex: 1; }
+  .crisis-title  { font-size: 1rem; line-height: 1.2; }
+  .crisis-building-tag {
+    font-size: 0.68rem; opacity: 0.7; margin-top: 2px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+  }
+
+  /* Body */
+  .crisis-body { padding: 10px 16px 14px; }
+  .crisis-desc {
+    font-size: 0.76rem; font-family:'Nunito',sans-serif;
+    opacity: 0.85; margin-bottom: 10px; line-height: 1.5;
+  }
+
+  /* Action hint */
+  .crisis-action-hint {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.3); border-radius: 10px;
+    padding: 7px 12px; margin-bottom: 10px;
+    font-size: 0.78rem; font-family:'Nunito',sans-serif;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .crisis-action-icon { font-size: 1.3rem; flex-shrink:0; }
+  .crisis-action-text { flex:1; line-height:1.4; }
+
+  /* Progress */
+  .crisis-bar-wrap {
+    background: rgba(0,0,0,0.4); border-radius: 8px; height: 12px; overflow: hidden;
+  }
+  .crisis-bar {
+    height: 100%; border-radius: 8px;
+    background: linear-gradient(90deg, #f9c74f, #f77f00);
+    transition: width 0.12s ease-out;
+    position: relative;
+  }
+  .crisis-bar::after {
+    content:''; position:absolute; right:0; top:0; bottom:0; width:6px;
+    background: rgba(255,255,255,0.5); border-radius:0 8px 8px 0;
+  }
+  .crisis-progress-row {
+    display:flex; justify-content:space-between; align-items:center; margin-top:5px;
+  }
+  .crisis-clicks { font-size: 0.7rem; opacity: 0.65; }
+  .crisis-pct    { font-size: 0.7rem; color: #f9c74f; }
+
+  /* CRISIS BUILDING HIGHLIGHT */
+  .scene-row.crisis-building {
+    animation: row-crisis 0.6s ease-in-out infinite;
+    border-radius: 6px;
+  }
+  @keyframes row-crisis {
+    0%,100%{ background: transparent; }
+    50%    { background: rgba(249,65,68,0.18); box-shadow: inset 0 0 8px rgba(249,65,68,0.3); }
+  }
+
+  /* Body vignette for crisis type */
+  body.in-crisis .panel-center { box-shadow: inset 0 0 50px rgba(249,65,68,0.12); }
+  body.in-crisis .fish-btn {
+    border-color: rgba(249,65,68,0.7) !important;
+    box-shadow: 0 0 50px rgba(249,65,68,0.5), inset 0 2px 8px rgba(255,255,255,0.15) !important;
+  }
 </style>
 </head>
 <body>
@@ -312,8 +698,11 @@
   <span class="fish-emoji">🐟</span>
   <h1>FISH FARM</h1>
   <span class="fish-emoji" style="animation-delay:.5s">🐠</span>
-  <button class="reset-btn" id="reset-btn">RESET GAME</button>
+  <div class="header-right">
+    <button class="reset-btn" id="reset-btn">RESET GAME</button>
+  </div>
 </header>
+<button class="share-btn-fixed" id="share-btn">SHARE GAME</button>
 
 <div class="game">
 
@@ -328,11 +717,12 @@
   <div class="panel-center">
     <div class="fish-counter">
       <div class="fish-count" id="fish-count">0</div>
-      <div class="fish-count-label">🐟 fish</div>
       <div class="fish-per-sec" id="fish-ps">0 fish/sec</div>
     </div>
 
     <div class="fish-btn-wrap">
+      <div class="tank-anim" id="tank-bg"></div>
+      <div class="click-zone" id="click-zone-main"></div>
       <div class="glow-ring"></div>
       <div class="glow-ring glow-ring2"></div>
       <button class="fish-btn" id="fish-btn">🐟</button>
@@ -362,54 +752,335 @@ const state = {
   fish: 0,
   totalFish: 0,
   fishPerClick: 1,
-  baseClickPower: 1,   // flat additive clicks (unaffected by synergy)
+  baseClickPower: 1,
   clickMultiplier: 1,
-  clickSynergyRate: 0, // fraction of fishPerSec added to each click
+  clickSynergyRate: 0,
   fishPerSec: 0,
   buildings: {},
   purchasedUpgrades: new Set(),
   totalClicks: 0,
   fishFromClicks: 0,
+  crisisActive: null,
+  crisisClicksLeft: 0,
+  crisisMultPenalty: 1,
+  boostHarvestMult: 1,
+  totalCrisesResolved: 0,
+  catchedBonusFish: 0,
 };
+
+// ── FISH BUTTON EVOLUTION ─────────────────────────────────────
+// Based on totalFish milestones, the fish button shows an evolving emoji + glow
+const FISH_STAGES = [
+  { min:0,         emoji:'🐟',  label:'Baby Fish',       glow:'rgba(61,156,212,0.4)' },
+  { min:500,       emoji:'🐠',  label:'Tropical Fish',   glow:'rgba(100,200,255,0.5)' },
+  { min:5000,      emoji:'🐡',  label:'Puffer Fish',     glow:'rgba(249,199,79,0.5)' },
+  { min:50000,     emoji:'🦈',  label:'Shark!',          glow:'rgba(150,100,255,0.6)' },
+  { min:500000,    emoji:'🐬',  label:'Dolphin Pod',     glow:'rgba(0,220,180,0.6)' },
+  { min:5000000,   emoji:'🐳',  label:'Blue Whale',      glow:'rgba(61,156,212,0.8)' },
+  { min:50000000,  emoji:'🦭',  label:'Sea Overlord',    glow:'rgba(249,100,79,0.7)' },
+  { min:500000000, emoji:'🐲',  label:'Ocean Dragon',    glow:'rgba(200,50,255,0.9)' },
+];
+
+function getCurrentFishStage() {
+  let stage = FISH_STAGES[0];
+  for(const s of FISH_STAGES) {
+    if(state.totalFish >= s.min) stage = s;
+  }
+  return stage;
+}
+
+let lastFishStageIdx = 0;
+function updateFishBtn() {
+  const stage = getCurrentFishStage();
+  const idx = FISH_STAGES.indexOf(stage);
+  const btn = document.getElementById('fish-btn');
+  btn.textContent = stage.emoji;
+  btn.style.boxShadow = `0 0 40px ${stage.glow}, 0 0 80px ${stage.glow.replace('0.','0.0')}, inset 0 2px 8px rgba(255,255,255,0.2)`;
+  if(idx > lastFishStageIdx) {
+    lastFishStageIdx = idx;
+    showMilestone(`${stage.emoji} Evolved to: ${stage.label}!`);
+  }
+}
 
 // ── BUILDINGS ────────────────────────────────────────────────
 const BUILDINGS = [
-  { id:'rod',         name:'Fishing Rod',       icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',          baseCost:10,       baseFps:0.1,   req:()=>true },
-  { id:'granny',      name:'Fisher Granny',      icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',               baseCost:100,      baseFps:0.5,   req:()=>(state.buildings.rod||0)>=1 },
-  { id:'boat',        name:'Boat',               icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',       baseCost:500,      baseFps:2,     req:()=>(state.buildings.granny||0)>=1 },
-  { id:'farm',        name:'Fish Farm',          icon:'🐠', sceneIcon:'🏗️', desc:'Fresh fish raised in a controlled environment.',       baseCost:2000,     baseFps:8,     req:()=>(state.buildings.boat||0)>=1 },
-  { id:'trawler',     name:'Trawler',            icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',        baseCost:8000,     baseFps:25,    req:()=>(state.buildings.farm||0)>=1 },
-  { id:'sonar',       name:'Sonar Station',      icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',          baseCost:30000,    baseFps:80,    req:()=>(state.buildings.trawler||0)>=1 },
-  { id:'lab',         name:'Aquarium Lab',       icon:'🔬', sceneIcon:'🧪', desc:'Scientists engineer ultra-productive fish.',           baseCost:100000,   baseFps:250,   req:()=>(state.buildings.sonar||0)>=1 },
-  { id:'portal',      name:'Ocean Portal',       icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',      baseCost:500000,   baseFps:1000,  req:()=>(state.buildings.lab||0)>=1 },
-  { id:'timemachine', name:'Time Machine',       icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',baseCost:2000000,  baseFps:4000,  req:()=>(state.buildings.portal||0)>=1 },
-  { id:'poseidon',    name:'Poseidon\'s Palace', icon:'🔱', sceneIcon:'🏛️', desc:'You struck a deal with the god of the sea.',           baseCost:10000000, baseFps:15000, req:()=>(state.buildings.timemachine||0)>=1 },
+  { id:'rod',         name:'Fishing Rod',        icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',              baseCost:10,        baseFps:0.1,    req:()=>true },
+  { id:'granny',      name:'Fisher Granny',       icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',                  baseCost:100,       baseFps:0.5,    req:()=>(state.buildings.rod||0)>=3 },
+  { id:'boat',        name:'Boat',                icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',          baseCost:500,       baseFps:2,      req:()=>(state.buildings.granny||0)>=2 && (state.buildings.rod||0)>=5 },
+  { id:'dock',        name:'Fishing Dock',        icon:'🪝', sceneIcon:'🪝', desc:'A proper dock where fishermen gather and trade.',          baseCost:1200,      baseFps:5,      req:()=>(state.buildings.boat||0)>=2 && (state.buildings.granny||0)>=4 },
+  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🏗️', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:8,      req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
+  { id:'hatchery',    name:'Hatchery',            icon:'🥚', sceneIcon:'🥚', desc:'Spawning millions of fish from carefully laid eggs.',      baseCost:5000,      baseFps:18,     req:()=>(state.buildings.farm||0)>=2 && (state.buildings.dock||0)>=3 },
+  { id:'trawler',     name:'Trawler',             icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',           baseCost:8000,      baseFps:25,     req:()=>(state.buildings.hatchery||0)>=2 && (state.buildings.farm||0)>=4 },
+  { id:'submarine',   name:'Submarine',           icon:'🤿', sceneIcon:'🤿', desc:'Deep-sea fishing where the big ones hide.',               baseCost:20000,     baseFps:55,     req:()=>(state.buildings.trawler||0)>=2 && (state.buildings.hatchery||0)>=3 },
+  { id:'sonar',       name:'Sonar Station',       icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',             baseCost:30000,     baseFps:80,     req:()=>(state.buildings.submarine||0)>=2 && (state.buildings.trawler||0)>=3 },
+  { id:'reef',        name:'Coral Reef Farm',     icon:'🪸', sceneIcon:'🪸', desc:'An artificial reef teeming with exotic species.',         baseCost:75000,     baseFps:160,    req:()=>(state.buildings.sonar||0)>=2 && (state.buildings.submarine||0)>=4 },
+  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🧪', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:250,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
+  { id:'factory',     name:'Processing Factory',  icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale fish processing and cloning.',           baseCost:300000,    baseFps:600,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.reef||0)>=4 },
+  { id:'satellite',   name:'Fish Satellite',      icon:'🛸', sceneIcon:'🛸', desc:'Orbital scanner detects fish migrations globally.',       baseCost:800000,    baseFps:1500,   req:()=>(state.buildings.factory||0)>=2 && (state.buildings.lab||0)>=3 },
+  { id:'portal',      name:'Ocean Portal',        icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',         baseCost:500000,    baseFps:1000,   req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.factory||0)>=4 },
+  { id:'volcano',     name:'Volcano Aquafarm',    icon:'🌋', sceneIcon:'🌋', desc:'Geothermal vents breed impossible fish lifeforms.',       baseCost:2000000,   baseFps:3000,   req:()=>(state.buildings.portal||0)>=2 && (state.buildings.satellite||0)>=3 },
+  { id:'timemachine', name:'Time Machine',        icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',   baseCost:5000000,   baseFps:6000,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.portal||0)>=4 },
+  { id:'blackhole',   name:'Black Hole Fisher',   icon:'⚫', sceneIcon:'⚫', desc:'Siphoning fish from across the universe.',               baseCost:20000000,  baseFps:20000,  req:()=>(state.buildings.timemachine||0)>=2 && (state.buildings.volcano||0)>=3 },
+  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🏛️', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
 ];
 
 // ── UPGRADES ─────────────────────────────────────────────────
 const UPGRADES = [
-  { id:'sharp_hook',    name:'Sharp Hook',          icon:'🪝', desc:'+1 extra fish per click.',       cost:100,      req:()=>state.totalFish>=50,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
-  { id:'titanium_hook', name:'Titanium Hook',       icon:'⚓', desc:'x2 fish per click!',              cost:500,      req:()=>state.totalFish>=200,                  effect:()=>{ state.clickMultiplier *= 2; } },
-  { id:'rod_x2',        name:'Double Rod',          icon:'🎣', desc:'Fishing rods are twice as efficient.',    cost:200,      req:()=>(state.buildings.rod||0)>=5,           effect:()=>{ boostBuilding('rod',2); } },
-  { id:'granny_tea',    name:'Granny\'s Tea',       icon:'🍵', desc:'Fisher grannies are 2x more productive.',           cost:1000,     req:()=>(state.buildings.granny||0)>=5,        effect:()=>{ boostBuilding('granny',2); } },
-  { id:'motor_boat',    name:'Motor Boat',          icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,     req:()=>(state.buildings.boat||0)>=5,          effect:()=>{ boostBuilding('boat',2); } },
-  { id:'fish_food',     name:'Special Fish Feed',   icon:'🍤', desc:'Fish farms produce 2x more.',          cost:20000,    req:()=>(state.buildings.farm||0)>=5,          effect:()=>{ boostBuilding('farm',2); } },
-  { id:'mega_net',      name:'Mega Net',            icon:'🕸️', desc:'Trawlers are 2x more efficient.',             cost:80000,    req:()=>(state.buildings.trawler||0)>=5,       effect:()=>{ boostBuilding('trawler',2); } },
-  { id:'ai_sonar',      name:'AI Sonar',            icon:'🤖', desc:'Sonar stations are 3x more efficient.',        cost:300000,   req:()=>(state.buildings.sonar||0)>=5,         effect:()=>{ boostBuilding('sonar',3); } },
-  { id:'click_frenzy',  name:'Click Frenzy',        icon:'💥', desc:'+10 fish per click.',                cost:50000,    req:()=>state.totalFish>=10000,                effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
-  { id:'ocean_song',    name:'Ocean Song',          icon:'🎵', desc:'All buildings are 50% more productive.',         cost:1000000,  req:()=>state.totalFish>=500000,               effect:()=>{ globalBoost(1.5); } },
-  { id:'ancient_map',   name:'Ancient Map',         icon:'🗺️', desc:'Discover hidden fish grounds: click x3.',  cost:5000000,  req:()=>state.totalFish>=1000000,              effect:()=>{ state.clickMultiplier *= 3; } },
-  { id:'fish_god',      name:'Fish God\'s Blessing',icon:'🔱', desc:'All production x2!',                       cost:50000000, req:()=>state.totalFish>=10000000,             effect:()=>{ globalBoost(2); } },
-  // Synergy upgrades: click power scales with passive fish/sec
-  { id:'synergy1', name:'Fisher\'s Intuition', icon:'🌊', desc:'Each click gains +1% of your fish/sec.',   cost:2000,    req:()=>(state.buildings.rod||0)>=1,           effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
-  { id:'synergy2', name:'Ocean Harmony',       icon:'🐋', desc:'Each click gains +5% of your fish/sec.',   cost:100000,  req:()=>(state.buildings.boat||0)>=1,          effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
-  { id:'synergy3', name:'Tidal Mastery',       icon:'🌀', desc:'Each click gains +15% of your fish/sec.',  cost:2000000, req:()=>(state.buildings.trawler||0)>=1,       effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  // Click upgrades
+  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',         cost:100,       req:()=>state.totalFish>=50,                    effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x2 fish per click!',               cost:500,       req:()=>state.totalFish>=200,                   effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+5 fish per click.',               cost:3000,      req:()=>state.totalFish>=1000,                  effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
+  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+10 fish per click.',              cost:50000,     req:()=>state.totalFish>=10000,                 effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
+  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x3.', cost:5000000,  req:()=>state.totalFish>=1000000,      effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+50 fish per click + x1.5 multiplier.', cost:20000000, req:()=>state.totalFish>=5000000,         effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
+
+  // Building upgrades - Rod
+  { id:'rod_x2',        name:'Double Rod',           icon:'🎣', desc:'Fishing rods are twice as efficient.',     cost:200,       req:()=>(state.buildings.rod||0)>=5,      effect:()=>{ boostBuilding('rod',2); } },
+  { id:'rod_x3',        name:'Carbon Fiber Rod',     icon:'🎣', desc:'Fishing rods are 3x as efficient.',       cost:2000,      req:()=>(state.buildings.rod||0)>=25,     effect:()=>{ boostBuilding('rod',3); } },
+
+  // Building upgrades - Granny
+  { id:'granny_tea',    name:'Granny\'s Tea',        icon:'🍵', desc:'Fisher grannies are 2x more productive.',  cost:1000,      req:()=>(state.buildings.granny||0)>=5,   effect:()=>{ boostBuilding('granny',2); } },
+  { id:'granny_boots',  name:'Rubber Boots',         icon:'👢', desc:'Grannies wade deeper: 3x production.',     cost:10000,     req:()=>(state.buildings.granny||0)>=25,  effect:()=>{ boostBuilding('granny',3); } },
+
+  // Building upgrades - Boat
+  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:5000,      req:()=>(state.buildings.boat||0)>=5,     effect:()=>{ boostBuilding('boat',2); } },
+  { id:'turbo_boat',    name:'Turbo Engine',         icon:'💨', desc:'Boats are now 3x faster.',                 cost:50000,     req:()=>(state.buildings.boat||0)>=25,    effect:()=>{ boostBuilding('boat',3); } },
+
+  // Building upgrades - Dock
+  { id:'dock_crane',    name:'Dock Crane',           icon:'🏗️', desc:'Dock efficiency x2.',                      cost:8000,      req:()=>(state.buildings.dock||0)>=5,     effect:()=>{ boostBuilding('dock',2); } },
+
+  // Building upgrades - Farm
+  { id:'fish_food',     name:'Special Fish Feed',    icon:'🍤', desc:'Fish farms produce 2x more.',              cost:20000,     req:()=>(state.buildings.farm||0)>=5,     effect:()=>{ boostBuilding('farm',2); } },
+  { id:'biotech_feed',  name:'BioTech Feed',         icon:'🧬', desc:'Fish farms produce 4x more.',              cost:250000,    req:()=>(state.buildings.farm||0)>=25,    effect:()=>{ boostBuilding('farm',4); } },
+
+  // Building upgrades - Hatchery
+  { id:'egg_incubator', name:'Egg Incubator',        icon:'🥚', desc:'Hatcheries are 2x more efficient.',        cost:40000,     req:()=>(state.buildings.hatchery||0)>=5, effect:()=>{ boostBuilding('hatchery',2); } },
+
+  // Building upgrades - Trawler
+  { id:'mega_net',      name:'Mega Net',             icon:'🕸️', desc:'Trawlers are 2x more efficient.',          cost:80000,     req:()=>(state.buildings.trawler||0)>=5,  effect:()=>{ boostBuilding('trawler',2); } },
+  { id:'deep_trawl',    name:'Deep Sea Trawl',       icon:'🕸️', desc:'Trawlers are 4x more efficient.',          cost:800000,    req:()=>(state.buildings.trawler||0)>=25, effect:()=>{ boostBuilding('trawler',4); } },
+
+  // Building upgrades - Submarine
+  { id:'sub_sonar',     name:'Sub Sonar',            icon:'🤿', desc:'Submarines find 2x more fish.',            cost:200000,    req:()=>(state.buildings.submarine||0)>=5, effect:()=>{ boostBuilding('submarine',2); } },
+
+  // Building upgrades - Sonar
+  { id:'ai_sonar',      name:'AI Sonar',             icon:'🤖', desc:'Sonar stations are 3x more efficient.',    cost:300000,    req:()=>(state.buildings.sonar||0)>=5,    effect:()=>{ boostBuilding('sonar',3); } },
+
+  // Building upgrades - Reef
+  { id:'reef_seeds',    name:'Coral Seeds',          icon:'🪸', desc:'Coral reefs are 2x more productive.',      cost:600000,    req:()=>(state.buildings.reef||0)>=5,     effect:()=>{ boostBuilding('reef',2); } },
+
+  // Building upgrades - Lab
+  { id:'gene_splice',   name:'Gene Splicing',        icon:'🔬', desc:'Labs produce 3x more.',                    cost:1500000,   req:()=>(state.buildings.lab||0)>=5,      effect:()=>{ boostBuilding('lab',3); } },
+
+  // Building upgrades - Factory
+  { id:'auto_factory',  name:'Automation',           icon:'🏭', desc:'Factories run 2x faster.',                 cost:3000000,   req:()=>(state.buildings.factory||0)>=5,  effect:()=>{ boostBuilding('factory',2); } },
+
+  // Building upgrades - Satellite
+  { id:'quantum_scan',  name:'Quantum Scanner',      icon:'🛸', desc:'Satellite coverage x3.',                   cost:8000000,   req:()=>(state.buildings.satellite||0)>=5, effect:()=>{ boostBuilding('satellite',3); } },
+
+  // Global boosts
+  { id:'ocean_song',    name:'Ocean Song',           icon:'🎵', desc:'All buildings are 50% more productive.',   cost:1000000,   req:()=>state.totalFish>=500000,              effect:()=>{ globalBoost(1.5); } },
+  { id:'fish_god',      name:'Fish God\'s Blessing', icon:'🔱', desc:'All production x2!',                       cost:50000000,  req:()=>state.totalFish>=10000000,            effect:()=>{ globalBoost(2); } },
+  { id:'poseidon_pact', name:'Poseidon Pact',        icon:'🌊', desc:'All production x3 — ocean debt forgiven!', cost:500000000, req:()=>state.totalFish>=100000000,           effect:()=>{ globalBoost(3); } },
+
+  // Synergy upgrades
+  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:2000,      req:()=>(state.buildings.rod||0)>=1,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:100000,    req:()=>(state.buildings.boat||0)>=1,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:2000000,   req:()=>(state.buildings.trawler||0)>=1,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:25000000,  req:()=>(state.buildings.submarine||0)>=1,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
+];
+
+// ── CRISIS DEFINITIONS ────────────────────────────────────────
+// solveType: 'click' | 'mash' | 'hold' | 'rapid'
+// building: which building's scene row to highlight (null = general)
+// iconAnim: CSS animation name for the crisis icon
+const CRISES = [
+  {
+    id: 'storm',
+    icon: '⛈️',
+    title: 'Storm Warning!',
+    desc: 'A violent storm is battering your boats and docks. Batten the hatches before everything sinks!',
+    color: '#2a2a6a',
+    accentColor: 'rgba(100,100,220,0.6)',
+    building: 'boat',
+    buildingTag: '⛵ Boats affected',
+    iconAnim: 'shake',
+    solveType: 'mash',
+    actionIcon: '⛵',
+    actionText: 'Spam-click to bail water from the boats! Every click counts!',
+    clicksNeeded: 25,
+    fpsPenalty: 0.5,
+    minFish: 200,
+    resolveMsg: '⛈️ Storm passed! Boats are safe.',
+  },
+  {
+    id: 'pollution',
+    icon: '☠️',
+    title: 'Factory Pollution!',
+    desc: 'Toxic sludge from a nearby factory is leaking into your fish tanks. Act fast!',
+    color: '#1a3a0a',
+    accentColor: 'rgba(60,180,60,0.5)',
+    building: 'factory',
+    buildingTag: '🏭 Factory leaking',
+    iconAnim: 'flash-crisis',
+    solveType: 'rapid',
+    actionIcon: '🔧',
+    actionText: 'Rapidly click to seal the pipes before more fish die!',
+    clicksNeeded: 40,
+    fpsPenalty: 0.3,
+    minFish: 2000,
+    resolveMsg: '🏭 Pipes sealed! Waters are clean again.',
+  },
+  {
+    id: 'shipwreck',
+    icon: '🚢',
+    title: 'Trawler Sinking!',
+    desc: 'Your trawler hit a reef and is taking on water. The crew is in danger!',
+    color: '#5a1a1a',
+    accentColor: 'rgba(220,60,60,0.6)',
+    building: 'trawler',
+    buildingTag: '🚢 Trawler in danger',
+    iconAnim: 'bob-crisis',
+    solveType: 'click',
+    actionIcon: '🆘',
+    actionText: 'Click steadily to coordinate the rescue operation!',
+    clicksNeeded: 50,
+    fpsPenalty: 0.4,
+    minFish: 5000,
+    resolveMsg: '🚢 Trawler saved! Crew rescued safely.',
+  },
+  {
+    id: 'disease',
+    icon: '🦠',
+    title: 'Fish Disease Outbreak!',
+    desc: 'A mysterious illness is sweeping through your fish farm. Quarantine immediately!',
+    color: '#4a2a00',
+    accentColor: 'rgba(200,140,0,0.5)',
+    building: 'farm',
+    buildingTag: '🐠 Fish Farm infected',
+    iconAnim: 'spin-crisis',
+    solveType: 'hold',
+    actionIcon: '💉',
+    actionText: 'Hold the fish button down to administer the vaccine!',
+    clicksNeeded: 35,
+    fpsPenalty: 0.25,
+    minFish: 1000,
+    resolveMsg: '🦠 Disease cured! All fish healthy again.',
+  },
+  {
+    id: 'poachers',
+    icon: '🦹',
+    title: 'Poachers Spotted!',
+    desc: 'Illegal fishing boats are raiding your ocean territory and stealing your catch!',
+    color: '#0a2a4a',
+    accentColor: 'rgba(60,120,220,0.5)',
+    building: 'boat',
+    buildingTag: '⛵ Ocean territory breached',
+    iconAnim: 'swim-crisis',
+    solveType: 'mash',
+    actionIcon: '🚔',
+    actionText: 'Spam-click to call the coast guard and chase them off!',
+    clicksNeeded: 30,
+    fpsPenalty: 0.6,
+    minFish: 500,
+    resolveMsg: '🦹 Poachers driven away! Waters secured.',
+  },
+  {
+    id: 'algae',
+    icon: '🌿',
+    title: 'Toxic Algae Bloom!',
+    desc: 'An explosive algae bloom is smothering your coral reefs and cutting off oxygen.',
+    color: '#0a3a1a',
+    accentColor: 'rgba(0,180,80,0.5)',
+    building: 'reef',
+    buildingTag: '🪸 Coral Reef suffocating',
+    iconAnim: 'bob-crisis',
+    solveType: 'rapid',
+    actionIcon: '🌿',
+    actionText: 'Rapidly click to scrub the algae off the reef!',
+    clicksNeeded: 45,
+    fpsPenalty: 0.4,
+    minFish: 10000,
+    resolveMsg: '🪸 Reef restored! Algae cleared.',
+  },
+  {
+    id: 'tsunami',
+    icon: '🌊',
+    title: 'Tsunami Alert!',
+    desc: 'An undersea earthquake is sending a massive wave toward your entire operation!',
+    color: '#0a1a3a',
+    accentColor: 'rgba(40,140,220,0.6)',
+    building: 'dock',
+    buildingTag: '🪝 Docks under threat',
+    iconAnim: 'shake',
+    solveType: 'click',
+    actionIcon: '🌊',
+    actionText: 'Click to reinforce the sea walls — hold the line!',
+    clicksNeeded: 60,
+    fpsPenalty: 0.2,
+    minFish: 50000,
+    resolveMsg: '🌊 Tsunami survived! Docks are holding.',
+  },
+  {
+    id: 'sonar_glitch',
+    icon: '📡',
+    title: 'Sonar Glitch!',
+    desc: 'Your sonar station is sending false readings — your fleet is fishing empty water.',
+    color: '#2a0a4a',
+    accentColor: 'rgba(160,80,240,0.5)',
+    building: 'sonar',
+    buildingTag: '📡 Sonar Station offline',
+    iconAnim: 'flash-crisis',
+    solveType: 'hold',
+    actionIcon: '🔌',
+    actionText: 'Hold the button to reboot the sonar systems!',
+    clicksNeeded: 30,
+    fpsPenalty: 0.45,
+    minFish: 20000,
+    resolveMsg: '📡 Sonar back online! Fleet redirected.',
+  },
+  {
+    id: 'lab_fire',
+    icon: '🔥',
+    title: 'Lab on Fire!',
+    desc: 'A chemical reaction in the aquarium lab has caused a fire — all experiments halted!',
+    color: '#5a1a00',
+    accentColor: 'rgba(255,80,0,0.6)',
+    building: 'lab',
+    buildingTag: '🔬 Aquarium Lab burning',
+    iconAnim: 'flash-crisis',
+    solveType: 'mash',
+    actionIcon: '🧯',
+    actionText: 'Spam-click to deploy fire extinguishers before it spreads!',
+    clicksNeeded: 45,
+    fpsPenalty: 0.35,
+    minFish: 80000,
+    resolveMsg: '🔬 Fire out! Lab is back to work.',
+  },
+  {
+    id: 'hatchery_flood',
+    icon: '🥚',
+    title: 'Hatchery Flood!',
+    desc: 'Pipes burst in the hatchery — millions of eggs are at risk of being washed away!',
+    color: '#0a2a4a',
+    accentColor: 'rgba(60,180,240,0.5)',
+    building: 'hatchery',
+    buildingTag: '🥚 Hatchery flooding',
+    iconAnim: 'bob-crisis',
+    solveType: 'rapid',
+    actionIcon: '🪣',
+    actionText: 'Rapidly click to pump the water out before the eggs are lost!',
+    clicksNeeded: 35,
+    fpsPenalty: 0.4,
+    minFish: 3000,
+    resolveMsg: '🥚 Hatchery drained! Eggs are safe.',
+  },
 ];
 
 // ── MULTIPLIERS ───────────────────────────────────────────────
 const buildingMult = {};
 BUILDINGS.forEach(b => buildingMult[b.id] = 1);
-const unlockedBuildings = new Set(['rod']); // rod always visible
+const unlockedBuildings = new Set(['rod']);
 
 function boostBuilding(id, factor) { buildingMult[id] = (buildingMult[id]||1) * factor; recalcFPS(); }
 function globalBoost(factor) { BUILDINGS.forEach(b => buildingMult[b.id] *= factor); recalcFPS(); }
@@ -418,64 +1089,45 @@ function getBuildingCost(b) {
   return Math.ceil(b.baseCost * Math.pow(1.15, state.buildings[b.id]||0));
 }
 
-function recalcFPS() {
-  let fps = 0;
-  BUILDINGS.forEach(b => { fps += (state.buildings[b.id]||0) * b.baseFps * buildingMult[b.id]; });
-  state.fishPerSec = fps;
-  // Synergy upgrades: click power gets a bonus from passive production
-  state.fishPerClick = state.baseClickPower + Math.floor(fps * state.clickSynergyRate);
-}
-
 // ── FORMAT ────────────────────────────────────────────────────
 function fmt(n) {
   if(n >= 1e12) return (n/1e12).toFixed(2) + ' trillion';
   if(n >= 1e9)  return (n/1e9).toFixed(2)  + ' billion';
   if(n >= 1e6)  return (n/1e6).toFixed(2)  + ' million';
-  if(n >= 1e3)  return (n/1e3).toFixed(1)  + 'k';
+  if(n >= 1e3)  return Math.floor(n).toLocaleString('de-DE');
   return Math.floor(n).toString();
 }
 
-// FPS: always show decimals if non-integer, never round to 0
 function fmtFps(n) {
   if(n === 0) return '0';
   if(n >= 1e6) return (n/1e6).toFixed(2) + ' million';
   if(n >= 1e3) return (n/1e3).toFixed(2) + 'k';
   if(n >= 100) return n.toFixed(1);
   if(n >= 1)   return n.toFixed(2);
-  // small: show enough decimals so it's not "0"
   if(n >= 0.01) return n.toFixed(2);
   return n.toFixed(4);
 }
 
 // ── CLICK BOT PROTECTION ──────────────────────────────────────
 const clickGuard = {
-  // Rolling window: timestamps of last N clicks
   times: [],
-  window: 2000,   // ms to look back
-  maxClicks: 30,  // max legitimate clicks in that window (~15 CPS)
-  // Penalty state
+  window: 2000,
+  maxClicks: 30,
   penalised: false,
   penaltyUntil: 0,
   penaltyMs: 4000,
-  // Pointer position of last click — bots often click the exact same pixel
-  lastX: null, lastY: null, sameSpotCount: 0, sameSpotLimit: 8,
+  lastX: null, lastY: null, sameSpotCount: 0, sameSpotLimit: 15,
 
   check(x, y) {
     const now = Date.now();
     if(this.penalised && now < this.penaltyUntil) return false;
     this.penalised = false;
-
-    // Prune old entries
     this.times = this.times.filter(t => now - t < this.window);
     this.times.push(now);
-
-    // Rate check
     if(this.times.length > this.maxClicks) {
       this._penalise('Too fast! Slow down 🐟');
       return false;
     }
-
-    // Same-spot check (bots click identical coordinates)
     if(this.lastX === x && this.lastY === y) {
       this.sameSpotCount++;
       if(this.sameSpotCount >= this.sameSpotLimit) {
@@ -490,7 +1142,7 @@ const clickGuard = {
   },
 
   _penalise(msg) {
-    this.penalised   = true;
+    this.penalised    = true;
     this.penaltyUntil = Date.now() + this.penaltyMs;
     this.times = [];
     this.sameSpotCount = 0;
@@ -499,7 +1151,6 @@ const clickGuard = {
 };
 
 function showWarning(msg) {
-  // Reuse existing warning el if present
   let el = document.getElementById('bot-warning');
   if(!el) {
     el = document.createElement('div');
@@ -520,11 +1171,38 @@ function showWarning(msg) {
 
 // ── CLICK ─────────────────────────────────────────────────────
 let lastMilestone = 0;
-const MILESTONES   = [100,1000,10000,100000,1000000,10000000,100000000];
+const MILESTONES     = [100,1000,10000,100000,1000000,10000000,100000000];
 const MILESTONE_MSGS = ['100 Fish! 🎉','1,000 Fish! 🐟','10,000! 🌊','100,000! ⛵','One Million! 🚢','Ten Million! 🔱','100 Million! 🌀'];
 
-document.getElementById('fish-btn').addEventListener('click', function(e) {
+// 'hold' crisis: count ticks while button is held down
+let holdInterval = null;
+const fishBtn = document.getElementById('fish-btn');
+
+fishBtn.addEventListener('mousedown', function() {
+  if(!state.crisisActive || state.crisisActive.solveType !== 'hold') return;
+  if(holdInterval) return;
+  holdInterval = setInterval(() => {
+    if(!state.crisisActive) { clearInterval(holdInterval); holdInterval = null; return; }
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - 1);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) { clearInterval(holdInterval); holdInterval = null; resolveCrisis(); }
+  }, 120);
+});
+fishBtn.addEventListener('mouseup',   () => { clearInterval(holdInterval); holdInterval = null; });
+fishBtn.addEventListener('mouseleave',() => { clearInterval(holdInterval); holdInterval = null; });
+
+fishBtn.addEventListener('click', function(e) {
   if(!clickGuard.check(e.clientX, e.clientY)) return;
+
+  // Crisis click: each solveType deducts differently
+  if(state.crisisActive && state.crisisActive.solveType !== 'hold') {
+    const deduct = state.crisisActive.solveType === 'mash'  ? 2
+                 : state.crisisActive.solveType === 'rapid' ? 1
+                 : 1; // 'click'
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - deduct);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) resolveCrisis();
+  }
 
   const gained = state.fishPerClick * state.clickMultiplier;
   state.fish += gained;
@@ -532,12 +1210,15 @@ document.getElementById('fish-btn').addEventListener('click', function(e) {
   state.totalClicks++;
   state.fishFromClicks += gained;
   spawnParticle(e.clientX, e.clientY, '+' + fmt(gained));
+
   for(let i=0;i<MILESTONES.length;i++){
     if(state.totalFish >= MILESTONES[i] && lastMilestone < MILESTONES[i]){
       lastMilestone = MILESTONES[i];
       showMilestone(MILESTONE_MSGS[i]);
     }
   }
+
+  updateFishBtn();
   updateUI();
 });
 
@@ -579,7 +1260,7 @@ function buyUpgrade(id) {
   state.fish -= u.cost;
   state.purchasedUpgrades.add(id);
   u.effect();
-  recalcFPS(); // ensure fps recalculated after building boosts
+  recalcFPS();
   renderUpgrades();
   updateUI();
 }
@@ -611,8 +1292,11 @@ function renderBuildings() {
         <div class="building-cost">🐟 ${fmt(cost)}</div>
       </div>`;
     card.addEventListener('click', ()=>buyBuilding(b.id));
-    card.addEventListener('mouseenter', e=>showTooltip(e, b.name, b.desc,
-      count > 0 ? `Total: ${fmtFps(count*fps)}/sec` : ''));
+    card.addEventListener('mouseenter', e=>{
+      let bonus = count > 0 ? `Total: ${fmtFps(count*fps)}/sec` : '';
+      if(!canAfford && count === 0) bonus = (bonus ? bonus+'\n' : '') + `🔒 Need more fish`;
+      showTooltip(e, b.name, b.desc, bonus);
+    });
     card.addEventListener('mouseleave', hideTooltip);
     card.addEventListener('mousemove',  moveTooltip);
     list.appendChild(card);
@@ -669,21 +1353,15 @@ function renderScene() {
     return;
   }
 
-  // Calculate available height for rows
-  // scene height - title height (~26px) - padding (16px)
   const sceneH = scene.clientHeight || 200;
   const availH = sceneH - 30;
   const rowH = Math.max(18, Math.min(28, Math.floor(availH / owned.length)));
   scene.style.setProperty('--row-h', rowH + 'px');
 
-  // Icon size based on row height
   const iconPx = Math.max(10, rowH - 4);
-  // Available width for icons: scene width - label(80) - count badge(28) - padding(16)
   const sceneW = scene.clientWidth || 260;
   const iconAreaW = sceneW - 80 - 28 - 16;
-  // Each icon takes roughly iconPx * 0.85 width (emoji are roughly square)
   const iconSlotW = Math.max(iconPx * 0.85, 12);
-  // Reserve ~28px for possible overflow badge
   const maxIcons = Math.max(1, Math.floor((iconAreaW - 28) / iconSlotW));
 
   container.innerHTML = '';
@@ -752,29 +1430,466 @@ function updateUI() {
 
   const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
   document.getElementById('stats-bar').innerHTML = `
-    <span>Total Earned: <strong>${fmt(state.totalFish)} 🐟</strong></span>
-    <span></span>
-    <span>Clicks: <strong>${fmt(state.totalClicks)}</strong></span>
-    <span>Click earnings: <strong>${fmt(state.fishFromClicks)} 🐟</strong></span>
+    <span>Total Earned: <strong>${fmt(state.totalFish)}</strong></span>
+    <span>Catched Relics: <strong>${caughtFishEmojis.length}</strong></span>
+    <span>Total Clicks: <strong>${fmt(state.totalClicks)}</strong></span>
+    <span>Click Earnings: <strong>${fmt(state.fishFromClicks)}</strong></span>
     <span>Buildings: <strong>${totalBuildings}</strong></span>
     <span>Upgrades: <strong>${state.purchasedUpgrades.size}</strong></span>`;
+}
+
+// ── ACTIVE BOOSTS ─────────────────────────────────────────────
+// boostType: 'frenzy' = click multiplier bonus | 'harvest' = fps multiplier bonus
+const activeBoosts = { frenzy: null, harvest: null };
+// activeBoosts.frenzy = { mult, endsAt, timerId, barEl }
+
+function applyBoost(type, mult, durationMs, emoji, label) {
+  // Cancel existing boost of same type
+  if(activeBoosts[type]) {
+    clearTimeout(activeBoosts[type].timerId);
+    if(activeBoosts[type].barEl) activeBoosts[type].barEl.remove();
+  }
+
+  const endsAt = Date.now() + durationMs;
+  if(type === 'frenzy')  state.clickMultiplier  *= mult;
+  if(type === 'harvest') state.boostHarvestMult  = (state.boostHarvestMult || 1) * mult;
+  recalcFPS();
+
+  const bar = createBoostBar(type, emoji, label, mult, durationMs);
+
+  const timerId = setTimeout(() => {
+    if(type === 'frenzy')  state.clickMultiplier  /= mult;
+    if(type === 'harvest') state.boostHarvestMult  = Math.max(1, (state.boostHarvestMult||1) / mult);
+    recalcFPS();
+    if(activeBoosts[type]) { activeBoosts[type].barEl.remove(); activeBoosts[type] = null; }
+    updateUI();
+    showMilestone(`${emoji} ${label} boost ended`);
+  }, durationMs);
+
+  activeBoosts[type] = { mult, endsAt, timerId, barEl: bar };
+  updateUI();
+}
+
+function recalcFPS() {
+  let fps = 0;
+  BUILDINGS.forEach(b => { fps += (state.buildings[b.id]||0) * b.baseFps * buildingMult[b.id]; });
+  const harvestMult = state.boostHarvestMult || 1;
+  state.fishPerSec  = fps * state.crisisMultPenalty * harvestMult;
+  state.fishPerClick = state.baseClickPower + Math.floor(fps * state.clickSynergyRate);
+}
+
+function createBoostBar(type, emoji, label, mult, durationMs) {
+  // Container anchored to center panel bottom
+  let container = document.getElementById('boost-bars');
+  if(!container) {
+    container = document.createElement('div');
+    container.id = 'boost-bars';
+    container.style.cssText = `
+      position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      z-index:600; pointer-events:none;`;
+    document.body.appendChild(container);
+  }
+
+  const isClick   = type === 'frenzy';
+  const accentCol = isClick ? '#f9c74f' : '#43aa8b';
+  const bgCol     = isClick ? 'rgba(50,30,0,0.88)' : 'rgba(10,40,20,0.88)';
+
+  const bar = document.createElement('div');
+  bar.style.cssText = `
+    background:${bgCol}; border:1px solid ${accentCol}55;
+    border-radius:30px; padding:5px 14px 5px 10px;
+    display:flex; align-items:center; gap:8px; min-width:200px;
+    box-shadow:0 2px 14px ${accentCol}33;`;
+
+  bar.innerHTML = `
+    <span style="font-size:1.2rem">${emoji}</span>
+    <div style="flex:1">
+      <div style="font-family:'Fredoka One',cursive;font-size:0.78rem;color:${accentCol};white-space:nowrap">
+        ${label} <span style="opacity:0.7;font-size:0.7rem">x${mult} ${isClick?'click':'production'}</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.4);border-radius:4px;height:5px;margin-top:3px;overflow:hidden">
+        <div class="boost-progress" style="height:100%;border-radius:4px;background:${accentCol};width:100%;transition:width 0.25s linear"></div>
+      </div>
+    </div>`;
+  container.appendChild(bar);
+
+  // Animate countdown
+  const prog = bar.querySelector('.boost-progress');
+  const start = Date.now();
+  const tick = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.max(0, 100 - (elapsed / durationMs) * 100);
+    prog.style.width = pct + '%';
+    if(pct <= 0) clearInterval(tick);
+  }, 100);
+
+  return bar;
+}
+
+// ── BONUS FISH ────────────────────────────────────────────────
+// boostType: 'instant'|'frenzy'|'harvest'
+// boostMult: multiplier applied during boost
+// boostDur:  duration in ms (only for frenzy/harvest)
+const BONUS_FISH_TYPES = [
+  // common — instant
+  { emoji:'🐠', label:'Clownfish',    mult:2,    color:'#ff6b35', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🦐', label:'Shrimp',       mult:1.5,  color:'#f9c74f', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🐟', label:'Wild Fish',    mult:2.5,  color:'#4dc3ff', rarity:'common',    minFish:50,      boostType:'instant' },
+  { emoji:'🦀', label:'Crab',         mult:3,    color:'#f94144', rarity:'common',    minFish:100,     boostType:'instant' },
+  // common — frenzy
+  { emoji:'🐡', label:'Puffer Fish',  mult:3,    color:'#f9c74f', rarity:'common',    minFish:200,     boostType:'frenzy',  boostMult:2,  boostDur:8000  },
+  // common — harvest
+  { emoji:'🐚', label:'Sea Snail',    mult:3,    color:'#7dd3f8', rarity:'common',    minFish:150,     boostType:'harvest', boostMult:2,  boostDur:8000  },
+
+  // rare — instant
+  { emoji:'🦞', label:'Lobster',      mult:5,    color:'#f77f00', rarity:'rare',      minFish:500,     boostType:'instant' },
+  { emoji:'🦑', label:'Baby Squid',   mult:7,    color:'#c77dff', rarity:'rare',      minFish:800,     boostType:'instant' },
+  // rare — frenzy
+  { emoji:'🐙', label:'Octopus',      mult:5,    color:'#9b5de5', rarity:'rare',      minFish:1000,    boostType:'frenzy',  boostMult:3,  boostDur:12000 },
+  { emoji:'🦈', label:'Baby Shark',   mult:10,   color:'#6a4fcf', rarity:'rare',      minFish:2000,    boostType:'frenzy',  boostMult:2,  boostDur:15000 },
+  // rare — harvest
+  { emoji:'🦭', label:'Seal',         mult:10,   color:'#43aa8b', rarity:'rare',      minFish:1500,    boostType:'harvest', boostMult:2,  boostDur:18000 },
+  { emoji:'🐢', label:'Sea Turtle',   mult:8,    color:'#2d7a63', rarity:'rare',      minFish:3000,    boostType:'harvest', boostMult:2,  boostDur:20000 },
+
+  // epic — instant
+  { emoji:'🦈', label:'Shark',        mult:12,   color:'#6a4fcf', rarity:'epic',      minFish:5000,    boostType:'instant' },
+  { emoji:'🐊', label:'Crocodile',    mult:10,   color:'#2d7a63', rarity:'epic',      minFish:8000,    boostType:'instant' },
+  // epic — frenzy
+  { emoji:'🦅', label:'Sea Eagle',    mult:15,   color:'#f77f00', rarity:'epic',      minFish:10000,   boostType:'frenzy',  boostMult:4,  boostDur:12000 },
+  { emoji:'🐊', label:'Croc Frenzy',  mult:20,   color:'#1a5a3a', rarity:'epic',      minFish:20000,   boostType:'frenzy',  boostMult:5,  boostDur:10000 },
+  // epic — harvest
+  { emoji:'🐬', label:'Dolphin',      mult:30,   color:'#43aa8b', rarity:'epic',      minFish:15000,   boostType:'harvest', boostMult:3,  boostDur:18000 },
+  { emoji:'🦑', label:'Giant Squid',  mult:50,   color:'#c77dff', rarity:'epic',      minFish:50000,   boostType:'harvest', boostMult:4,  boostDur:15000 },
+
+  // legendary — instant
+  { emoji:'🐳', label:'Blue Whale',   mult:60,   color:'#1a8fd1', rarity:'legendary', minFish:500000,  boostType:'instant' },
+  // legendary — frenzy
+  { emoji:'🐲', label:'Sea Dragon',   mult:60,   color:'#ff4d6d', rarity:'legendary', minFish:100000,  boostType:'frenzy',  boostMult:8,  boostDur:20000 },
+  { emoji:'☄️',  label:'Meteor Fish',  mult:80,   color:'#ff9500', rarity:'legendary', minFish:1000000, boostType:'frenzy',  boostMult:10, boostDur:15000 },
+  // legendary — harvest
+  { emoji:'🌊', label:'Tsunami Fish', mult:150,  color:'#00d4ff', rarity:'legendary', minFish:200000,  boostType:'harvest', boostMult:6,  boostDur:25000 },
+  { emoji:'🔱', label:'Poseidon\'s Gift', mult:200, color:'#f9c74f', rarity:'legendary', minFish:5000000, boostType:'harvest', boostMult:10, boostDur:30000 },
+];
+
+const RARITY_COLORS = {
+  common:    { border:'rgba(125,211,248,0.5)', bg:'rgba(10,22,40,0.7)', label:'#7dd3f8' },
+  rare:      { border:'rgba(67,170,139,0.7)',  bg:'rgba(10,40,20,0.8)', label:'#43aa8b' },
+  epic:      { border:'rgba(155,93,229,0.8)',  bg:'rgba(30,10,60,0.8)', label:'#c77dff' },
+  legendary: { border:'rgba(249,199,79,0.9)',  bg:'rgba(50,30,0,0.9)',  label:'#f9c74f' },
+};
+
+// Weighted pool: legendary appears less
+const RARITY_WEIGHTS = { common:50, rare:30, epic:15, legendary:5 };
+
+const BONUS_INTERVAL_MIN = 18000;
+const BONUS_INTERVAL_MAX = 40000;
+let bonusFishTimer = null;
+
+function scheduleBonusFish() {
+  const delay = BONUS_INTERVAL_MIN + Math.random() * (BONUS_INTERVAL_MAX - BONUS_INTERVAL_MIN);
+  bonusFishTimer = setTimeout(spawnBonusFish, delay);
+}
+
+function pickBonusFishType() {
+  const available = BONUS_FISH_TYPES.filter(t => state.totalFish >= t.minFish);
+  if(available.length === 0) return null;
+
+  // Build weighted list
+  const pool = [];
+  available.forEach(t => {
+    const w = RARITY_WEIGHTS[t.rarity] || 10;
+    for(let i=0; i<w; i++) pool.push(t);
+  });
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function spawnBonusFish() {
+  const type = pickBonusFishType();
+  if(!type) { scheduleBonusFish(); return; }
+
+  const baseValue = Math.max(
+    state.fishPerClick * state.clickMultiplier,
+    state.fishPerSec * 3
+  );
+  const reward = Math.max(1, Math.floor(baseValue * type.mult));
+  const rc     = RARITY_COLORS[type.rarity];
+
+  // Position: center panel area, left/right of the click button
+  const panelLeft  = window.innerWidth * (280 / window.innerWidth);
+  const panelRight = window.innerWidth * ((window.innerWidth - 300) / window.innerWidth);
+  const centerX    = (panelLeft + panelRight) / 2;
+  const centerY    = window.innerHeight * 0.48;
+
+  const side   = Math.random() < 0.5 ? -1 : 1;
+  const startX = centerX + side * (90 + Math.random() * 130);
+  const startY = centerY + (-90 + Math.random() * 180);
+  const driftX = side * (40 + Math.random() * 80);
+  const driftY = -(50 + Math.random() * 120);
+  const dur    = type.rarity === 'legendary' ? 6000 : type.rarity === 'epic' ? 5500 : 4000 + Math.random() * 2000;
+
+  // Wrapper (for label positioning)
+  const wrap = document.createElement('div');
+  wrap.className = 'bonus-fish-wrap';
+  wrap.style.cssText = `left:${startX}px;top:${startY}px;`;
+
+  const el = document.createElement('div');
+  el.className = `bonus-fish type-${type.rarity}`;
+  el.textContent = type.emoji;
+  el.style.setProperty('--swim-dur', dur + 'ms');
+  el.style.setProperty('--drift-x', driftX + 'px');
+  el.style.setProperty('--drift-y', driftY + 'px');
+  el.style.filter = `drop-shadow(0 0 16px ${type.color}) drop-shadow(0 0 6px ${type.color})`;
+  if(type.rarity === 'legendary') {
+    el.style.filter += ' brightness(1.3)';
+  }
+  el.style.pointerEvents = 'all';
+
+  const boostTag = type.boostType === 'frenzy'
+    ? `<span style="color:#f9c74f;font-size:0.6rem"> ⚡CLICK x${type.boostMult}</span>`
+    : type.boostType === 'harvest'
+      ? `<span style="color:#43aa8b;font-size:0.6rem"> 🌿FARM x${type.boostMult}</span>`
+      : `<span style="color:#7dd3f8;font-size:0.6rem"> +FISH</span>`;
+
+  const lbl = document.createElement('div');
+  lbl.className = 'bonus-fish-label';
+  lbl.innerHTML = type.label + boostTag;
+  lbl.style.color = rc.label;
+  lbl.style.borderColor = type.boostType === 'frenzy' ? 'rgba(249,199,79,0.6)'
+                        : type.boostType === 'harvest' ? 'rgba(67,170,139,0.6)'
+                        : rc.border;
+  lbl.style.background  = rc.bg;
+
+  wrap.appendChild(el);
+  wrap.appendChild(lbl);
+
+  let clicked = false;
+  el.addEventListener('click', function(e) {
+    if(clicked) return;
+    clicked = true;
+    e.stopPropagation();
+    state.catchedBonusFish++;
+
+    const rarityTag = type.rarity === 'legendary' ? ' ✨LEGENDARY✨' : type.rarity === 'epic' ? ' ⚡EPIC' : '';
+
+    addCaughtFishToTank(type.emoji);
+
+    if(type.boostType === 'instant') {
+      state.fish += reward;
+      state.totalFish += reward;
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} +${fmt(reward)}`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} caught! +${fmt(reward)} fish!`);
+
+    } else if(type.boostType === 'frenzy') {
+      state.fish += reward;
+      state.totalFish += reward;
+      const secs = Math.round(type.boostDur / 1000);
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} x${type.boostMult} CLICK!`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} — Click Frenzy x${type.boostMult} for ${secs}s!`);
+      applyBoost('frenzy', type.boostMult, type.boostDur, type.emoji, type.label);
+
+    } else if(type.boostType === 'harvest') {
+      state.fish += reward;
+      state.totalFish += reward;
+      const secs = Math.round(type.boostDur / 1000);
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} x${type.boostMult} FARM!`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} — Harvest Boost x${type.boostMult} for ${secs}s!`);
+      applyBoost('harvest', type.boostMult, type.boostDur, type.emoji, type.label);
+    }
+
+    wrap.remove();
+    updateFishBtn();
+    updateUI();
+  });
+
+  document.body.appendChild(wrap);
+  setTimeout(() => { if(!clicked) wrap.remove(); }, dur + 200);
+
+  scheduleBonusFish();
+}
+
+// ── CRISIS SYSTEM ─────────────────────────────────────────────
+const CRISIS_MIN_INTERVAL = 45000;
+const CRISIS_MAX_INTERVAL = 120000;
+let crisisTimer = null;
+let crisisBannerEl = null;
+
+function scheduleCrisis() {
+  if(!crisesEnabled) return;
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  if(totalBuildings < 3) { crisisTimer = setTimeout(scheduleCrisis, 15000); return; }
+
+  const delay = CRISIS_MIN_INTERVAL + Math.random() * (CRISIS_MAX_INTERVAL - CRISIS_MIN_INTERVAL);
+  crisisTimer = setTimeout(triggerCrisis, delay);
+}
+
+let crisisExpireTimer = null;
+
+function triggerCrisis() {
+  if(state.crisisActive) { scheduleCrisis(); return; }
+
+  const eligible = CRISES.filter(c => state.totalFish >= c.minFish);
+  if(eligible.length === 0) { scheduleCrisis(); return; }
+
+  const crisis = eligible[Math.floor(Math.random() * eligible.length)];
+  state.crisisActive     = crisis;
+  state.crisisClicksLeft = crisis.clicksNeeded;
+  state.crisisMultPenalty = crisis.fpsPenalty;
+  state.crisisExpiresAt  = Date.now() + 60000;
+  recalcFPS();
+
+  document.body.classList.add('in-crisis');
+  showCrisisBanner(crisis);
+  highlightCrisisBuilding(crisis.building, true);
+  updateUI();
+
+  crisisExpireTimer = setTimeout(() => {
+    if(!state.crisisActive) return;
+    const lostFish = Math.floor(state.fish * 0.15);
+    state.fish      = Math.max(0, state.fish - lostFish);
+    const msg = state.crisisActive.resolveMsg.replace('!', ' — too late!') + ` Lost ${fmt(lostFish)} fish! 💀`;
+    resolveCrisis(true);
+    showMilestone(msg);
+  }, 60000);
+}
+
+function highlightCrisisBuilding(buildingId, on) {
+  if(!buildingId) return;
+  document.querySelectorAll('.scene-row').forEach(row => {
+    // match by label text
+    const lbl = row.querySelector('.scene-row-label');
+    const b   = BUILDINGS.find(x => x.id === buildingId);
+    if(b && lbl && lbl.textContent.trim() === b.name) {
+      row.classList.toggle('crisis-building', on);
+    }
+  });
+}
+
+function showCrisisBanner(crisis) {
+  if(crisisBannerEl) crisisBannerEl.remove();
+
+  // Add vignette
+  let vig = document.getElementById('crisis-vignette');
+  if(!vig) {
+    vig = document.createElement('div');
+    vig.id = 'crisis-vignette';
+    vig.className = 'crisis-vignette';
+    document.body.appendChild(vig);
+  }
+
+  crisisBannerEl = document.createElement('div');
+  crisisBannerEl.className = 'crisis-banner';
+  crisisBannerEl.id = 'crisis-banner';
+  crisisBannerEl.style.cssText = `
+    background: linear-gradient(160deg, ${crisis.color} 0%, rgba(5,10,20,0.97) 100%);
+    border: 1.5px solid ${crisis.accentColor};
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 30px ${crisis.accentColor};
+  `;
+
+  const solveLabels = {
+    click: 'Click the fish button to resolve',
+    mash:  'Spam-click the fish button fast!',
+    rapid: 'Click quickly and repeatedly!',
+    hold:  'Click continuously — keep going!',
+  };
+
+  crisisBannerEl.innerHTML = `
+    <div class="crisis-header">
+      <div class="crisis-icon-wrap" style="--icon-anim:${crisis.iconAnim}">${crisis.icon}</div>
+      <div class="crisis-titles">
+        <div class="crisis-title">${crisis.title}</div>
+        <div class="crisis-building-tag">${crisis.buildingTag || ''}</div>
+      </div>
+    </div>
+    <div class="crisis-body">
+      <div class="crisis-desc">${crisis.desc}</div>
+      <div class="crisis-action-hint">
+        <span class="crisis-action-icon">${crisis.actionIcon}</span>
+        <span class="crisis-action-text">${crisis.actionText}</span>
+      </div>
+      <div class="crisis-bar-wrap">
+        <div class="crisis-bar" id="crisis-bar" style="width:100%"></div>
+      </div>
+      <div class="crisis-progress-row">
+        <div class="crisis-clicks" id="crisis-clicks">${crisis.clicksNeeded} actions needed</div>
+        <div class="crisis-pct" id="crisis-pct">100%</div>
+      </div>
+      <div style="font-size:0.72rem;color:rgba(249,65,68,0.85);margin-top:4px;text-align:center;letter-spacing:0.5px;">
+        ⚠️ Production -${Math.round((1 - crisis.fpsPenalty) * 100)}% &nbsp;|&nbsp; <span id="crisis-countdown">60s</span> left or lose fish!
+      </div>
+    </div>
+  `;
+  document.body.appendChild(crisisBannerEl);
+}
+
+function updateCrisisUI() {
+  if(!state.crisisActive) return;
+  const total = state.crisisActive.clicksNeeded;
+  const left  = state.crisisClicksLeft;
+  const pct   = Math.max(0, (left / total) * 100);
+
+  const bar = document.getElementById('crisis-bar');
+  const lbl = document.getElementById('crisis-clicks');
+  const pctEl = document.getElementById('crisis-pct');
+  if(bar) bar.style.width = pct + '%';
+  if(lbl) lbl.textContent = `${left} actions remaining`;
+  if(pctEl) pctEl.textContent = Math.round(pct) + '%';
+
+  // Bar color shifts red as it decreases
+  if(bar) {
+    const r = Math.round(249 - (249-249)*(pct/100));
+    const g = Math.round(199 * (pct/100));
+    bar.style.background = `linear-gradient(90deg, rgb(${r},${g},79), #f77f00)`;
+  }
+
+  // Countdown timer
+  const cdEl = document.getElementById('crisis-countdown');
+  if(cdEl && state.crisisExpiresAt) {
+    const secsLeft = Math.max(0, Math.ceil((state.crisisExpiresAt - Date.now()) / 1000));
+    cdEl.textContent = secsLeft + 's';
+    cdEl.style.color = secsLeft <= 10 ? '#ff4444' : 'rgba(249,65,68,0.85)';
+    if(secsLeft <= 10) cdEl.style.fontWeight = 'bold';
+  }
+}
+
+function resolveCrisis(expired = false) {
+  const crisis = state.crisisActive;
+  clearTimeout(crisisExpireTimer); crisisExpireTimer = null;
+  state.crisisActive      = null;
+  state.crisisClicksLeft  = 0;
+  state.crisisMultPenalty = 1;
+  state.crisisExpiresAt   = null;
+  if(!expired) state.totalCrisesResolved++;
+  recalcFPS();
+
+  document.body.classList.remove('in-crisis');
+  highlightCrisisBuilding(crisis.building, false);
+
+  const vig = document.getElementById('crisis-vignette');
+  if(vig) vig.remove();
+
+  if(crisisBannerEl) {
+    crisisBannerEl.classList.add('resolving');
+    setTimeout(() => { if(crisisBannerEl) { crisisBannerEl.remove(); crisisBannerEl = null; } }, 380);
+  }
+  if(!expired) showMilestone(crisis.resolveMsg);
+  updateUI();
+  scheduleCrisis();
 }
 
 // ── GAME LOOP ─────────────────────────────────────────────────
 let lastTick = Date.now();
 let frameCount = 0;
 
-// Core production tick — runs via setInterval always, regardless of tab visibility
 function tick() {
   const now = Date.now();
-  const dt  = Math.min((now - lastTick) / 1000, 5); // allow up to 5s catch-up
+  const dt  = Math.min((now - lastTick) / 1000, 5);
   lastTick  = now;
   state.fish      += state.fishPerSec * dt;
   state.totalFish += state.fishPerSec * dt;
   frameCount++;
 }
 
-// Visual update — only runs when tab is visible via rAF
 let rafRunning = false;
 function renderLoop() {
   if(document.hidden) { rafRunning = false; return; }
@@ -789,7 +1904,6 @@ function renderLoop() {
     card.classList.toggle('cant-afford', !can);
   });
 
-  // Upgrade affordability: update card classes every frame without full re-render
   document.querySelectorAll('.upgrade-card:not(.purchased)').forEach(card => {
     const u = UPGRADES.find(x => x.id === card.dataset.id);
     if(!u) return;
@@ -805,14 +1919,16 @@ function renderLoop() {
   document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
 
   if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); updateUI(); }
+  if(frameCount % 60 === 0 && state.crisisActive) updateCrisisUI();
+
+  // Update tank fish count every ~2s
+  if(frameCount % 120 === 0) updateTankZone();
 
   requestAnimationFrame(renderLoop);
 }
 
-// Production: every 250ms regardless of tab state
 setInterval(tick, 250);
 
-// Re-start visual loop when tab becomes visible again
 document.addEventListener('visibilitychange', () => {
   if(!document.hidden && !rafRunning) requestAnimationFrame(renderLoop);
 });
@@ -831,7 +1947,7 @@ function createBubbles() {
 
 // ── SAVE / LOAD ───────────────────────────────────────────────
 const SAVE_KEY = 'fishfarm_save';
-const _XK = [0x46,0x49,0x53,0x48,0x46,0x41,0x52,0x4d]; // FISHFARM
+const _XK = [0x46,0x49,0x53,0x48,0x46,0x41,0x52,0x4d];
 
 function _encode(obj) {
   const str = JSON.stringify(obj);
@@ -850,7 +1966,6 @@ function _decode(encoded) {
 }
 
 function _checksum(data) {
-  // Simple hash: sum of fish + totalFish + building counts, stored alongside data
   const s = Math.floor(data.fish) + Math.floor(data.totalFish) +
     Object.values(data.buildings).reduce((a,b)=>a+b,0);
   return (s * 31 + 7) % 999983;
@@ -864,10 +1979,14 @@ function saveGame() {
     purchasedUpgrades: [...state.purchasedUpgrades],
     totalClicks: state.totalClicks,
     fishFromClicks: state.fishFromClicks,
+    totalCrisesResolved: state.totalCrisesResolved,
+    catchedBonusFish: state.catchedBonusFish,
+    lastMilestone: lastMilestone,
     savedAt: Date.now(),
   };
   data._c = _checksum(data);
   localStorage.setItem(SAVE_KEY, _encode(data));
+  localStorage.setItem(SAVE_KEY + '_tank', JSON.stringify(caughtFishEmojis));
 }
 
 function loadGame() {
@@ -876,30 +1995,38 @@ function loadGame() {
     if(!raw) return;
     const data = _decode(raw);
 
-    // Checksum doğrulama — değiştirilmişse sıfırla
     if(data._c !== _checksum(data)) {
       localStorage.removeItem(SAVE_KEY);
       showMilestone('Save data corrupted — starting fresh 🐟');
       return;
     }
 
-    state.fish            = data.fish || 0;
-    state.totalFish       = data.totalFish || 0;
-    state.buildings       = data.buildings || {};
-    state.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
-    state.totalClicks     = data.totalClicks || 0;
-    state.fishFromClicks  = data.fishFromClicks || 0;
+    state.fish                = data.fish || 0;
+    state.totalFish           = data.totalFish || 0;
+    state.buildings           = data.buildings || {};
+    state.purchasedUpgrades   = new Set(data.purchasedUpgrades || []);
+    state.totalClicks         = data.totalClicks || 0;
+    state.fishFromClicks      = data.fishFromClicks || 0;
+    state.totalCrisesResolved = data.totalCrisesResolved || 0;
+    state.catchedBonusFish    = data.catchedBonusFish || 0;
+    lastMilestone             = data.lastMilestone || 0;
+    try { caughtFishEmojis = JSON.parse(localStorage.getItem(SAVE_KEY + '_tank') || '[]'); } catch(e) { caughtFishEmojis = []; }
 
-    // Recalculate from scratch to avoid stacking on reload
     state.fishPerClick      = 1;
     state.baseClickPower    = 1;
     state.clickMultiplier   = 1;
     state.clickSynergyRate  = 0;
+    state.crisisMultPenalty = 1;
+    state.boostHarvestMult  = 1;
     BUILDINGS.forEach(b => buildingMult[b.id] = 1);
     UPGRADES.forEach(u => {
       if(state.purchasedUpgrades.has(u.id)) u.effect();
     });
     recalcFPS();
+
+    // Sync fish stage index to avoid false "evolution" message on load
+    const stage = getCurrentFishStage();
+    lastFishStageIdx = FISH_STAGES.indexOf(stage);
 
   } catch(e) { localStorage.removeItem(SAVE_KEY); }
 }
@@ -908,30 +2035,307 @@ function resetGame() {
   if(!confirm('Reset all progress and start over? This cannot be undone.')) return;
   window.removeEventListener('beforeunload', saveGame);
   localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(SAVE_KEY + '_tank');
   location.reload();
 }
 document.getElementById('reset-btn').addEventListener('click', resetGame);
 
-// Auto-save every 10 seconds
+// ── SHARE MODAL ───────────────────────────────────────────────
+function buildShareText() {
+  const stage = getCurrentFishStage();
+  const totalB = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+  const topBuilding = BUILDINGS.slice().reverse().find(b=>(state.buildings[b.id]||0)>0);
+  const lines = [
+    `🐟 Fish Farm Stats`,
+    `─────────────────`,
+    `${stage.emoji} Fish: ${fmt(state.totalFish)} total`,
+    `⚡ Production: ${fmtFps(state.fishPerSec)}/sec`,
+    `🖱️ Clicks: ${fmt(state.totalClicks)}`,
+    `🏗️ Buildings: ${totalB}`,
+    `⬆️ Upgrades: ${state.purchasedUpgrades.size}`,
+    topBuilding ? `🏆 Best building: ${topBuilding.icon} ${topBuilding.name}` : '',
+    state.totalCrisesResolved > 0 ? `🛡️ Crises resolved: ${state.totalCrisesResolved}` : '',
+    `─────────────────`,
+    `Play Fish Farm!`,
+  ].filter(Boolean);
+  return lines.join('\n');
+}
+
+function openShareModal() {
+  const stage    = getCurrentFishStage();
+  const totalB   = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+  const topBuilding = BUILDINGS.slice().reverse().find(b=>(state.buildings[b.id]||0)>0);
+  const shareText   = buildShareText();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'share-overlay';
+  overlay.id = 'share-overlay';
+
+  overlay.innerHTML = `
+    <div class="share-modal" id="share-modal">
+      <div class="share-modal-title">🐟 Share Your Farm</div>
+      <div class="share-body">
+        <!-- Left: stat card -->
+        <div class="share-card" id="share-snapshot-card">
+          <div class="share-card-header">${stage.emoji} ${stage.label} Farm</div>
+          <div class="share-stat-grid">
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.totalFish)}</div>
+              <div class="share-stat-lbl">Total Fish Caught</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmtFps(state.fishPerSec)}/s</div>
+              <div class="share-stat-lbl">Production Rate</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.fishPerClick * state.clickMultiplier)}</div>
+              <div class="share-stat-lbl">Fish per Click</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.totalClicks)}</div>
+              <div class="share-stat-lbl">Total Clicks</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${totalB}</div>
+              <div class="share-stat-lbl">Buildings Built</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${state.purchasedUpgrades.size}</div>
+              <div class="share-stat-lbl">Upgrades Bought</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${state.totalCrisesResolved}</div>
+              <div class="share-stat-lbl">Crises Resolved</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${topBuilding ? topBuilding.icon : '—'}</div>
+              <div class="share-stat-lbl">${topBuilding ? topBuilding.name : 'No buildings'}</div>
+            </div>
+          </div>
+        </div>
+        <!-- Right: share text -->
+        <div class="share-right">
+          <div class="share-right-title">📋 SHARE TEXT</div>
+          <textarea class="share-text-area" id="share-textarea" readonly>${shareText}</textarea>
+        </div>
+      </div>
+
+      <div class="share-actions">
+        <button class="share-copy-btn"       id="share-copy-btn">Copy Text</button>
+        <button class="share-screenshot-btn" id="share-screenshot-btn">Copy as Image</button>
+        <button class="share-close-btn"      id="share-close-btn">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Copy text
+  document.getElementById('share-copy-btn').addEventListener('click', function() {
+    const ta = document.getElementById('share-textarea');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      this.textContent = '✓ Copied!';
+      this.style.background = 'linear-gradient(135deg,#1a8fd1,#0d5fa0)';
+      setTimeout(() => { this.textContent = 'Copy Text'; this.style.background = ''; }, 2000);
+    }).catch(() => {
+      try { document.execCommand('copy'); } catch(ex){}
+      this.textContent = '✓ Copied!';
+      setTimeout(() => { this.textContent = 'Copy Text'; }, 2000);
+    });
+  });
+
+  // Screenshot: capture the modal card via html2canvas → copy PNG to clipboard
+  document.getElementById('share-screenshot-btn').addEventListener('click', function() {
+    const btn = this;
+    btn.textContent = 'Capturing…';
+    btn.disabled = true;
+
+    const target = document.getElementById('share-modal');
+
+    html2canvas(target, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    }).then(canvas => {
+      canvas.toBlob(blob => {
+        if(!blob) { btn.textContent = 'Failed'; btn.disabled = false; return; }
+
+        const tryClipboard = () => navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+
+        tryClipboard().then(() => {
+          btn.textContent = '✓ Image Copied!';
+          btn.style.background = 'linear-gradient(135deg,#43aa8b,#2d7a63)';
+          btn.disabled = false;
+          setTimeout(() => {
+            btn.textContent = 'Copy as Image';
+            btn.style.background = '';
+          }, 2500);
+        }).catch(() => {
+          // Clipboard API blocked → fall back to download
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = 'fishfarm-share.png';
+          a.click();
+          btn.textContent = '✓ Downloaded!';
+          btn.disabled = false;
+          setTimeout(() => { btn.textContent = 'Copy as Image'; }, 2500);
+        });
+      }, 'image/png');
+    }).catch(() => {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    });
+  });
+
+  document.getElementById('share-close-btn').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.remove(); });
+}
+
+
+document.getElementById('share-btn').addEventListener('click', openShareModal);
+
 setInterval(saveGame, 10000);
-// Save on page unload
 window.addEventListener('beforeunload', saveGame);
+
+// ── SIDE CLICK ZONES ──────────────────────────────────────────
+// Tank fish: small emoji swimmers inside each zone canvas
+const TANK_FISH_EMOJIS = ['🐟','🐠','🐡','🦐','🦀'];
+
+function rnd(min, max) { return min + Math.random() * (max - min); }
+
+function createTankFish(container, emoji) {
+  const el = document.createElement('div');
+  el.className = 'tank-fish' + (Math.random() < 0.5 ? ' flip' : '');
+  el.textContent = emoji || TANK_FISH_EMOJIS[Math.floor(Math.random() * TANK_FISH_EMOJIS.length)];
+  el.style.left = rnd(5, 88).toFixed(0) + '%';
+  el.style.top  = rnd(8, 78).toFixed(0) + '%';
+  el.style.setProperty('--swim-dur', rnd(14, 28).toFixed(1) + 's');
+  el.style.animationDelay = '-' + rnd(0, 20).toFixed(1) + 's';
+  const makeCoord = () => (rnd(-35, 35).toFixed(0) + 'px');
+  ['start-x','mid1-x','mid2-x','mid3-x'].forEach(k => el.style.setProperty('--'+k, makeCoord()));
+  ['start-y','mid1-y','mid2-y','mid3-y'].forEach(k => el.style.setProperty('--'+k, makeCoord()));
+  el.style.fontSize = rnd(10, 15).toFixed(0) + 'px';
+  container.appendChild(el);
+  return el;
+}
+
+function createTankBubble(container) {
+  const el = document.createElement('div');
+  el.className = 'tank-bubble';
+  const size = rnd(3, 7).toFixed(0);
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  el.style.left = rnd(5, 90).toFixed(0) + '%';
+  el.style.bottom = rnd(2, 20).toFixed(0) + '%';
+  el.style.setProperty('--bub-dur', rnd(3, 7).toFixed(1) + 's');
+  el.style.animationDelay = '-' + rnd(0, 6).toFixed(1) + 's';
+  container.appendChild(el);
+  return el;
+}
+
+let tankContainer = null;
+let tankFishEls = [];
+let caughtFishEmojis = [];
+const MAX_TANK_FISH = 30;
+
+function initTankZone() {
+  tankContainer = document.getElementById('tank-bg');
+  if(!tankContainer) return;
+  for(let i = 0; i < 5; i++) createTankBubble(tankContainer);
+  // Restore caught fish saved before this function ran
+  caughtFishEmojis.forEach(emoji => {
+    tankFishEls.push(createTankFish(tankContainer, emoji));
+  });
+}
+
+function updateTankZone() { /* no-op: tank only fills from caught bonus fish */ }
+
+function addCaughtFishToTank(emoji) {
+  if(!tankContainer) return;
+  if(tankFishEls.length >= MAX_TANK_FISH) {
+    tankContainer.removeChild(tankFishEls.shift());
+    caughtFishEmojis.shift();
+  }
+  caughtFishEmojis.push(emoji);
+  tankFishEls.push(createTankFish(tankContainer, emoji));
+}
+
+function spawnZoneParticle(zone, x, y, txt) {
+  const p = document.createElement('div');
+  p.className = 'click-zone-particle';
+  p.textContent = txt;
+  // Position relative to zone
+  const rect = zone.getBoundingClientRect();
+  p.style.left = (x - rect.left - 15 + Math.random()*30) + 'px';
+  p.style.top  = (y - rect.top  - 10) + 'px';
+  zone.appendChild(p);
+  setTimeout(()=>p.remove(), 800);
+}
+
+function handleZoneClick(e) {
+  if(!clickGuard.check(e.clientX, e.clientY)) return;
+  const gained = state.fishPerClick * state.clickMultiplier;
+  state.fish += gained;
+  state.totalFish += gained;
+  state.totalClicks++;
+  state.fishFromClicks += gained;
+  spawnZoneParticle(document.getElementById('click-zone-main'), e.clientX, e.clientY, '+' + fmt(gained));
+
+  // Also count toward crisis resolution
+  if(state.crisisActive && state.crisisActive.solveType !== 'hold') {
+    const deduct = state.crisisActive.solveType === 'mash' ? 2 : 1;
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - deduct);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) resolveCrisis();
+  }
+
+  updateFishBtn();
+  updateUI();
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 loadGame();
 createBubbles();
 renderBuildings();
 renderUpgrades();
-// Wait one frame so layout is settled before measuring scene dimensions
 requestAnimationFrame(()=>{ renderScene(); });
 updateUI();
+updateFishBtn();
 requestAnimationFrame(renderLoop);
 
-// Re-render scene if window is resized
 const sceneEl = document.getElementById('building-scene');
 if(window.ResizeObserver) {
   new ResizeObserver(()=>renderScene()).observe(sceneEl);
 }
+
+// Init unified tank behind click button (restores saved fish internally)
+initTankZone();
+const zoneMain = document.getElementById('click-zone-main');
+zoneMain.addEventListener('click', handleZoneClick);
+zoneMain.addEventListener('mousedown', () => {
+  if(!state.crisisActive || state.crisisActive.solveType !== 'hold') return;
+  if(holdInterval) return;
+  holdInterval = setInterval(() => {
+    if(!state.crisisActive) { clearInterval(holdInterval); holdInterval = null; return; }
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - 1);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) { clearInterval(holdInterval); holdInterval = null; resolveCrisis(); }
+  }, 120);
+});
+zoneMain.addEventListener('mouseup',    () => { clearInterval(holdInterval); holdInterval = null; });
+zoneMain.addEventListener('mouseleave', () => { clearInterval(holdInterval); holdInterval = null; });
+
+// Start bonus fish and crisis systems
+scheduleBonusFish();
+scheduleCrisis();
+
+let crisesEnabled = true;
 </script>
+
+<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.1</div>
 </body>
 </html>
