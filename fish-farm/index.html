@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fish Farm — Idle Clicker Game | ClickingGame</title>
+<meta name="description" content="Build your underwater empire in Fish Farm! An idle clicker game where you breed fish, upgrade tanks, and harvest gold. Free to play in your browser.">
+<meta name="keywords" content="fish farm, idle game, clicker game, browser game, free game, incremental game">
+<meta name="author" content="ClickingGame">
+<link rel="canonical" href="https://clickingame.com/fish-farm/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://clickingame.com/fish-farm/">
+<meta property="og:title" content="Fish Farm — Idle Clicker Game">
+<meta property="og:description" content="Build your underwater empire! Breed fish, upgrade tanks, and harvest gold in this free idle clicker game.">
+<meta property="og:image" content="https://clickingame.com/fish-farm/og-image.png">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fish Farm — Idle Clicker Game">
+<meta name="twitter:description" content="Build your underwater empire! Breed fish, upgrade tanks, and harvest gold in this free idle clicker game.">
+<meta name="twitter:image" content="https://clickingame.com/fish-farm/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --ocean: #0a1628;
+    --deep: #071020;
+    --mid: #0d2444;
+    --surface: #1a3a6b;
+    --foam: #2a6fa8;
+    --wave: #3d9cd4;
+    --light: #7dd3f8;
+    --white: #e8f4fd;
+    --gold: #f9c74f;
+    --orange: #f77f00;
+    --coral: #f94144;
+    --green: #43aa8b;
+    --purple: #9b5de5;
+    --panel: rgba(13,36,68,0.85);
+    --border: rgba(61,156,212,0.25);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--ocean);
+    font-family: 'Nunito', sans-serif;
+    color: var(--white);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(61,156,212,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(10,22,40,0.8) 0%, transparent 50%),
+      linear-gradient(180deg, #071020 0%, #0a1628 40%, #0d2444 100%);
+    z-index:0; pointer-events:none;
+  }
+  .bubbles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .bubble {
+    position:absolute; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, rgba(125,211,248,0.6), rgba(61,156,212,0.1));
+    border: 1px solid rgba(125,211,248,0.3);
+    animation: rise linear infinite;
+    bottom: -40px;
+  }
+  @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
+
+  header {
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    padding: 8px 20px;
+    background: linear-gradient(90deg, var(--deep), var(--mid), var(--deep));
+    border-bottom: 2px solid var(--border);
+    gap: 12px;
+  }
+  header.embed .fish-emoji,
+  header.embed h1 { display: none; }
+  .header-right {
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    display:flex; align-items:center; gap:10px;
+  }
+  .share-btn-fixed {
+    position: fixed; top: 12px; left: 16px; z-index: 100;
+    background: transparent;
+    border: 1px solid rgba(61,156,212,0.35);
+    color: var(--light); font-family:'Fredoka One',cursive; font-size:0.82rem;
+    letter-spacing:1px; padding:5px 14px; cursor:pointer; border-radius:20px;
+    transition:all 0.2s;
+  }
+  .share-btn-fixed:hover {
+    background: rgba(61,156,212,0.15);
+    border-color: rgba(61,156,212,0.7);
+    color:#fff;
+    box-shadow: 0 2px 14px rgba(61,156,212,0.3);
+  }
+  .reset-btn {
+    background:transparent; border:none;
+    color:var(--coral); font-family:'Fredoka One',cursive; font-size:0.85rem;
+    letter-spacing:1px; padding:4px 8px; cursor:pointer;
+    transition:color 0.2s, text-shadow 0.2s;
+    text-shadow: 0 0 8px rgba(249,65,68,0.4);
+  }
+  .reset-btn:hover { color:#ff6b6e; text-shadow:0 0 14px rgba(249,65,68,0.8); }
+
+  /* SHARE MODAL */
+  .share-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.75);
+    z-index:10000; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(8px);
+    animation: fade-in 0.2s ease;
+  }
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+  .share-modal {
+    background: linear-gradient(135deg, #071020, #0d2444);
+    border: 2px solid rgba(61,156,212,0.4);
+    border-radius: 20px; padding: 24px 28px;
+    width: min(860px, 94vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: modal-pop 0.3s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+  }
+  @keyframes modal-pop { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+  .share-modal-title {
+    font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--light);
+    text-align:center; margin-bottom:18px; text-shadow:0 0 20px rgba(125,211,248,0.5);
+  }
+
+  /* Two-column body */
+  .share-body {
+    display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:16px;
+  }
+
+  /* Left: stat card */
+  .share-card {
+    background: linear-gradient(135deg, #0a1628, #1a3a6b);
+    border: 1px solid rgba(61,156,212,0.3);
+    border-radius: 14px; padding: 16px 18px;
+    font-family:'Fredoka One',cursive;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .share-card-header {
+    display:flex; align-items:center; gap:8px;
+    font-size:1.1rem; color:var(--light);
+  }
+  .share-stat-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; flex:1;
+  }
+  .share-stat {
+    background:rgba(0,0,0,0.3); border-radius:10px; padding:9px 10px;
+    text-align:center;
+  }
+  .share-stat-val { font-size:1rem; color:var(--gold); }
+  .share-stat-lbl { font-size:0.65rem; color:rgba(125,211,248,0.6); margin-top:2px; font-family:'Nunito',sans-serif; }
+
+  /* Right: text area */
+  .share-right {
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .share-right-title {
+    font-family:'Fredoka One',cursive; font-size:0.85rem; color:var(--light);
+    letter-spacing:1px;
+  }
+  .share-text-area {
+    flex:1; width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(61,156,212,0.3);
+    border-radius:10px; color:var(--light); font-family:'Nunito',sans-serif;
+    font-size:0.78rem; line-height:1.7; padding:10px 12px; resize:none;
+    outline:none; min-height:160px;
+    scrollbar-width:thin; scrollbar-color:var(--foam) transparent;
+  }
+  .share-text-area::-webkit-scrollbar { width:3px; }
+  .share-text-area::-webkit-scrollbar-thumb { background:var(--foam); border-radius:2px; }
+
+  /* Actions row */
+  .share-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .share-copy-btn {
+    flex:1; min-width:120px; background:linear-gradient(135deg,#43aa8b,#2d7a63);
+    border:none; color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-copy-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(67,170,139,0.5); }
+  .share-screenshot-btn {
+    flex:1; min-width:140px;
+    background:linear-gradient(135deg,#2a6fa8,#1a5a8a);
+    border:1px solid rgba(125,211,248,0.3);
+    color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-screenshot-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(61,156,212,0.5); }
+  .share-close-btn {
+    background:rgba(249,65,68,0.15); border:1px solid rgba(249,65,68,0.3);
+    color:var(--coral); font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 16px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-close-btn:hover { background:rgba(249,65,68,0.3); }
+
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--light);
+    text-shadow: 0 0 20px rgba(125,211,248,0.6);
+    letter-spacing: 2px;
+  }
+  .fish-emoji { font-size: 2rem; animation: swim 2s ease-in-out infinite; display:inline-block; }
+  @keyframes swim { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-4px) rotate(5deg)} }
+
+  .game {
+    position:relative; z-index:5;
+    display:grid;
+    grid-template-columns: 280px 1fr 300px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .panel-title {
+    font-family:'Fredoka One',cursive; font-size:1rem; color: var(--light);
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); display:flex; align-items:center; gap:6px;
+  }
+
+  /* CENTER */
+  .panel-center {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: 14px; padding: 14px 20px;
+    position: relative; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--foam) transparent;
+  }
+  .fish-counter { text-align: center; }
+  .fish-count {
+    font-family: 'Fredoka One', cursive; font-size: 2.8rem;
+    color: var(--gold); text-shadow: 0 0 30px rgba(249,199,79,0.5); line-height: 1;
+  }
+  .fish-count-label { font-size: 0.85rem; color: var(--light); opacity: 0.7; margin-top: 4px; }
+  .fish-per-sec { font-size: 0.9rem; color: var(--wave); margin-top: 2px; }
+
+  .fish-btn-wrap {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    width: 100%; height: 220px;
+  }
+  .fish-btn {
+    width: 170px; height: 170px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #4dc3ff 0%, #1a8fd1 40%, #0d5fa0 70%, #083d6e 100%);
+    border: 4px solid rgba(125,211,248,0.5);
+    box-shadow: 0 0 40px rgba(61,156,212,0.4), 0 0 80px rgba(61,156,212,0.15), inset 0 2px 8px rgba(255,255,255,0.2);
+    cursor: pointer; transition: transform 0.08s, box-shadow 0.08s;
+    font-size: 4.5rem; display: flex; align-items:center; justify-content:center;
+    user-select: none; -webkit-user-select: none; position: relative; overflow: hidden;
+    z-index: 4;
+  }
+  .fish-btn::after {
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 38% 30%, rgba(255,255,255,0.25), transparent 60%);
+    pointer-events:none;
+  }
+  .fish-btn:hover { transform: scale(1.04); box-shadow: 0 0 60px rgba(61,156,212,0.6), 0 0 100px rgba(61,156,212,0.2), inset 0 2px 8px rgba(255,255,255,0.2); }
+  .fish-btn:active { transform: scale(0.94); }
+  .glow-ring {
+    position:absolute; width:190px; height:190px; border-radius:50%;
+    border: 2px solid rgba(125,211,248,0.2); animation: pulse-ring 2s ease-in-out infinite; pointer-events:none;
+    z-index: 2;
+  }
+  .glow-ring2 { width:220px; height:220px; animation-delay:0.5s; border-color:rgba(125,211,248,0.1); }
+  @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.05);opacity:1} }
+
+  /* SINGLE CLICK ZONE — full wrap, button punched out via pointer-events on btn */
+  .click-zone {
+    position: absolute; inset: 0;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    z-index: 3;
+  }
+
+  /* UNIFIED TANK — full wrap width, behind button */
+  .tank-anim {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 16px;
+  }
+  #tank-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    border-radius: 16px;
+  }
+  .click-zone-particle {
+    position: absolute; pointer-events: none;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    color: var(--gold); text-shadow: 0 0 8px rgba(249,199,79,0.8);
+    animation: float-up 0.8s ease-out forwards;
+  }
+
+  /* BUILDING SCENE */
+  .building-scene {
+    width: 100%; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 0; display:flex; flex-direction:column; gap:0;
+    flex: 1; min-height: 0; overflow: hidden;
+  }
+  .scene-title {
+    font-family:'Fredoka One',cursive; font-size:1rem;
+    color: var(--light); text-align:center; letter-spacing:1px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); flex-shrink:0;
+  }
+  .scene-row {
+    display:flex; align-items:center; gap:0;
+    height: var(--row-h); flex-shrink:0;
+    border-bottom: 1px solid rgba(61,156,212,0.07);
+    overflow: hidden;
+  }
+  .scene-row-label {
+    font-size:0.6rem; color:rgba(125,211,248,0.35);
+    width: 80px; flex-shrink:0; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; padding-left:2px;
+  }
+  .scene-row-icons {
+    flex:1; display:flex; align-items:center;
+    overflow:hidden; gap:1px;
+  }
+  .scene-unit {
+    display:inline-block; flex-shrink:0; line-height:1;
+    animation: bob 1.5s ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  .scene-overflow {
+    font-family:'Fredoka One',cursive; font-size:0.7rem;
+    color:var(--gold); flex-shrink:0; margin-left:2px;
+  }
+  .scene-row-count {
+    font-family:'Fredoka One',cursive; font-size:0.75rem;
+    color:var(--wave); flex-shrink:0; width:28px; text-align:right;
+    padding-right:4px;
+  }
+  @keyframes bob {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)}
+  }
+  .scene-empty { font-size:0.7rem; color:rgba(125,211,248,0.2); text-align:center; padding:12px 0; }
+
+  .click-info { font-size:0.8rem; color:rgba(125,211,248,0.4); text-align:center; }
+
+  /* PARTICLES */
+  .particle {
+    position:fixed; pointer-events:none; font-size:1.4rem;
+    font-family:'Fredoka One',cursive; color: var(--gold);
+    text-shadow: 0 0 10px rgba(249,199,79,0.8);
+    animation: float-up 0.9s ease-out forwards; z-index:999;
+  }
+  @keyframes float-up { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-80px) scale(0.5);opacity:0} }
+
+  .milestone {
+    position:fixed; top:70px; left:50%; transform:translateX(-50%);
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: var(--deep); font-family:'Fredoka One',cursive; font-size:1.1rem;
+    padding: 8px 24px; border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(249,199,79,0.5); z-index:999;
+    animation: banner-in 0.4s ease, banner-out 0.4s ease 2.5s forwards;
+  }
+  @keyframes banner-in{ from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+  @keyframes banner-out{ to{opacity:0;transform:translateX(-50%) translateY(-20px)} }
+
+  /* RIGHT PANEL */
+  .panel-right {
+    background: var(--panel); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .scroll-list {
+    flex:1; overflow-y: auto; padding: 8px;
+    scrollbar-width: thin; scrollbar-color: var(--foam) transparent;
+  }
+  .scroll-list::-webkit-scrollbar { width:4px; }
+  .scroll-list::-webkit-scrollbar-thumb { background:var(--foam); border-radius:2px; }
+
+  /* BUILDING CARD */
+  @keyframes unlock-slide {
+    from { opacity:0; transform: translateX(30px) scale(0.95); }
+    to   { opacity:1; transform: translateX(0)    scale(1); }
+  }
+  .building-card {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 10px; margin-bottom: 5px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s; position:relative; overflow:hidden;
+  }
+  .building-card.unlocked-new {
+    animation: unlock-slide 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .building-card::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(125,211,248,0.05), transparent);
+    transform:translateX(-100%); transition:transform 0.3s;
+  }
+  .building-card:hover::before { transform:translateX(100%); }
+  .building-card:hover { background: rgba(61,156,212,0.12); border-color: rgba(61,156,212,0.4); transform:translateX(2px); }
+  .building-card.affordable { border-color: rgba(67,170,139,0.5); background: rgba(67,170,139,0.06); }
+  .building-card.affordable:hover { background: rgba(67,170,139,0.14); border-color: var(--green); }
+  .building-card.cant-afford { opacity:0.5; }
+  .building-icon { font-size:1.7rem; flex-shrink:0; }
+  .building-info { flex:1; min-width:0; }
+  .building-name { font-weight:800; font-size:0.82rem; color: var(--light); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .building-desc { font-size:0.68rem; color: rgba(125,211,248,0.6); line-height:1.3; }
+  .building-fps { font-size:0.65rem; color:rgba(125,211,248,0.5); }
+  .building-right { text-align:right; flex-shrink:0; }
+  .building-cost { font-family:'Fredoka One',cursive; font-size:0.85rem; color: var(--gold); }
+  .building-count { font-family:'Fredoka One',cursive; font-size:1.1rem; color: var(--wave); }
+
+  /* UPGRADE CARD */
+  .upgrade-card {
+    display:flex; align-items:center; gap:10px; padding:7px 10px; margin-bottom:4px;
+    border-radius:8px; cursor:pointer; transition:all 0.15s; position:relative;
+  }
+  .upgrade-card.available {
+    background:rgba(249,199,79,0.07); border:1px solid rgba(249,199,79,0.3);
+  }
+  .upgrade-card.available:hover {
+    background:rgba(249,199,79,0.18); border-color:rgba(249,199,79,0.7);
+    transform:translateX(2px);
+  }
+  .upgrade-card.cant-afford-upg {
+    background:rgba(249,199,79,0.03); border:1px solid rgba(249,199,79,0.1);
+    opacity:0.55; cursor:not-allowed;
+  }
+  .upgrade-card.purchased {
+    background:rgba(67,170,139,0.08); border:1px solid rgba(67,170,139,0.25);
+    cursor:default; opacity:0.55;
+  }
+  .upgrade-icon { font-size:1.4rem; flex-shrink:0; }
+  .upgrade-info { flex:1; }
+  .upgrade-name { font-weight:800; font-size:0.8rem; color:var(--gold); }
+  .upgrade-desc { font-size:0.67rem; color:rgba(249,199,79,0.6); }
+  .upgrade-cost-lbl { font-family:'Fredoka One',cursive; font-size:0.78rem; color:var(--gold); text-align:right; flex-shrink:0; }
+
+  .stats-bar {
+    padding:6px 14px; border-top:1px solid var(--border); background:rgba(0,0,0,0.3);
+    display:grid; grid-template-columns:1fr 1fr; gap:4px 16px; font-size:0.72rem; color:rgba(125,211,248,0.6);
+  }
+  .stat-item strong { color:var(--light); }
+
+  .tooltip {
+    position:fixed; z-index:9999; background:rgba(7,16,32,0.97);
+    border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+    font-size:0.78rem; max-width:220px; pointer-events:none;
+    backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none;
+  }
+  .tooltip-title { font-family:'Fredoka One',cursive; color:var(--light); margin-bottom:4px; }
+  .tooltip-body { color:rgba(125,211,248,0.7); line-height:1.5; }
+  .tooltip-bonus { color:var(--green); font-size:0.75rem; margin-top:4px; }
+
+  /* BONUS FISH */
+  .bonus-fish {
+    position: fixed;
+    cursor: pointer;
+    z-index: 200;
+    pointer-events: all;
+    user-select: none;
+    animation: bonus-swim var(--swim-dur) linear forwards;
+    transition: transform 0.12s;
+    transform-origin: center;
+  }
+  .bonus-fish:hover { transform: scale(1.35) rotate(10deg) !important; }
+  .bonus-fish:active { transform: scale(0.85) !important; }
+
+  /* Each bonus fish type has its own animation personality */
+  .bonus-fish.type-common {
+    font-size: 2rem;
+    animation: bonus-swim-wobble var(--swim-dur) ease-in-out forwards;
+  }
+  .bonus-fish.type-rare {
+    font-size: 2.4rem;
+    animation: bonus-swim-spiral var(--swim-dur) linear forwards;
+  }
+  .bonus-fish.type-epic {
+    font-size: 2.8rem;
+    animation: bonus-swim-bounce var(--swim-dur) ease-in-out forwards;
+  }
+  .bonus-fish.type-legendary {
+    font-size: 3.4rem;
+    animation: bonus-swim-flash var(--swim-dur) linear forwards;
+  }
+
+  @keyframes bonus-swim-wobble {
+    0%   { opacity:0; transform: scale(0.4) rotate(-10deg); }
+    8%   { opacity:1; transform: scale(1) rotate(5deg); }
+    30%  { transform: scale(1.05) rotate(-5deg) translateY(-8px); }
+    60%  { transform: scale(1) rotate(5deg) translateY(5px); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-spiral {
+    0%   { opacity:0; transform: scale(0.3) rotate(0deg); }
+    8%   { opacity:1; transform: scale(1) rotate(180deg); }
+    50%  { transform: scale(1.1) rotate(360deg) translateY(var(--mid-y,0px)); }
+    90%  { opacity:1; transform: scale(1) rotate(540deg); }
+    100% { opacity:0; transform: scale(0.5) rotate(720deg) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-bounce {
+    0%   { opacity:0; transform: scale(0.2); }
+    5%   { opacity:1; transform: scale(1.3); }
+    15%  { transform: scale(0.9); }
+    25%  { transform: scale(1.15) translateY(-15px); }
+    40%  { transform: scale(1) translateY(0); }
+    60%  { transform: scale(1.1) translateY(-10px); }
+    80%  { transform: scale(1) translateY(0); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.7) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-swim-flash {
+    0%   { opacity:0; transform: scale(0) rotate(0deg); }
+    6%   { opacity:1; transform: scale(1.4) rotate(-15deg); }
+    12%  { transform: scale(1) rotate(10deg); }
+    25%  { transform: scale(1.2) rotate(-5deg); filter: brightness(1.5); }
+    50%  { transform: scale(1) rotate(5deg); filter: brightness(1); }
+    75%  { transform: scale(1.15) rotate(-8deg); filter: brightness(2); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+
+  /* Badge label under bonus fish */
+  .bonus-fish-label {
+    position: absolute;
+    bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-family:'Fredoka One',cursive; font-size: 0.65rem;
+    white-space: nowrap; padding: 1px 6px; border-radius: 8px;
+    pointer-events: none;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bonus-fish-wrap {
+    position: fixed; z-index: 200; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ── CRISIS SYSTEM ─────────────────────────────────────────── */
+
+  /* Screen-edge danger vignette */
+  .crisis-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 490;
+    box-shadow: inset 0 0 80px 20px rgba(249,65,68,0.22);
+    animation: vignette-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes vignette-pulse {
+    0%,100% { opacity: 0.6; }
+    50%      { opacity: 1;   }
+  }
+
+  /* Main crisis panel — slides up from bottom */
+  .crisis-banner {
+    position: fixed;
+    bottom: 70px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-family:'Fredoka One',cursive;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    z-index: 500; width: 370px;
+    animation: crisis-in 0.45s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+  @keyframes crisis-in {
+    from { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  }
+  @keyframes crisis-out {
+    to   { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+  }
+  .crisis-banner.resolving { animation: crisis-out 0.35s ease forwards; }
+
+  /* Top header row with icon + animated bg */
+  .crisis-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px 10px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .crisis-icon-wrap {
+    font-size: 2.2rem; flex-shrink: 0;
+    animation: crisis-icon-anim var(--icon-anim, shake) 0.5s infinite;
+  }
+  @keyframes shake {
+    0%,100%{ transform:translateX(0) rotate(0deg); }
+    20%    { transform:translateX(-4px) rotate(-6deg); }
+    40%    { transform:translateX(4px) rotate(6deg); }
+    60%    { transform:translateX(-3px) rotate(-4deg); }
+    80%    { transform:translateX(3px) rotate(4deg); }
+  }
+  @keyframes spin-crisis {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes bob-crisis {
+    0%,100%{ transform: translateY(0); }
+    50%    { transform: translateY(-6px); }
+  }
+  @keyframes flash-crisis {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%    { opacity:0.4; transform:scale(1.3); }
+  }
+  @keyframes swim-crisis {
+    0%,100%{ transform:translateX(0) scaleX(1); }
+    45%    { transform:translateX(8px) scaleX(1); }
+    50%    { transform:translateX(8px) scaleX(-1); }
+    95%    { transform:translateX(0) scaleX(-1); }
+  }
+  .crisis-titles { flex: 1; }
+  .crisis-title  { font-size: 1rem; line-height: 1.2; }
+  .crisis-building-tag {
+    font-size: 0.68rem; opacity: 0.7; margin-top: 2px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+  }
+
+  /* Body */
+  .crisis-body { padding: 10px 16px 14px; }
+  .crisis-desc {
+    font-size: 0.76rem; font-family:'Nunito',sans-serif;
+    opacity: 0.85; margin-bottom: 10px; line-height: 1.5;
+  }
+
+  /* Action hint */
+  .crisis-action-hint {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.3); border-radius: 10px;
+    padding: 7px 12px; margin-bottom: 10px;
+    font-size: 0.78rem; font-family:'Nunito',sans-serif;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .crisis-action-icon { font-size: 1.3rem; flex-shrink:0; }
+  .crisis-action-text { flex:1; line-height:1.4; }
+
+  /* Progress */
+  .crisis-bar-wrap {
+    background: rgba(0,0,0,0.4); border-radius: 8px; height: 12px; overflow: hidden;
+  }
+  .crisis-bar {
+    height: 100%; border-radius: 8px;
+    background: linear-gradient(90deg, #f9c74f, #f77f00);
+    transition: width 0.12s ease-out;
+    position: relative;
+  }
+  .crisis-bar::after {
+    content:''; position:absolute; right:0; top:0; bottom:0; width:6px;
+    background: rgba(255,255,255,0.5); border-radius:0 8px 8px 0;
+  }
+  .crisis-progress-row {
+    display:flex; justify-content:space-between; align-items:center; margin-top:5px;
+  }
+  .crisis-clicks { font-size: 0.7rem; opacity: 0.65; }
+  .crisis-pct    { font-size: 0.7rem; color: #f9c74f; }
+
+  /* CRISIS BUILDING HIGHLIGHT */
+  .scene-row.crisis-building {
+    animation: row-crisis 0.6s ease-in-out infinite;
+    border-radius: 6px;
+  }
+  @keyframes row-crisis {
+    0%,100%{ background: transparent; }
+    50%    { background: rgba(249,65,68,0.18); box-shadow: inset 0 0 8px rgba(249,65,68,0.3); }
+  }
+
+  /* Body vignette for crisis type */
+  body.in-crisis .panel-center { box-shadow: inset 0 0 50px rgba(249,65,68,0.12); }
+  body.in-crisis .fish-btn {
+    border-color: rgba(249,65,68,0.7) !important;
+    box-shadow: 0 0 50px rgba(249,65,68,0.5), inset 0 2px 8px rgba(255,255,255,0.15) !important;
+  }
+
+</style>
+</head>
+<body>
+<div class="bubbles" id="bubbles"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-body" id="tt-body"></div>
+  <div class="tooltip-bonus" id="tt-bonus"></div>
+</div>
+
+<header>
+  <span class="fish-emoji">🐟</span>
+  <h1>FISH FARM</h1>
+  <span class="fish-emoji" style="animation-delay:.5s">🐠</span>
+  <div class="header-right">
+    <button class="reset-btn" id="reset-btn">RESET GAME</button>
+  </div>
+</header>
+<button class="share-btn-fixed" id="share-btn">SHARE GAME</button>
+
+<div class="game">
+
+  <!-- LEFT: Upgrades -->
+  <div class="panel-left">
+    <div class="panel-title">⚡ Upgrades</div>
+    <div class="scroll-list" id="upgrades-list"></div>
+    <div class="stats-bar" id="stats-bar"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="panel-center">
+    <div class="fish-counter">
+      <div class="fish-count" id="fish-count">0</div>
+      <div class="fish-per-sec" id="fish-ps">0 fish/sec</div>
+    </div>
+
+    <div class="fish-btn-wrap">
+      <div class="tank-anim" id="tank-bg"><canvas id="tank-canvas"></canvas></div>
+      <div class="click-zone" id="click-zone-main"></div>
+      <div class="glow-ring"></div>
+      <div class="glow-ring glow-ring2"></div>
+      <button class="fish-btn" id="fish-btn">🐟</button>
+    </div>
+
+    <div class="click-info">
+      per click <span id="click-power" style="color:var(--light)">1</span> fish
+    </div>
+
+    <!-- Building Scene -->
+    <div class="building-scene" id="building-scene">
+      <div class="scene-title">◈ FARM ◈</div>
+      <div id="scene-content" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;padding:6px 8px;"><div class="scene-empty">Buy a building to see it here...</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Buildings -->
+  <div class="panel-right">
+    <div class="panel-title">🏗️ Buildings</div>
+    <div class="scroll-list" id="buildings-list"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────
+const state = {
+  fish: 0,
+  totalFish: 0,
+  fishPerClick: 1,
+  baseClickPower: 1,
+  clickMultiplier: 1,
+  clickSynergyRate: 0,
+  fishPerSec: 0,
+  buildings: {},
+  purchasedUpgrades: new Set(),
+  totalClicks: 0,
+  fishFromClicks: 0,
+  crisisActive: null,
+  crisisClicksLeft: 0,
+  crisisMultPenalty: 1,
+  boostHarvestMult: 1,
+  totalCrisesResolved: 0,
+  catchedBonusFish: 0,
+  firstPlayedAt: 0,
+  totalPlayTime: 0,
+};
+
+// ── FISH BUTTON EVOLUTION ─────────────────────────────────────
+// Based on totalFish milestones, the fish button shows an evolving emoji + glow
+const FISH_STAGES = [
+  { min:0,         emoji:'🐟',  label:'Baby Fish',       glow:'rgba(61,156,212,0.4)' },
+  { min:500,       emoji:'🐠',  label:'Tropical Fish',   glow:'rgba(100,200,255,0.5)' },
+  { min:5000,      emoji:'🐡',  label:'Puffer Fish',     glow:'rgba(249,199,79,0.5)' },
+  { min:50000,     emoji:'🦈',  label:'Shark!',          glow:'rgba(150,100,255,0.6)' },
+  { min:500000,    emoji:'🐬',  label:'Dolphin Pod',     glow:'rgba(0,220,180,0.6)' },
+  { min:5000000,   emoji:'🐳',  label:'Blue Whale',      glow:'rgba(61,156,212,0.8)' },
+  { min:50000000,  emoji:'🦭',  label:'Sea Overlord',    glow:'rgba(249,100,79,0.7)' },
+  { min:500000000, emoji:'🐲',  label:'Ocean Dragon',    glow:'rgba(200,50,255,0.9)' },
+];
+
+function getCurrentFishStage() {
+  let stage = FISH_STAGES[0];
+  for(const s of FISH_STAGES) {
+    if(state.totalFish >= s.min) stage = s;
+  }
+  return stage;
+}
+
+let lastFishStageIdx = 0;
+function updateFishBtn() {
+  const stage = getCurrentFishStage();
+  const idx = FISH_STAGES.indexOf(stage);
+  const btn = document.getElementById('fish-btn');
+  btn.textContent = stage.emoji;
+  btn.style.boxShadow = `0 0 40px ${stage.glow}, 0 0 80px ${stage.glow.replace('0.','0.0')}, inset 0 2px 8px rgba(255,255,255,0.2)`;
+  if(idx > lastFishStageIdx) {
+    lastFishStageIdx = idx;
+    showMilestone(`${stage.emoji} Evolved to: ${stage.label}!`);
+  }
+}
+
+// ── BUILDINGS ────────────────────────────────────────────────
+const BUILDINGS = [
+  { id:'rod',         name:'Fishing Rod',        icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',              baseCost:10,        baseFps:0.1,    req:()=>true },
+  { id:'granny',      name:'Fisher Granny',       icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',                  baseCost:100,       baseFps:0.5,    req:()=>(state.buildings.rod||0)>=3 },
+  { id:'boat',        name:'Boat',                icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',          baseCost:500,       baseFps:2,      req:()=>(state.buildings.granny||0)>=2 && (state.buildings.rod||0)>=5 },
+  { id:'dock',        name:'Fishing Dock',        icon:'🪝', sceneIcon:'🪝', desc:'A proper dock where fishermen gather and trade.',          baseCost:1200,      baseFps:5,      req:()=>(state.buildings.boat||0)>=2 && (state.buildings.granny||0)>=4 },
+  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🐠', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:8,      req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
+  { id:'hatchery',    name:'Hatchery',            icon:'🥚', sceneIcon:'🥚', desc:'Spawning millions of fish from carefully laid eggs.',      baseCost:5000,      baseFps:18,     req:()=>(state.buildings.farm||0)>=2 && (state.buildings.dock||0)>=3 },
+  { id:'trawler',     name:'Trawler',             icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',           baseCost:8000,      baseFps:25,     req:()=>(state.buildings.hatchery||0)>=2 && (state.buildings.farm||0)>=4 },
+  { id:'submarine',   name:'Submarine',           icon:'🤿', sceneIcon:'🤿', desc:'Deep-sea fishing where the big ones hide.',               baseCost:20000,     baseFps:55,     req:()=>(state.buildings.trawler||0)>=2 && (state.buildings.hatchery||0)>=3 },
+  { id:'sonar',       name:'Sonar Station',       icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',             baseCost:30000,     baseFps:80,     req:()=>(state.buildings.submarine||0)>=2 && (state.buildings.trawler||0)>=3 },
+  { id:'reef',        name:'Coral Reef Farm',     icon:'🪸', sceneIcon:'🪸', desc:'An artificial reef teeming with exotic species.',         baseCost:75000,     baseFps:160,    req:()=>(state.buildings.sonar||0)>=2 && (state.buildings.submarine||0)>=4 },
+  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🔬', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:250,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
+  { id:'factory',     name:'Processing Factory',  icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale fish processing and cloning.',           baseCost:300000,    baseFps:600,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.reef||0)>=4 },
+  { id:'satellite',   name:'Fish Satellite',      icon:'🛸', sceneIcon:'🛸', desc:'Orbital scanner detects fish migrations globally.',       baseCost:800000,    baseFps:1500,   req:()=>(state.buildings.factory||0)>=2 && (state.buildings.lab||0)>=3 },
+  { id:'portal',      name:'Ocean Portal',        icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',         baseCost:500000,    baseFps:1000,   req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.factory||0)>=4 },
+  { id:'volcano',     name:'Volcano Aquafarm',    icon:'🌋', sceneIcon:'🌋', desc:'Geothermal vents breed impossible fish lifeforms.',       baseCost:2000000,   baseFps:3000,   req:()=>(state.buildings.portal||0)>=2 && (state.buildings.satellite||0)>=3 },
+  { id:'timemachine', name:'Time Machine',        icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',   baseCost:5000000,   baseFps:6000,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.portal||0)>=4 },
+  { id:'blackhole',   name:'Black Hole Fisher',   icon:'⚫', sceneIcon:'⚫', desc:'Siphoning fish from across the universe.',               baseCost:20000000,  baseFps:20000,  req:()=>(state.buildings.timemachine||0)>=2 && (state.buildings.volcano||0)>=3 },
+  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🔱', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
+];
+
+// ── UPGRADES ─────────────────────────────────────────────────
+const UPGRADES = [
+  // Click upgrades
+  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',         cost:200,       req:()=>state.totalFish>=150,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x2 fish per click!',               cost:1500,      req:()=>state.totalFish>=600,                   effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+5 fish per click.',               cost:8000,      req:()=>state.totalFish>=3000,                  effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
+  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+10 fish per click.',              cost:150000,    req:()=>state.totalFish>=40000,                 effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
+  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x3.', cost:12000000, req:()=>state.totalFish>=3000000,      effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+50 fish per click + x1.5 multiplier.', cost:60000000, req:()=>state.totalFish>=15000000,        effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
+
+  // Building upgrades - Rod
+  { id:'rod_x2',        name:'Double Rod',           icon:'🎣', desc:'Fishing rods are twice as efficient.',     cost:500,       req:()=>(state.buildings.rod||0)>=10,     effect:()=>{ boostBuilding('rod',2); } },
+  { id:'rod_x3',        name:'Carbon Fiber Rod',     icon:'🎣', desc:'Fishing rods are 3x as efficient.',       cost:5000,      req:()=>(state.buildings.rod||0)>=40,     effect:()=>{ boostBuilding('rod',3); } },
+
+  // Building upgrades - Granny
+  { id:'granny_tea',    name:'Granny\'s Tea',        icon:'🍵', desc:'Fisher grannies are 2x more productive.',  cost:3000,      req:()=>(state.buildings.granny||0)>=10,  effect:()=>{ boostBuilding('granny',2); } },
+  { id:'granny_boots',  name:'Rubber Boots',         icon:'👢', desc:'Grannies wade deeper: 3x production.',     cost:30000,     req:()=>(state.buildings.granny||0)>=40,  effect:()=>{ boostBuilding('granny',3); } },
+
+  // Building upgrades - Boat
+  { id:'motor_boat',    name:'Motor Boat',           icon:'⛵', desc:'Boats work 2x faster.',                    cost:15000,     req:()=>(state.buildings.boat||0)>=10,    effect:()=>{ boostBuilding('boat',2); } },
+  { id:'turbo_boat',    name:'Turbo Engine',         icon:'💨', desc:'Boats are now 3x faster.',                 cost:150000,    req:()=>(state.buildings.boat||0)>=40,    effect:()=>{ boostBuilding('boat',3); } },
+
+  // Building upgrades - Dock
+  { id:'dock_crane',    name:'Dock Crane',           icon:'🏗️', desc:'Dock efficiency x2.',                      cost:25000,     req:()=>(state.buildings.dock||0)>=10,    effect:()=>{ boostBuilding('dock',2); } },
+
+  // Building upgrades - Farm
+  { id:'fish_food',     name:'Special Fish Feed',    icon:'🍤', desc:'Fish farms produce 2x more.',              cost:60000,     req:()=>(state.buildings.farm||0)>=10,    effect:()=>{ boostBuilding('farm',2); } },
+  { id:'biotech_feed',  name:'BioTech Feed',         icon:'🧬', desc:'Fish farms produce 4x more.',              cost:800000,    req:()=>(state.buildings.farm||0)>=40,    effect:()=>{ boostBuilding('farm',4); } },
+
+  // Building upgrades - Hatchery
+  { id:'egg_incubator', name:'Egg Incubator',        icon:'🥚', desc:'Hatcheries are 2x more efficient.',        cost:120000,    req:()=>(state.buildings.hatchery||0)>=10, effect:()=>{ boostBuilding('hatchery',2); } },
+
+  // Building upgrades - Trawler
+  { id:'mega_net',      name:'Mega Net',             icon:'🕸️', desc:'Trawlers are 2x more efficient.',          cost:250000,    req:()=>(state.buildings.trawler||0)>=10, effect:()=>{ boostBuilding('trawler',2); } },
+  { id:'deep_trawl',    name:'Deep Sea Trawl',       icon:'🕸️', desc:'Trawlers are 4x more efficient.',          cost:2500000,   req:()=>(state.buildings.trawler||0)>=40, effect:()=>{ boostBuilding('trawler',4); } },
+
+  // Building upgrades - Submarine
+  { id:'sub_sonar',     name:'Sub Sonar',            icon:'🤿', desc:'Submarines find 2x more fish.',            cost:600000,    req:()=>(state.buildings.submarine||0)>=10, effect:()=>{ boostBuilding('submarine',2); } },
+
+  // Building upgrades - Sonar
+  { id:'ai_sonar',      name:'AI Sonar',             icon:'🤖', desc:'Sonar stations are 3x more efficient.',    cost:1000000,   req:()=>(state.buildings.sonar||0)>=10,   effect:()=>{ boostBuilding('sonar',3); } },
+
+  // Building upgrades - Reef
+  { id:'reef_seeds',    name:'Coral Seeds',          icon:'🪸', desc:'Coral reefs are 2x more productive.',      cost:2000000,   req:()=>(state.buildings.reef||0)>=10,    effect:()=>{ boostBuilding('reef',2); } },
+
+  // Building upgrades - Lab
+  { id:'gene_splice',   name:'Gene Splicing',        icon:'🔬', desc:'Labs produce 3x more.',                    cost:5000000,   req:()=>(state.buildings.lab||0)>=10,     effect:()=>{ boostBuilding('lab',3); } },
+
+  // Building upgrades - Factory
+  { id:'auto_factory',  name:'Automation',           icon:'🏭', desc:'Factories run 2x faster.',                 cost:10000000,  req:()=>(state.buildings.factory||0)>=10, effect:()=>{ boostBuilding('factory',2); } },
+
+  // Building upgrades - Satellite
+  { id:'quantum_scan',  name:'Quantum Scanner',      icon:'🛸', desc:'Satellite coverage x3.',                   cost:25000000,  req:()=>(state.buildings.satellite||0)>=10, effect:()=>{ boostBuilding('satellite',3); } },
+
+  // Global boosts
+  { id:'ocean_song',    name:'Ocean Song',           icon:'🎵', desc:'All buildings are 50% more productive.',   cost:3000000,   req:()=>state.totalFish>=1500000,             effect:()=>{ globalBoost(1.5); } },
+  { id:'fish_god',      name:'Fish God\'s Blessing', icon:'🔱', desc:'All production x2!',                       cost:150000000, req:()=>state.totalFish>=30000000,            effect:()=>{ globalBoost(2); } },
+  { id:'poseidon_pact', name:'Poseidon Pact',        icon:'🌊', desc:'All production x3 — ocean debt forgiven!', cost:800000000, req:()=>state.totalFish>=200000000,           effect:()=>{ globalBoost(3); } },
+
+  // Synergy upgrades
+  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:5000,      req:()=>(state.buildings.rod||0)>=5,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:250000,    req:()=>(state.buildings.boat||0)>=5,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:5000000,   req:()=>(state.buildings.trawler||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:60000000,  req:()=>(state.buildings.submarine||0)>=5,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
+];
+
+// ── CRISIS DEFINITIONS ────────────────────────────────────────
+// solveType: 'click' | 'mash' | 'hold' | 'rapid'
+// building: which building's scene row to highlight (null = general)
+// iconAnim: CSS animation name for the crisis icon
+const CRISES = [
+  {
+    id: 'storm',
+    icon: '⛈️',
+    title: 'Storm Warning!',
+    desc: 'A violent storm is battering your boats and docks. Batten the hatches before everything sinks!',
+    color: '#2a2a6a',
+    accentColor: 'rgba(100,100,220,0.6)',
+    building: 'boat',
+    buildingTag: '⛵ Boats affected',
+    iconAnim: 'shake',
+    solveType: 'mash',
+    actionIcon: '⛵',
+    actionText: 'Spam-click to bail water from the boats! Every click counts!',
+    clicksNeeded: 25,
+    fpsPenalty: 0.5,
+    minFish: 200,
+    resolveMsg: '⛈️ Storm passed! Boats are safe.',
+  },
+  {
+    id: 'pollution',
+    icon: '☠️',
+    title: 'Factory Pollution!',
+    desc: 'Toxic sludge from a nearby factory is leaking into your fish tanks. Act fast!',
+    color: '#1a3a0a',
+    accentColor: 'rgba(60,180,60,0.5)',
+    building: 'factory',
+    buildingTag: '🏭 Factory leaking',
+    iconAnim: 'flash-crisis',
+    solveType: 'rapid',
+    actionIcon: '🔧',
+    actionText: 'Rapidly click to seal the pipes before more fish die!',
+    clicksNeeded: 40,
+    fpsPenalty: 0.3,
+    minFish: 2000,
+    resolveMsg: '🏭 Pipes sealed! Waters are clean again.',
+  },
+  {
+    id: 'shipwreck',
+    icon: '🚢',
+    title: 'Trawler Sinking!',
+    desc: 'Your trawler hit a reef and is taking on water. The crew is in danger!',
+    color: '#5a1a1a',
+    accentColor: 'rgba(220,60,60,0.6)',
+    building: 'trawler',
+    buildingTag: '🚢 Trawler in danger',
+    iconAnim: 'bob-crisis',
+    solveType: 'click',
+    actionIcon: '🆘',
+    actionText: 'Click steadily to coordinate the rescue operation!',
+    clicksNeeded: 50,
+    fpsPenalty: 0.4,
+    minFish: 5000,
+    resolveMsg: '🚢 Trawler saved! Crew rescued safely.',
+  },
+  {
+    id: 'disease',
+    icon: '🦠',
+    title: 'Fish Disease Outbreak!',
+    desc: 'A mysterious illness is sweeping through your fish farm. Quarantine immediately!',
+    color: '#4a2a00',
+    accentColor: 'rgba(200,140,0,0.5)',
+    building: 'farm',
+    buildingTag: '🐠 Fish Farm infected',
+    iconAnim: 'spin-crisis',
+    solveType: 'hold',
+    actionIcon: '💉',
+    actionText: 'Hold the fish button down to administer the vaccine!',
+    clicksNeeded: 35,
+    fpsPenalty: 0.25,
+    minFish: 1000,
+    resolveMsg: '🦠 Disease cured! All fish healthy again.',
+  },
+  {
+    id: 'poachers',
+    icon: '🦹',
+    title: 'Poachers Spotted!',
+    desc: 'Illegal fishing boats are raiding your ocean territory and stealing your catch!',
+    color: '#0a2a4a',
+    accentColor: 'rgba(60,120,220,0.5)',
+    building: 'boat',
+    buildingTag: '⛵ Ocean territory breached',
+    iconAnim: 'swim-crisis',
+    solveType: 'mash',
+    actionIcon: '🚔',
+    actionText: 'Spam-click to call the coast guard and chase them off!',
+    clicksNeeded: 30,
+    fpsPenalty: 0.6,
+    minFish: 500,
+    resolveMsg: '🦹 Poachers driven away! Waters secured.',
+  },
+  {
+    id: 'algae',
+    icon: '🌿',
+    title: 'Toxic Algae Bloom!',
+    desc: 'An explosive algae bloom is smothering your coral reefs and cutting off oxygen.',
+    color: '#0a3a1a',
+    accentColor: 'rgba(0,180,80,0.5)',
+    building: 'reef',
+    buildingTag: '🪸 Coral Reef suffocating',
+    iconAnim: 'bob-crisis',
+    solveType: 'rapid',
+    actionIcon: '🌿',
+    actionText: 'Rapidly click to scrub the algae off the reef!',
+    clicksNeeded: 45,
+    fpsPenalty: 0.4,
+    minFish: 10000,
+    resolveMsg: '🪸 Reef restored! Algae cleared.',
+  },
+  {
+    id: 'tsunami',
+    icon: '🌊',
+    title: 'Tsunami Alert!',
+    desc: 'An undersea earthquake is sending a massive wave toward your entire operation!',
+    color: '#0a1a3a',
+    accentColor: 'rgba(40,140,220,0.6)',
+    building: 'dock',
+    buildingTag: '🪝 Docks under threat',
+    iconAnim: 'shake',
+    solveType: 'click',
+    actionIcon: '🌊',
+    actionText: 'Click to reinforce the sea walls — hold the line!',
+    clicksNeeded: 60,
+    fpsPenalty: 0.2,
+    minFish: 50000,
+    resolveMsg: '🌊 Tsunami survived! Docks are holding.',
+  },
+  {
+    id: 'sonar_glitch',
+    icon: '📡',
+    title: 'Sonar Glitch!',
+    desc: 'Your sonar station is sending false readings — your fleet is fishing empty water.',
+    color: '#2a0a4a',
+    accentColor: 'rgba(160,80,240,0.5)',
+    building: 'sonar',
+    buildingTag: '📡 Sonar Station offline',
+    iconAnim: 'flash-crisis',
+    solveType: 'hold',
+    actionIcon: '🔌',
+    actionText: 'Hold the button to reboot the sonar systems!',
+    clicksNeeded: 30,
+    fpsPenalty: 0.45,
+    minFish: 20000,
+    resolveMsg: '📡 Sonar back online! Fleet redirected.',
+  },
+  {
+    id: 'lab_fire',
+    icon: '🔥',
+    title: 'Lab on Fire!',
+    desc: 'A chemical reaction in the aquarium lab has caused a fire — all experiments halted!',
+    color: '#5a1a00',
+    accentColor: 'rgba(255,80,0,0.6)',
+    building: 'lab',
+    buildingTag: '🔬 Aquarium Lab burning',
+    iconAnim: 'flash-crisis',
+    solveType: 'mash',
+    actionIcon: '🧯',
+    actionText: 'Spam-click to deploy fire extinguishers before it spreads!',
+    clicksNeeded: 45,
+    fpsPenalty: 0.35,
+    minFish: 80000,
+    resolveMsg: '🔬 Fire out! Lab is back to work.',
+  },
+  {
+    id: 'hatchery_flood',
+    icon: '🥚',
+    title: 'Hatchery Flood!',
+    desc: 'Pipes burst in the hatchery — millions of eggs are at risk of being washed away!',
+    color: '#0a2a4a',
+    accentColor: 'rgba(60,180,240,0.5)',
+    building: 'hatchery',
+    buildingTag: '🥚 Hatchery flooding',
+    iconAnim: 'bob-crisis',
+    solveType: 'rapid',
+    actionIcon: '🪣',
+    actionText: 'Rapidly click to pump the water out before the eggs are lost!',
+    clicksNeeded: 35,
+    fpsPenalty: 0.4,
+    minFish: 3000,
+    resolveMsg: '🥚 Hatchery drained! Eggs are safe.',
+  },
+];
+
+// ── MULTIPLIERS ───────────────────────────────────────────────
+const buildingMult = {};
+BUILDINGS.forEach(b => buildingMult[b.id] = 1);
+const unlockedBuildings = new Set(['rod']);
+
+function boostBuilding(id, factor) { buildingMult[id] = (buildingMult[id]||1) * factor; recalcFPS(); }
+function globalBoost(factor) { BUILDINGS.forEach(b => buildingMult[b.id] *= factor); recalcFPS(); }
+
+function getBuildingCost(b) {
+  return Math.ceil(b.baseCost * Math.pow(1.22, state.buildings[b.id]||0));
+}
+
+// ── SESSION TIMER ─────────────────────────────────────────────
+let sessionStart = Date.now();
+
+function fmtDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if(d > 0)  return `${d}d ${h%24}h ${m%60}m`;
+  if(h > 0)  return `${h}h ${m%60}m`;
+  if(m > 0)  return `${m}m ${s%60}s`;
+  return `${s}s`;
+}
+
+function fmtDate(ts) {
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ── FORMAT ────────────────────────────────────────────────────
+function fmt(n) {
+  if(n >= 1e12) return (n/1e12).toFixed(2) + ' trillion';
+  if(n >= 1e9)  return (n/1e9).toFixed(2)  + ' billion';
+  if(n >= 1e6)  return (n/1e6).toFixed(2)  + ' million';
+  if(n >= 1e3)  return Math.floor(n).toLocaleString('de-DE');
+  return Math.floor(n).toString();
+}
+
+function fmtShort(n) {
+  if(n >= 1e12) return (n/1e12).toFixed(2) + 't';
+  if(n >= 1e9)  return (n/1e9).toFixed(2)  + 'b';
+  if(n >= 1e6)  return (n/1e6).toFixed(2)  + 'm';
+  if(n >= 1e3)  return (n/1e3).toFixed(2)  + 'k';
+  return Math.floor(n).toString();
+}
+
+function fmtFps(n) {
+  if(n === 0) return '0';
+  if(n >= 1e6) return (n/1e6).toFixed(2) + ' million';
+  if(n >= 1e3) return (n/1e3).toFixed(2) + 'k';
+  if(n >= 100) return n.toFixed(1);
+  if(n >= 1)   return n.toFixed(2);
+  if(n >= 0.01) return n.toFixed(2);
+  return n.toFixed(4);
+}
+
+// ── CLICK BOT PROTECTION ──────────────────────────────────────
+const clickGuard = {
+  times: [],
+  window: 2000,
+  maxClicks: 30,
+  penalised: false,
+  penaltyUntil: 0,
+  penaltyMs: 4000,
+  lastX: null, lastY: null, sameSpotCount: 0, sameSpotLimit: 15,
+
+  check(x, y) {
+    const now = Date.now();
+    if(this.penalised && now < this.penaltyUntil) return false;
+    this.penalised = false;
+    this.times = this.times.filter(t => now - t < this.window);
+    this.times.push(now);
+    if(this.times.length > this.maxClicks) {
+      this._penalise('Too fast! Slow down 🐟');
+      return false;
+    }
+    if(this.lastX === x && this.lastY === y) {
+      this.sameSpotCount++;
+      if(this.sameSpotCount >= this.sameSpotLimit) {
+        this._penalise('Suspicious clicks detected! 🤖');
+        return false;
+      }
+    } else {
+      this.sameSpotCount = 0;
+    }
+    this.lastX = x; this.lastY = y;
+    return true;
+  },
+
+  _penalise(msg) {
+    this.penalised    = true;
+    this.penaltyUntil = Date.now() + this.penaltyMs;
+    this.times = [];
+    this.sameSpotCount = 0;
+    showWarning(msg);
+  }
+};
+
+function showWarning(msg) {
+  let el = document.getElementById('bot-warning');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'bot-warning';
+    el.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,#f94144,#c1121f);
+      color:#fff;font-family:'Fredoka One',cursive;font-size:1rem;
+      padding:8px 24px;border-radius:30px;z-index:9999;
+      box-shadow:0 4px 20px rgba(249,65,68,0.5);
+      animation:banner-in 0.3s ease;pointer-events:none;`;
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.remove(), 3000);
+}
+
+// ── CLICK ─────────────────────────────────────────────────────
+let lastMilestone = 0;
+const MILESTONES     = [100,1000,10000,100000,1000000,10000000,100000000];
+const MILESTONE_MSGS = ['100 Fish! 🎉','1,000 Fish! 🐟','10,000! 🌊','100,000! ⛵','One Million! 🚢','Ten Million! 🔱','100 Million! 🌀'];
+
+// 'hold' crisis: count ticks while button is held down
+let holdInterval = null;
+const fishBtn = document.getElementById('fish-btn');
+
+fishBtn.addEventListener('mousedown', function() {
+  if(!state.crisisActive || state.crisisActive.solveType !== 'hold') return;
+  if(holdInterval) return;
+  holdInterval = setInterval(() => {
+    if(!state.crisisActive) { clearInterval(holdInterval); holdInterval = null; return; }
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - 1);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) { clearInterval(holdInterval); holdInterval = null; resolveCrisis(); }
+  }, 120);
+});
+fishBtn.addEventListener('mouseup',   () => { clearInterval(holdInterval); holdInterval = null; });
+fishBtn.addEventListener('mouseleave',() => { clearInterval(holdInterval); holdInterval = null; });
+
+fishBtn.addEventListener('click', function(e) {
+  if(!clickGuard.check(e.clientX, e.clientY)) return;
+
+  // Crisis click: each solveType deducts differently
+  if(state.crisisActive && state.crisisActive.solveType !== 'hold') {
+    const deduct = state.crisisActive.solveType === 'mash'  ? 2
+                 : state.crisisActive.solveType === 'rapid' ? 1
+                 : 1; // 'click'
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - deduct);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) resolveCrisis();
+  }
+
+  const gained = state.fishPerClick * state.clickMultiplier;
+  state.fish += gained;
+  state.totalFish += gained;
+  state.totalClicks++;
+  state.fishFromClicks += gained;
+  spawnParticle(e.clientX, e.clientY, '+' + fmt(gained));
+
+  for(let i=0;i<MILESTONES.length;i++){
+    if(state.totalFish >= MILESTONES[i] && lastMilestone < MILESTONES[i]){
+      lastMilestone = MILESTONES[i];
+      showMilestone(MILESTONE_MSGS[i]);
+    }
+  }
+
+  updateFishBtn();
+  updateUI();
+});
+
+function spawnParticle(x, y, txt) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = txt;
+  p.style.left = (x - 20 + Math.random()*40) + 'px';
+  p.style.top  = (y - 10) + 'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(), 900);
+}
+function showMilestone(msg) {
+  const el = document.createElement('div');
+  el.className = 'milestone'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+// ── BUY BUILDING ──────────────────────────────────────────────
+function buyBuilding(id) {
+  const b = BUILDINGS.find(x=>x.id===id);
+  const cost = getBuildingCost(b);
+  if(state.fish < cost) return;
+  state.fish -= cost;
+  state.buildings[id] = (state.buildings[id]||0) + 1;
+  recalcFPS();
+  renderBuildings();
+  renderUpgrades();
+  renderScene();
+  updateUI();
+}
+
+// ── BUY UPGRADE ───────────────────────────────────────────────
+function buyUpgrade(id) {
+  const u = UPGRADES.find(x=>x.id===id);
+  if(!u || state.purchasedUpgrades.has(id)) return;
+  if(state.fish < u.cost) return;
+  state.fish -= u.cost;
+  state.purchasedUpgrades.add(id);
+  u.effect();
+  recalcFPS();
+  renderUpgrades();
+  updateUI();
+}
+
+// ── RENDER BUILDINGS ──────────────────────────────────────────
+function renderBuildings() {
+  const list = document.getElementById('buildings-list');
+  list.innerHTML = '';
+  BUILDINGS.forEach(b => {
+    if(!b.req()) return;
+    const isNew = !unlockedBuildings.has(b.id);
+    if(isNew) unlockedBuildings.add(b.id);
+    const cost      = getBuildingCost(b);
+    const count     = state.buildings[b.id] || 0;
+    const canAfford = state.fish >= cost;
+    const fps       = (b.baseFps * buildingMult[b.id]);
+    const card = document.createElement('div');
+    card.className = 'building-card' + (canAfford ? ' affordable' : ' cant-afford') + (isNew ? ' unlocked-new' : '');
+    card.dataset.id = b.id;
+    card.innerHTML = `
+      <div class="building-icon">${b.icon}</div>
+      <div class="building-info">
+        <div class="building-name">${b.name}</div>
+        <div class="building-desc">${b.desc}</div>
+        <div class="building-fps">+${fmtFps(fps)} fish/sec each</div>
+      </div>
+      <div class="building-right">
+        <div class="building-count">${count}</div>
+        <div class="building-cost">🐟 ${fmt(cost)}</div>
+      </div>`;
+    card.addEventListener('click', ()=>buyBuilding(b.id));
+    card.addEventListener('mouseenter', e=>{
+      let bonus = count > 0 ? `Total: ${fmtFps(count*fps)}/sec` : '';
+      if(!canAfford && count === 0) bonus = (bonus ? bonus+'\n' : '') + `🔒 Need more fish`;
+      showTooltip(e, b.name, b.desc, bonus);
+    });
+    card.addEventListener('mouseleave', hideTooltip);
+    card.addEventListener('mousemove',  moveTooltip);
+    list.appendChild(card);
+  });
+}
+
+// ── RENDER UPGRADES ───────────────────────────────────────────
+function renderUpgrades() {
+  const list = document.getElementById('upgrades-list');
+  list.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const purchased = state.purchasedUpgrades.has(u.id);
+    const unlocked  = u.req();
+    if(!unlocked && !purchased) return;
+
+    const canAfford = state.fish >= u.cost;
+    const card = document.createElement('div');
+
+    let cls = 'upgrade-card ';
+    if(purchased) cls += 'purchased';
+    else if(canAfford) cls += 'available';
+    else cls += 'cant-afford-upg';
+
+    card.className = cls;
+    card.dataset.id = u.id;
+    card.innerHTML = `
+      <div class="upgrade-icon">${u.icon}</div>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${u.name}</div>
+        <div class="upgrade-desc">${u.desc}</div>
+      </div>
+      <div class="upgrade-cost-lbl">${purchased ? '✓' : '🐟 '+fmt(u.cost)}</div>`;
+
+    if(!purchased && canAfford) {
+      card.addEventListener('click', ()=>buyUpgrade(u.id));
+    }
+    card.addEventListener('mouseenter', e=>showTooltip(e, u.icon+' '+u.name, u.desc,
+      purchased ? '✓ Purchased' : (canAfford ? '⬅ Click to buy!' : `Not enough fish (need ${fmt(u.cost - state.fish)} more)`)));
+    card.addEventListener('mouseleave', hideTooltip);
+    card.addEventListener('mousemove',  moveTooltip);
+    list.appendChild(card);
+  });
+}
+
+// ── RENDER SCENE ─────────────────────────────────────────────
+function renderScene() {
+  const scene = document.getElementById('building-scene');
+  const container = document.getElementById('scene-content');
+  const owned = BUILDINGS.filter(b => (state.buildings[b.id]||0) > 0);
+
+  if(owned.length === 0) {
+    container.innerHTML = '<div class="scene-empty">Buy a building to see it here...</div>';
+    scene.style.setProperty('--row-h', '28px');
+    return;
+  }
+
+  const sceneH = scene.clientHeight || 200;
+  const availH = sceneH - 30;
+  const rowH = Math.max(18, Math.min(28, Math.floor(availH / owned.length)));
+  scene.style.setProperty('--row-h', rowH + 'px');
+
+  const iconPx = Math.max(10, rowH - 4);
+  const sceneW = scene.clientWidth || 260;
+  const iconAreaW = sceneW - 80 - 28 - 16;
+  const iconSlotW = Math.max(iconPx * 0.85, 12);
+  const maxIcons = Math.max(1, Math.floor((iconAreaW - 28) / iconSlotW));
+
+  container.innerHTML = '';
+  owned.forEach(b => {
+    const count = state.buildings[b.id];
+    const show  = Math.min(count, maxIcons);
+    const overflow = count - show;
+
+    const row = document.createElement('div');
+    row.className = 'scene-row';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'scene-row-label';
+    lbl.textContent = b.name;
+    row.appendChild(lbl);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'scene-row-icons';
+
+    for(let i = 0; i < show; i++){
+      const s = document.createElement('span');
+      s.className = 'scene-unit';
+      s.style.fontSize = iconPx + 'px';
+      s.style.setProperty('--delay', (i * 0.08) % 1.5 + 's');
+      s.textContent = b.sceneIcon;
+      wrap.appendChild(s);
+    }
+    if(overflow > 0){
+      const ovr = document.createElement('span');
+      ovr.className = 'scene-overflow';
+      ovr.textContent = '+' + overflow;
+      wrap.appendChild(ovr);
+    }
+    row.appendChild(wrap);
+
+    const badge = document.createElement('span');
+    badge.className = 'scene-row-count';
+    badge.textContent = count;
+    row.appendChild(badge);
+
+    container.appendChild(row);
+  });
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, title, body, bonus='') {
+  document.getElementById('tt-title').textContent = title;
+  document.getElementById('tt-body').textContent  = body;
+  document.getElementById('tt-bonus').textContent = bonus;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+function hideTooltip() { tooltip.style.display = 'none'; }
+function moveTooltip(e) {
+  let x = e.clientX+14, y = e.clientY-10;
+  if(x+230 > window.innerWidth) x = e.clientX-230;
+  tooltip.style.left = x+'px'; tooltip.style.top = y+'px';
+}
+
+// ── UPDATE UI ─────────────────────────────────────────────────
+function initStatsBar() {
+  document.getElementById('stats-bar').innerHTML = `
+    <span class="stat-item">Total Earned: <strong id="stat-total"></strong></span>
+    <span class="stat-item">Catched Relics: <strong id="stat-relics"></strong></span>
+    <span class="stat-item">Total Clicks: <strong id="stat-clicks"></strong></span>
+    <span class="stat-item">Click Earnings: <strong id="stat-click-earn"></strong></span>
+    <span class="stat-item">Buildings: <strong id="stat-buildings"></strong></span>
+    <span class="stat-item">Upgrades: <strong id="stat-upgrades"></strong></span>
+    <span class="stat-item">Started: <strong id="stat-started"></strong></span>
+    <span class="stat-item">Play Time: <strong id="stat-playtime"></strong></span>
+    <span class="stat-item">Crises Solved: <strong id="stat-crises"></strong></span>`;
+}
+
+function updateUI() {
+  document.getElementById('fish-count').textContent = fmt(state.fish);
+  document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
+  document.getElementById('click-power').textContent = fmtFps(state.fishPerClick * state.clickMultiplier);
+
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  const se = document.getElementById('stat-total');      if(se) se.textContent = fmtShort(state.totalFish);
+  const re = document.getElementById('stat-relics');     if(re) re.textContent = fmtShort(state.catchedBonusFish);
+  const ce = document.getElementById('stat-clicks');     if(ce) ce.textContent = fmtShort(state.totalClicks);
+  const cke= document.getElementById('stat-click-earn');if(cke)cke.textContent= fmtShort(state.fishFromClicks);
+  const be = document.getElementById('stat-buildings');  if(be) be.textContent = totalBuildings;
+  const ue = document.getElementById('stat-upgrades');   if(ue) ue.textContent = state.purchasedUpgrades.size;
+  const ste= document.getElementById('stat-started');    if(ste)ste.textContent= fmtDate(state.firstPlayedAt);
+  const pt = document.getElementById('stat-playtime');
+  if(pt) pt.textContent = fmtDuration(state.totalPlayTime + (Date.now() - sessionStart));
+  const cr = document.getElementById('stat-crises');     if(cr) cr.textContent = state.totalCrisesResolved;
+}
+
+// ── ACTIVE BOOSTS ─────────────────────────────────────────────
+// boostType: 'frenzy' = click multiplier bonus | 'harvest' = fps multiplier bonus
+const activeBoosts = { frenzy: null, harvest: null };
+// activeBoosts.frenzy = { mult, endsAt, timerId, barEl }
+
+function applyBoost(type, mult, durationMs, emoji, label) {
+  // Cancel existing boost of same type
+  if(activeBoosts[type]) {
+    clearTimeout(activeBoosts[type].timerId);
+    if(activeBoosts[type].barEl) activeBoosts[type].barEl.remove();
+  }
+
+  const endsAt = Date.now() + durationMs;
+  if(type === 'frenzy')  state.clickMultiplier  *= mult;
+  if(type === 'harvest') state.boostHarvestMult  = (state.boostHarvestMult || 1) * mult;
+  recalcFPS();
+
+  const bar = createBoostBar(type, emoji, label, mult, durationMs);
+
+  const timerId = setTimeout(() => {
+    if(type === 'frenzy')  state.clickMultiplier  /= mult;
+    if(type === 'harvest') state.boostHarvestMult  = Math.max(1, (state.boostHarvestMult||1) / mult);
+    recalcFPS();
+    if(activeBoosts[type]) { activeBoosts[type].barEl.remove(); activeBoosts[type] = null; }
+    updateUI();
+    showMilestone(`${emoji} ${label} boost ended`);
+  }, durationMs);
+
+  activeBoosts[type] = { mult, endsAt, timerId, barEl: bar };
+  updateUI();
+}
+
+function recalcFPS() {
+  let fps = 0;
+  BUILDINGS.forEach(b => { fps += (state.buildings[b.id]||0) * b.baseFps * buildingMult[b.id]; });
+  const harvestMult = state.boostHarvestMult || 1;
+  state.fishPerSec  = fps * state.crisisMultPenalty * harvestMult;
+  state.fishPerClick = state.baseClickPower + Math.floor(fps * state.clickSynergyRate);
+}
+
+function createBoostBar(type, emoji, label, mult, durationMs) {
+  // Container anchored to center panel bottom
+  let container = document.getElementById('boost-bars');
+  if(!container) {
+    container = document.createElement('div');
+    container.id = 'boost-bars';
+    container.style.cssText = `
+      position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      z-index:600; pointer-events:none;`;
+    document.body.appendChild(container);
+  }
+
+  const isClick   = type === 'frenzy';
+  const accentCol = isClick ? '#f9c74f' : '#43aa8b';
+  const bgCol     = isClick ? 'rgba(50,30,0,0.88)' : 'rgba(10,40,20,0.88)';
+
+  const bar = document.createElement('div');
+  bar.style.cssText = `
+    background:${bgCol}; border:1px solid ${accentCol}55;
+    border-radius:30px; padding:5px 14px 5px 10px;
+    display:flex; align-items:center; gap:8px; min-width:200px;
+    box-shadow:0 2px 14px ${accentCol}33;`;
+
+  bar.innerHTML = `
+    <span style="font-size:1.2rem">${emoji}</span>
+    <div style="flex:1">
+      <div style="font-family:'Fredoka One',cursive;font-size:0.78rem;color:${accentCol};white-space:nowrap">
+        ${label} <span style="opacity:0.7;font-size:0.7rem">x${mult} ${isClick?'click':'production'}</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.4);border-radius:4px;height:5px;margin-top:3px;overflow:hidden">
+        <div class="boost-progress" style="height:100%;border-radius:4px;background:${accentCol};width:100%;transition:width 0.25s linear"></div>
+      </div>
+    </div>`;
+  container.appendChild(bar);
+
+  // Animate countdown
+  const prog = bar.querySelector('.boost-progress');
+  const start = Date.now();
+  const tick = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.max(0, 100 - (elapsed / durationMs) * 100);
+    prog.style.width = pct + '%';
+    if(pct <= 0) clearInterval(tick);
+  }, 100);
+
+  return bar;
+}
+
+// ── BONUS FISH ────────────────────────────────────────────────
+// boostType: 'instant'|'frenzy'|'harvest'
+// boostMult: multiplier applied during boost
+// boostDur:  duration in ms (only for frenzy/harvest)
+const BONUS_FISH_TYPES = [
+  // common — instant
+  { emoji:'🐠', label:'Clownfish',    mult:0.8,  color:'#ff6b35', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🦐', label:'Shrimp',       mult:0.6,  color:'#f9c74f', rarity:'common',    minFish:0,       boostType:'instant' },
+  { emoji:'🐟', label:'Wild Fish',    mult:1,    color:'#4dc3ff', rarity:'common',    minFish:50,      boostType:'instant' },
+  { emoji:'🦀', label:'Crab',         mult:1.2,  color:'#f94144', rarity:'common',    minFish:100,     boostType:'instant' },
+  // common — frenzy
+  { emoji:'🐡', label:'Puffer Fish',  mult:1,    color:'#f9c74f', rarity:'common',    minFish:200,     boostType:'frenzy',  boostMult:1.3, boostDur:8000  },
+  // common — harvest
+  { emoji:'🐚', label:'Sea Snail',    mult:1,    color:'#7dd3f8', rarity:'common',    minFish:150,     boostType:'harvest', boostMult:1.3, boostDur:8000  },
+
+  // rare — instant
+  { emoji:'🦞', label:'Lobster',      mult:2,    color:'#f77f00', rarity:'rare',      minFish:500,     boostType:'instant' },
+  { emoji:'🪼', label:'Jellyfish',     mult:2.5,  color:'#c77dff', rarity:'rare',      minFish:800,     boostType:'instant' },
+  // rare — frenzy
+  { emoji:'🐙', label:'Octopus',      mult:2,    color:'#9b5de5', rarity:'rare',      minFish:1000,    boostType:'frenzy',  boostMult:1.5, boostDur:12000 },
+  { emoji:'🫧', label:'Manta Ray',    mult:3,    color:'#6a4fcf', rarity:'rare',      minFish:2000,    boostType:'frenzy',  boostMult:1.3, boostDur:15000 },
+  // rare — harvest
+  { emoji:'🦭', label:'Seal',         mult:3,    color:'#43aa8b', rarity:'rare',      minFish:1500,    boostType:'harvest', boostMult:1.3, boostDur:18000 },
+  { emoji:'🐢', label:'Sea Turtle',   mult:2.5,  color:'#2d7a63', rarity:'rare',      minFish:3000,    boostType:'harvest', boostMult:1.3, boostDur:20000 },
+
+  // epic — instant
+  { emoji:'🦈', label:'Shark',        mult:5,    color:'#6a4fcf', rarity:'epic',      minFish:5000,    boostType:'instant' },
+  { emoji:'🦎', label:'Sea Lizard',   mult:4,    color:'#2d7a63', rarity:'epic',      minFish:8000,    boostType:'instant' },
+  // epic — frenzy
+  { emoji:'🦅', label:'Sea Eagle',    mult:6,    color:'#f77f00', rarity:'epic',      minFish:10000,   boostType:'frenzy',  boostMult:2,  boostDur:12000 },
+  { emoji:'🐊', label:'Croc Frenzy',  mult:7,    color:'#1a5a3a', rarity:'epic',      minFish:20000,   boostType:'frenzy',  boostMult:2,  boostDur:10000 },
+  // epic — harvest
+  { emoji:'🐬', label:'Dolphin',      mult:10,   color:'#43aa8b', rarity:'epic',      minFish:15000,   boostType:'harvest', boostMult:1.5, boostDur:18000 },
+  { emoji:'🦑', label:'Giant Squid',  mult:15,   color:'#c77dff', rarity:'epic',      minFish:50000,   boostType:'harvest', boostMult:2,  boostDur:15000 },
+
+  // legendary — instant
+  { emoji:'🐳', label:'Blue Whale',   mult:20,   color:'#1a8fd1', rarity:'legendary', minFish:500000,  boostType:'instant' },
+  // legendary — frenzy
+  { emoji:'🐲', label:'Sea Dragon',   mult:20,   color:'#ff4d6d', rarity:'legendary', minFish:100000,  boostType:'frenzy',  boostMult:3,  boostDur:20000 },
+  { emoji:'☄️',  label:'Meteor Fish',  mult:25,   color:'#ff9500', rarity:'legendary', minFish:1000000, boostType:'frenzy',  boostMult:4,  boostDur:15000 },
+  // legendary — harvest
+  { emoji:'🌊', label:'Tsunami Fish', mult:40,   color:'#00d4ff', rarity:'legendary', minFish:200000,  boostType:'harvest', boostMult:2.5, boostDur:25000 },
+  { emoji:'🔱', label:'Poseidon\'s Gift', mult:60, color:'#f9c74f', rarity:'legendary', minFish:5000000, boostType:'harvest', boostMult:4,  boostDur:30000 },
+];
+
+const RARITY_COLORS = {
+  common:    { border:'rgba(125,211,248,0.5)', bg:'rgba(10,22,40,0.7)', label:'#7dd3f8' },
+  rare:      { border:'rgba(67,170,139,0.7)',  bg:'rgba(10,40,20,0.8)', label:'#43aa8b' },
+  epic:      { border:'rgba(155,93,229,0.8)',  bg:'rgba(30,10,60,0.8)', label:'#c77dff' },
+  legendary: { border:'rgba(249,199,79,0.9)',  bg:'rgba(50,30,0,0.9)',  label:'#f9c74f' },
+};
+
+// Weighted pool: legendary appears less
+const RARITY_WEIGHTS = { common:50, rare:30, epic:15, legendary:5 };
+
+const BONUS_INTERVAL_MIN = 18000;
+const BONUS_INTERVAL_MAX = 40000;
+let bonusFishTimer = null;
+
+function scheduleBonusFish() {
+  const delay = BONUS_INTERVAL_MIN + Math.random() * (BONUS_INTERVAL_MAX - BONUS_INTERVAL_MIN);
+  bonusFishTimer = setTimeout(spawnBonusFish, delay);
+}
+
+function pickBonusFishType() {
+  const available = BONUS_FISH_TYPES.filter(t => state.totalFish >= t.minFish);
+  if(available.length === 0) return null;
+
+  // Build weighted list
+  const pool = [];
+  available.forEach(t => {
+    const w = RARITY_WEIGHTS[t.rarity] || 10;
+    for(let i=0; i<w; i++) pool.push(t);
+  });
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function spawnBonusFish() {
+  const type = pickBonusFishType();
+  if(!type) { scheduleBonusFish(); return; }
+
+  const baseValue = Math.max(
+    state.fishPerClick * state.clickMultiplier,
+    state.fishPerSec * 3
+  );
+  const reward = Math.max(1, Math.floor(baseValue * type.mult));
+  const rc     = RARITY_COLORS[type.rarity];
+
+  // Position: center panel area, left/right of the click button
+  const panelLeft  = window.innerWidth * (280 / window.innerWidth);
+  const panelRight = window.innerWidth * ((window.innerWidth - 300) / window.innerWidth);
+  const centerX    = (panelLeft + panelRight) / 2;
+  const centerY    = window.innerHeight * 0.48;
+
+  const side   = Math.random() < 0.5 ? -1 : 1;
+  const startX = centerX + side * (90 + Math.random() * 130);
+  const startY = centerY + (-90 + Math.random() * 180);
+  const driftX = side * (40 + Math.random() * 80);
+  const driftY = -(50 + Math.random() * 120);
+  const dur    = type.rarity === 'legendary' ? 6000 : type.rarity === 'epic' ? 5500 : 4000 + Math.random() * 2000;
+
+  // Wrapper (for label positioning)
+  const wrap = document.createElement('div');
+  wrap.className = 'bonus-fish-wrap';
+  wrap.style.cssText = `left:${startX}px;top:${startY}px;`;
+
+  const el = document.createElement('div');
+  el.className = `bonus-fish type-${type.rarity}`;
+  el.textContent = type.emoji;
+  el.style.setProperty('--swim-dur', dur + 'ms');
+  el.style.setProperty('--drift-x', driftX + 'px');
+  el.style.setProperty('--drift-y', driftY + 'px');
+  el.style.filter = `drop-shadow(0 0 16px ${type.color}) drop-shadow(0 0 6px ${type.color})`;
+  if(type.rarity === 'legendary') {
+    el.style.filter += ' brightness(1.3)';
+  }
+  el.style.pointerEvents = 'all';
+
+  const boostTag = type.boostType === 'frenzy'
+    ? `<span style="color:#f9c74f;font-size:0.6rem"> ⚡CLICK x${type.boostMult}</span>`
+    : type.boostType === 'harvest'
+      ? `<span style="color:#43aa8b;font-size:0.6rem"> 🌿FARM x${type.boostMult}</span>`
+      : `<span style="color:#7dd3f8;font-size:0.6rem"> +FISH</span>`;
+
+  const lbl = document.createElement('div');
+  lbl.className = 'bonus-fish-label';
+  lbl.innerHTML = type.label + boostTag;
+  lbl.style.color = rc.label;
+  lbl.style.borderColor = type.boostType === 'frenzy' ? 'rgba(249,199,79,0.6)'
+                        : type.boostType === 'harvest' ? 'rgba(67,170,139,0.6)'
+                        : rc.border;
+  lbl.style.background  = rc.bg;
+
+  wrap.appendChild(el);
+  wrap.appendChild(lbl);
+
+  let clicked = false;
+  el.addEventListener('click', function(e) {
+    if(clicked) return;
+    clicked = true;
+    e.stopPropagation();
+    state.catchedBonusFish++;
+
+    const rarityTag = type.rarity === 'legendary' ? ' ✨LEGENDARY✨' : type.rarity === 'epic' ? ' ⚡EPIC' : '';
+
+    addCaughtFishToTank(type.emoji);
+
+    if(type.boostType === 'instant') {
+      state.fish += reward;
+      state.totalFish += reward;
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} +${fmt(reward)}`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} caught! +${fmt(reward)} fish!`);
+
+    } else if(type.boostType === 'frenzy') {
+      state.fish += reward;
+      state.totalFish += reward;
+      const secs = Math.round(type.boostDur / 1000);
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} x${type.boostMult} CLICK!`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} — Click Frenzy x${type.boostMult} for ${secs}s!`);
+      applyBoost('frenzy', type.boostMult, type.boostDur, type.emoji, type.label);
+
+    } else if(type.boostType === 'harvest') {
+      state.fish += reward;
+      state.totalFish += reward;
+      const secs = Math.round(type.boostDur / 1000);
+      spawnParticle(e.clientX, e.clientY, `${type.emoji} x${type.boostMult} FARM!`);
+      showMilestone(`${type.emoji}${rarityTag} ${type.label} — Harvest Boost x${type.boostMult} for ${secs}s!`);
+      applyBoost('harvest', type.boostMult, type.boostDur, type.emoji, type.label);
+    }
+
+    wrap.remove();
+    updateFishBtn();
+    updateUI();
+  });
+
+  document.body.appendChild(wrap);
+  setTimeout(() => { if(!clicked) wrap.remove(); }, dur + 200);
+
+  scheduleBonusFish();
+}
+
+// ── CRISIS SYSTEM ─────────────────────────────────────────────
+const CRISIS_MIN_INTERVAL = 45000;
+const CRISIS_MAX_INTERVAL = 120000;
+let crisisTimer = null;
+let crisisBannerEl = null;
+
+function scheduleCrisis() {
+  if(!crisesEnabled) return;
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  if(totalBuildings < 3) { crisisTimer = setTimeout(scheduleCrisis, 15000); return; }
+
+  const delay = CRISIS_MIN_INTERVAL + Math.random() * (CRISIS_MAX_INTERVAL - CRISIS_MIN_INTERVAL);
+  crisisTimer = setTimeout(triggerCrisis, delay);
+}
+
+let crisisExpireTimer = null;
+
+function triggerCrisis() {
+  if(state.crisisActive) { scheduleCrisis(); return; }
+
+  const eligible = CRISES.filter(c => state.totalFish >= c.minFish);
+  if(eligible.length === 0) { scheduleCrisis(); return; }
+
+  const crisis = eligible[Math.floor(Math.random() * eligible.length)];
+  state.crisisActive     = crisis;
+  state.crisisClicksLeft = crisis.clicksNeeded;
+  state.crisisMultPenalty = crisis.fpsPenalty;
+  state.crisisExpiresAt  = Date.now() + 60000;
+  recalcFPS();
+
+  document.body.classList.add('in-crisis');
+  showCrisisBanner(crisis);
+  highlightCrisisBuilding(crisis.building, true);
+  updateUI();
+
+  crisisExpireTimer = setTimeout(() => {
+    if(!state.crisisActive) return;
+    const lostFish = Math.floor(state.fish * 0.15);
+    state.fish      = Math.max(0, state.fish - lostFish);
+    const msg = state.crisisActive.resolveMsg.replace('!', ' — too late!') + ` Lost ${fmt(lostFish)} fish! 💀`;
+    resolveCrisis(true);
+    showMilestone(msg);
+  }, 60000);
+}
+
+function highlightCrisisBuilding(buildingId, on) {
+  if(!buildingId) return;
+  document.querySelectorAll('.scene-row').forEach(row => {
+    // match by label text
+    const lbl = row.querySelector('.scene-row-label');
+    const b   = BUILDINGS.find(x => x.id === buildingId);
+    if(b && lbl && lbl.textContent.trim() === b.name) {
+      row.classList.toggle('crisis-building', on);
+    }
+  });
+}
+
+function showCrisisBanner(crisis) {
+  if(crisisBannerEl) crisisBannerEl.remove();
+
+  // Add vignette
+  let vig = document.getElementById('crisis-vignette');
+  if(!vig) {
+    vig = document.createElement('div');
+    vig.id = 'crisis-vignette';
+    vig.className = 'crisis-vignette';
+    document.body.appendChild(vig);
+  }
+
+  crisisBannerEl = document.createElement('div');
+  crisisBannerEl.className = 'crisis-banner';
+  crisisBannerEl.id = 'crisis-banner';
+  crisisBannerEl.style.cssText = `
+    background: linear-gradient(160deg, ${crisis.color} 0%, rgba(5,10,20,0.97) 100%);
+    border: 1.5px solid ${crisis.accentColor};
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 30px ${crisis.accentColor};
+  `;
+
+  const solveLabels = {
+    click: 'Click the fish button to resolve',
+    mash:  'Spam-click the fish button fast!',
+    rapid: 'Click quickly and repeatedly!',
+    hold:  'Click continuously — keep going!',
+  };
+
+  crisisBannerEl.innerHTML = `
+    <div class="crisis-header">
+      <div class="crisis-icon-wrap" style="--icon-anim:${crisis.iconAnim}">${crisis.icon}</div>
+      <div class="crisis-titles">
+        <div class="crisis-title">${crisis.title}</div>
+        <div class="crisis-building-tag">${crisis.buildingTag || ''}</div>
+      </div>
+    </div>
+    <div class="crisis-body">
+      <div class="crisis-desc">${crisis.desc}</div>
+      <div class="crisis-action-hint">
+        <span class="crisis-action-icon">${crisis.actionIcon}</span>
+        <span class="crisis-action-text">${crisis.actionText}</span>
+      </div>
+      <div class="crisis-bar-wrap">
+        <div class="crisis-bar" id="crisis-bar" style="width:100%"></div>
+      </div>
+      <div class="crisis-progress-row">
+        <div class="crisis-clicks" id="crisis-clicks">${crisis.clicksNeeded} actions needed</div>
+        <div class="crisis-pct" id="crisis-pct">100%</div>
+      </div>
+      <div style="font-size:0.72rem;color:rgba(249,65,68,0.85);margin-top:4px;text-align:center;letter-spacing:0.5px;">
+        ⚠️ Production -${Math.round((1 - crisis.fpsPenalty) * 100)}% &nbsp;|&nbsp; <span id="crisis-countdown">60s</span> left or lose fish!
+      </div>
+    </div>
+  `;
+  document.body.appendChild(crisisBannerEl);
+}
+
+function updateCrisisUI() {
+  if(!state.crisisActive) return;
+  const total = state.crisisActive.clicksNeeded;
+  const left  = state.crisisClicksLeft;
+  const pct   = Math.max(0, (left / total) * 100);
+
+  const bar = document.getElementById('crisis-bar');
+  const lbl = document.getElementById('crisis-clicks');
+  const pctEl = document.getElementById('crisis-pct');
+  if(bar) bar.style.width = pct + '%';
+  if(lbl) lbl.textContent = `${left} actions remaining`;
+  if(pctEl) pctEl.textContent = Math.round(pct) + '%';
+
+  // Bar color shifts red as it decreases
+  if(bar) {
+    const r = Math.round(249 - (249-249)*(pct/100));
+    const g = Math.round(199 * (pct/100));
+    bar.style.background = `linear-gradient(90deg, rgb(${r},${g},79), #f77f00)`;
+  }
+
+  // Countdown timer
+  const cdEl = document.getElementById('crisis-countdown');
+  if(cdEl && state.crisisExpiresAt) {
+    const secsLeft = Math.max(0, Math.ceil((state.crisisExpiresAt - Date.now()) / 1000));
+    cdEl.textContent = secsLeft + 's';
+    cdEl.style.color = secsLeft <= 10 ? '#ff4444' : 'rgba(249,65,68,0.85)';
+    if(secsLeft <= 10) cdEl.style.fontWeight = 'bold';
+  }
+}
+
+function resolveCrisis(expired = false) {
+  const crisis = state.crisisActive;
+  clearTimeout(crisisExpireTimer); crisisExpireTimer = null;
+  state.crisisActive      = null;
+  state.crisisClicksLeft  = 0;
+  state.crisisMultPenalty = 1;
+  state.crisisExpiresAt   = null;
+  if(!expired) state.totalCrisesResolved++;
+  recalcFPS();
+
+  document.body.classList.remove('in-crisis');
+  highlightCrisisBuilding(crisis.building, false);
+
+  const vig = document.getElementById('crisis-vignette');
+  if(vig) vig.remove();
+
+  if(crisisBannerEl) {
+    crisisBannerEl.classList.add('resolving');
+    setTimeout(() => { if(crisisBannerEl) { crisisBannerEl.remove(); crisisBannerEl = null; } }, 380);
+  }
+  if(!expired) showMilestone(crisis.resolveMsg);
+  updateUI();
+  scheduleCrisis();
+}
+
+// ── GAME LOOP ─────────────────────────────────────────────────
+let lastTick = Date.now();
+let frameCount = 0;
+
+function tick() {
+  const now = Date.now();
+  const dt  = Math.min((now - lastTick) / 1000, 5);
+  lastTick  = now;
+  state.fish      += state.fishPerSec * dt;
+  state.totalFish += state.fishPerSec * dt;
+  frameCount++;
+}
+
+let rafRunning = false;
+function renderLoop() {
+  if(document.hidden) { rafRunning = false; return; }
+  rafRunning = true;
+
+  document.querySelectorAll('.building-card').forEach(card => {
+    const b = BUILDINGS.find(x => x.id === card.dataset.id);
+    if(!b) return;
+    const cost = getBuildingCost(b);
+    const can  = state.fish >= cost;
+    card.classList.toggle('affordable',  can);
+    card.classList.toggle('cant-afford', !can);
+  });
+
+  document.querySelectorAll('.upgrade-card:not(.purchased)').forEach(card => {
+    const u = UPGRADES.find(x => x.id === card.dataset.id);
+    if(!u) return;
+    const can = state.fish >= u.cost;
+    if(can && card.classList.contains('cant-afford-upg')) {
+      card.classList.remove('cant-afford-upg');
+      card.classList.add('available');
+      card.addEventListener('click', ()=>buyUpgrade(u.id));
+    }
+  });
+
+  document.getElementById('fish-count').textContent = fmt(state.fish);
+  document.getElementById('fish-ps').textContent    = `${fmtFps(state.fishPerSec)} fish/sec`;
+  document.getElementById('stat-total').textContent = fmtShort(state.totalFish);
+
+  if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); updateUI(); }
+  if(frameCount % 60 === 0 && state.crisisActive) updateCrisisUI();
+
+  // Update tank fish count every ~2s
+  if(frameCount % 120 === 0) updateTankZone();
+
+  requestAnimationFrame(renderLoop);
+}
+
+setInterval(tick, 250);
+
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && !rafRunning) requestAnimationFrame(renderLoop);
+});
+
+// ── BUBBLES ───────────────────────────────────────────────────
+function createBubbles() {
+  const c = document.getElementById('bubbles');
+  for(let i=0;i<18;i++){
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 4+Math.random()*14;
+    b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${6+Math.random()*12}s;animation-delay:${Math.random()*8}s;--drift:${(Math.random()-0.5)*60}px;opacity:${0.3+Math.random()*0.5};`;
+    c.appendChild(b);
+  }
+}
+
+// ── SAVE / LOAD ───────────────────────────────────────────────
+const SAVE_KEY = 'fishfarm_save';
+const _XK = [0x46,0x49,0x53,0x48,0x46,0x41,0x52,0x4d];
+
+function _encode(obj) {
+  const str = JSON.stringify(obj);
+  let out = '';
+  for(let i = 0; i < str.length; i++)
+    out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i % _XK.length]);
+  return btoa(out);
+}
+
+function _decode(encoded) {
+  const str = atob(encoded);
+  let out = '';
+  for(let i = 0; i < str.length; i++)
+    out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i % _XK.length]);
+  return JSON.parse(out);
+}
+
+function _checksum(data) {
+  const s = Math.floor(data.fish) + Math.floor(data.totalFish) +
+    Object.values(data.buildings).reduce((a,b)=>a+b,0);
+  return (s * 31 + 7) % 999983;
+}
+
+function saveGame() {
+  const now = Date.now();
+  state.totalPlayTime += now - sessionStart;
+  sessionStart = now;
+  if(!state.firstPlayedAt) state.firstPlayedAt = now;
+  const data = {
+    fish: state.fish,
+    totalFish: state.totalFish,
+    buildings: state.buildings,
+    purchasedUpgrades: [...state.purchasedUpgrades],
+    totalClicks: state.totalClicks,
+    fishFromClicks: state.fishFromClicks,
+    totalCrisesResolved: state.totalCrisesResolved,
+    catchedBonusFish: state.catchedBonusFish,
+    lastMilestone: lastMilestone,
+    firstPlayedAt: state.firstPlayedAt,
+    totalPlayTime: state.totalPlayTime,
+    savedAt: now,
+  };
+  data._c = _checksum(data);
+  localStorage.setItem(SAVE_KEY, _encode(data));
+  localStorage.setItem(SAVE_KEY + '_tank', JSON.stringify(caughtFishEmojis));
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
+    const data = _decode(raw);
+
+    if(data._c !== _checksum(data)) {
+      localStorage.removeItem(SAVE_KEY);
+      showMilestone('Save data corrupted — starting fresh 🐟');
+      return;
+    }
+
+    state.fish                = data.fish || 0;
+    state.totalFish           = data.totalFish || 0;
+    state.buildings           = data.buildings || {};
+    state.purchasedUpgrades   = new Set(data.purchasedUpgrades || []);
+    state.totalClicks         = data.totalClicks || 0;
+    state.fishFromClicks      = data.fishFromClicks || 0;
+    state.totalCrisesResolved = data.totalCrisesResolved || 0;
+    state.catchedBonusFish    = data.catchedBonusFish || 0;
+    state.firstPlayedAt       = data.firstPlayedAt || 0;
+    state.totalPlayTime       = data.totalPlayTime || 0;
+    lastMilestone             = data.lastMilestone || 0;
+    try { caughtFishEmojis = JSON.parse(localStorage.getItem(SAVE_KEY + '_tank') || '[]'); } catch(e) { caughtFishEmojis = []; }
+
+    state.fishPerClick      = 1;
+    state.baseClickPower    = 1;
+    state.clickMultiplier   = 1;
+    state.clickSynergyRate  = 0;
+    state.crisisMultPenalty = 1;
+    state.boostHarvestMult  = 1;
+    BUILDINGS.forEach(b => buildingMult[b.id] = 1);
+    UPGRADES.forEach(u => {
+      if(state.purchasedUpgrades.has(u.id)) u.effect();
+    });
+    recalcFPS();
+
+    // Sync fish stage index to avoid false "evolution" message on load
+    const stage = getCurrentFishStage();
+    lastFishStageIdx = FISH_STAGES.indexOf(stage);
+
+  } catch(e) { localStorage.removeItem(SAVE_KEY); }
+}
+
+function resetGame() {
+  if(!confirm('Reset all progress and start over? This cannot be undone.')) return;
+  window.removeEventListener('beforeunload', saveGame);
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(SAVE_KEY + '_tank');
+  localStorage.removeItem('ff_ad_shown');
+  location.reload();
+}
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'ff_do_reset') resetGame();
+  if (e.data && e.data.type === 'ff_do_share') openShareModal();
+});
+
+// ── SHARE MODAL ───────────────────────────────────────────────
+function buildShareText() {
+  const stage = getCurrentFishStage();
+  const totalB = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+  const topBuilding = BUILDINGS.slice().reverse().find(b=>(state.buildings[b.id]||0)>0);
+  const lines = [
+    `🐟 Fish Farm Stats`,
+    `─────────────────`,
+    `${stage.emoji} Fish: ${fmt(state.totalFish)} total`,
+    `⚡ Production: ${fmtFps(state.fishPerSec)}/sec`,
+    `🖱️ Clicks: ${fmt(state.totalClicks)}`,
+    `🏗️ Buildings: ${totalB}`,
+    `⬆️ Upgrades: ${state.purchasedUpgrades.size}`,
+    topBuilding ? `🏆 Best building: ${topBuilding.icon} ${topBuilding.name}` : '',
+    state.totalCrisesResolved > 0 ? `🛡️ Crises resolved: ${state.totalCrisesResolved}` : '',
+    `─────────────────`,
+    `Play Fish Farm!`,
+  ].filter(Boolean);
+  return lines.join('\n');
+}
+
+function openShareModal() {
+  const stage    = getCurrentFishStage();
+  const totalB   = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+  const topBuilding = BUILDINGS.slice().reverse().find(b=>(state.buildings[b.id]||0)>0);
+  const shareText   = buildShareText();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'share-overlay';
+  overlay.id = 'share-overlay';
+
+  overlay.innerHTML = `
+    <div class="share-modal" id="share-modal">
+      <div class="share-modal-title">🐟 Share Your Farm</div>
+      <div class="share-body">
+        <!-- Left: stat card -->
+        <div class="share-card" id="share-snapshot-card">
+          <div class="share-card-header">${stage.emoji} ${stage.label} Farm</div>
+          <div class="share-stat-grid">
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.totalFish)}</div>
+              <div class="share-stat-lbl">Total Fish Caught</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmtFps(state.fishPerSec)}/s</div>
+              <div class="share-stat-lbl">Production Rate</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.fishPerClick * state.clickMultiplier)}</div>
+              <div class="share-stat-lbl">Fish per Click</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${fmt(state.totalClicks)}</div>
+              <div class="share-stat-lbl">Total Clicks</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${totalB}</div>
+              <div class="share-stat-lbl">Buildings Built</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${state.purchasedUpgrades.size}</div>
+              <div class="share-stat-lbl">Upgrades Bought</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${state.totalCrisesResolved}</div>
+              <div class="share-stat-lbl">Crises Resolved</div>
+            </div>
+            <div class="share-stat">
+              <div class="share-stat-val">${topBuilding ? topBuilding.icon : '—'}</div>
+              <div class="share-stat-lbl">${topBuilding ? topBuilding.name : 'No buildings'}</div>
+            </div>
+          </div>
+        </div>
+        <!-- Right: share text -->
+        <div class="share-right">
+          <div class="share-right-title">📋 SHARE TEXT</div>
+          <textarea class="share-text-area" id="share-textarea" readonly>${shareText}</textarea>
+        </div>
+      </div>
+
+      <div class="share-actions">
+        <button class="share-copy-btn"       id="share-copy-btn">Copy Text</button>
+        <button class="share-screenshot-btn" id="share-screenshot-btn">Copy as Image</button>
+        <button class="share-close-btn"      id="share-close-btn">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Copy text
+  document.getElementById('share-copy-btn').addEventListener('click', function() {
+    const ta = document.getElementById('share-textarea');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+      this.textContent = '✓ Copied!';
+      this.style.background = 'linear-gradient(135deg,#1a8fd1,#0d5fa0)';
+      setTimeout(() => { this.textContent = 'Copy Text'; this.style.background = ''; }, 2000);
+    }).catch(() => {
+      try { document.execCommand('copy'); } catch(ex){}
+      this.textContent = '✓ Copied!';
+      setTimeout(() => { this.textContent = 'Copy Text'; }, 2000);
+    });
+  });
+
+  // Screenshot: capture the modal card via html2canvas → copy PNG to clipboard
+  document.getElementById('share-screenshot-btn').addEventListener('click', function() {
+    const btn = this;
+    btn.textContent = 'Capturing…';
+    btn.disabled = true;
+
+    const target = document.getElementById('share-modal');
+
+    html2canvas(target, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    }).then(canvas => {
+      canvas.toBlob(blob => {
+        if(!blob) { btn.textContent = 'Failed'; btn.disabled = false; return; }
+
+        const tryClipboard = () => navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+
+        tryClipboard().then(() => {
+          btn.textContent = '✓ Image Copied!';
+          btn.style.background = 'linear-gradient(135deg,#43aa8b,#2d7a63)';
+          btn.disabled = false;
+          setTimeout(() => {
+            btn.textContent = 'Copy as Image';
+            btn.style.background = '';
+          }, 2500);
+        }).catch(() => {
+          // Clipboard API blocked → fall back to download
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = 'fishfarm-share.png';
+          a.click();
+          btn.textContent = '✓ Downloaded!';
+          btn.disabled = false;
+          setTimeout(() => { btn.textContent = 'Copy as Image'; }, 2500);
+        });
+      }, 'image/png');
+    }).catch(() => {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    });
+  });
+
+  document.getElementById('share-close-btn').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.remove(); });
+}
+
+
+document.getElementById('share-btn').addEventListener('click', openShareModal);
+
+setInterval(saveGame, 10000);
+window.addEventListener('beforeunload', saveGame);
+
+// ── SIDE CLICK ZONES ──────────────────────────────────────────
+// Tank fish: small emoji swimmers inside each zone canvas
+const TANK_FISH_EMOJIS = ['🐟','🐠','🐡','🦐','🦀'];
+
+function rnd(min, max) { return min + Math.random() * (max - min); }
+
+// ── CANVAS TANK ───────────────────────────────────────────────
+let tankCanvas = null, tankCtx = null;
+let caughtFishEmojis = [];
+const tankFishData = [];   // { emoji, x, y, vx, vy, size, flip, t }
+const tankBubbles  = [];   // { x, y, size, speed, opacity }
+let tankRafId = null;
+
+function mkFish(emoji, w, h) {
+  const size = rnd(10, 15);
+  const vx   = rnd(0.1, 0.35) * (Math.random() < 0.5 ? 1 : -1);
+  const vy   = rnd(0.05, 0.15) * (Math.random() < 0.5 ? 1 : -1);
+  return { emoji, x: rnd(size, w - size), y: rnd(size, h - size), vx, vy, size, t: Math.random() * 1000 };
+}
+
+function mkBubble(w, h) {
+  return { x: rnd(4, w - 4), y: rnd(h * 0.1, h), size: rnd(2, 5), speed: rnd(0.3, 0.8), opacity: rnd(0.2, 0.5) };
+}
+
+function resizeTankCanvas() {
+  const wrap = tankCanvas.parentElement;
+  const dpr  = window.devicePixelRatio || 1;
+  const w = wrap.offsetWidth  || 200;
+  const h = wrap.offsetHeight || 200;
+  tankCanvas.width  = w * dpr;
+  tankCanvas.height = h * dpr;
+  tankCanvas.style.width  = w + 'px';
+  tankCanvas.style.height = h + 'px';
+  tankCtx = tankCanvas.getContext('2d');
+  tankCtx.scale(dpr, dpr);
+  return { w, h };
+}
+
+function initTankZone() {
+  tankCanvas = document.getElementById('tank-canvas');
+  if(!tankCanvas) return;
+  const { w, h } = resizeTankCanvas();
+
+  for(let i = 0; i < 8; i++) tankBubbles.push(mkBubble(w, h));
+  caughtFishEmojis.forEach(e => tankFishData.push(mkFish(e, w, h)));
+
+  new ResizeObserver(() => resizeTankCanvas()).observe(tankCanvas.parentElement);
+
+  tankRafId = requestAnimationFrame(tankLoop);
+}
+
+function tankLoop() {
+  if(!tankCtx) return;
+  const w = parseInt(tankCanvas.style.width)  || tankCanvas.width;
+  const h = parseInt(tankCanvas.style.height) || tankCanvas.height;
+  tankCtx.clearRect(0, 0, w, h);
+
+  // bubbles
+  for(const b of tankBubbles) {
+    b.y -= b.speed;
+    if(b.y < 0) { b.y = h; b.x = rnd(4, w - 4); }
+    tankCtx.beginPath();
+    tankCtx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+    tankCtx.strokeStyle = `rgba(125,211,248,${b.opacity})`;
+    tankCtx.lineWidth = 1;
+    tankCtx.stroke();
+  }
+
+  // fish — gentle sine drift
+  for(const f of tankFishData) {
+    f.t += 0.006;
+    f.x += f.vx + Math.sin(f.t * 1.3) * 0.12;
+    f.y += f.vy + Math.cos(f.t)        * 0.08;
+    if(f.x < f.size)     { f.x = f.size;     f.vx =  Math.abs(f.vx); }
+    if(f.x > w - f.size) { f.x = w - f.size; f.vx = -Math.abs(f.vx); }
+    if(f.y < f.size)     { f.y = f.size;     f.vy =  Math.abs(f.vy); }
+    if(f.y > h - f.size) { f.y = h - f.size; f.vy = -Math.abs(f.vy); }
+
+    tankCtx.save();
+    tankCtx.globalAlpha = 0.8;
+    tankCtx.font = `${f.size}px serif`;
+    tankCtx.textAlign = 'center';
+    tankCtx.textBaseline = 'middle';
+    if(f.vx < 0) { tankCtx.scale(-1, 1); tankCtx.fillText(f.emoji, -f.x, f.y); }
+    else            tankCtx.fillText(f.emoji,  f.x, f.y);
+    tankCtx.restore();
+  }
+
+  tankRafId = requestAnimationFrame(tankLoop);
+}
+
+function updateTankZone() {}
+
+function addCaughtFishToTank(emoji) {
+  caughtFishEmojis.push(emoji);
+  if(!tankCanvas) return;
+  tankFishData.push(mkFish(emoji, tankCanvas.width, tankCanvas.height));
+}
+
+function spawnZoneParticle(zone, x, y, txt) {
+  const p = document.createElement('div');
+  p.className = 'click-zone-particle';
+  p.textContent = txt;
+  // Position relative to zone
+  const rect = zone.getBoundingClientRect();
+  p.style.left = (x - rect.left - 15 + Math.random()*30) + 'px';
+  p.style.top  = (y - rect.top  - 10) + 'px';
+  zone.appendChild(p);
+  setTimeout(()=>p.remove(), 800);
+}
+
+function handleZoneClick(e) {
+  if(!clickGuard.check(e.clientX, e.clientY)) return;
+  const gained = state.fishPerClick * state.clickMultiplier;
+  state.fish += gained;
+  state.totalFish += gained;
+  state.totalClicks++;
+  state.fishFromClicks += gained;
+  spawnZoneParticle(document.getElementById('click-zone-main'), e.clientX, e.clientY, '+' + fmt(gained));
+
+  // Also count toward crisis resolution
+  if(state.crisisActive && state.crisisActive.solveType !== 'hold') {
+    const deduct = state.crisisActive.solveType === 'mash' ? 2 : 1;
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - deduct);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) resolveCrisis();
+  }
+
+  updateFishBtn();
+  updateUI();
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadGame();
+if(!state.firstPlayedAt) { state.firstPlayedAt = Date.now(); }
+createBubbles();
+initStatsBar();
+renderBuildings();
+renderUpgrades();
+requestAnimationFrame(()=>{ renderScene(); });
+updateUI();
+updateFishBtn();
+requestAnimationFrame(renderLoop);
+
+const sceneEl = document.getElementById('building-scene');
+if(window.ResizeObserver) {
+  new ResizeObserver(()=>renderScene()).observe(sceneEl);
+}
+
+// Init unified tank behind click button (restores saved fish internally)
+initTankZone();
+const zoneMain = document.getElementById('click-zone-main');
+zoneMain.addEventListener('click', handleZoneClick);
+zoneMain.addEventListener('mousedown', () => {
+  if(!state.crisisActive || state.crisisActive.solveType !== 'hold') return;
+  if(holdInterval) return;
+  holdInterval = setInterval(() => {
+    if(!state.crisisActive) { clearInterval(holdInterval); holdInterval = null; return; }
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - 1);
+    updateCrisisUI();
+    if(state.crisisClicksLeft <= 0) { clearInterval(holdInterval); holdInterval = null; resolveCrisis(); }
+  }, 120);
+});
+zoneMain.addEventListener('mouseup',    () => { clearInterval(holdInterval); holdInterval = null; });
+zoneMain.addEventListener('mouseleave', () => { clearInterval(holdInterval); holdInterval = null; });
+
+// Start bonus fish and crisis systems
+scheduleBonusFish();
+scheduleCrisis();
+
+let crisesEnabled = true;
+</script>
+
+<div id="version-tag" style="position:fixed;bottom:8px;right:12px;z-index:50;font-family:'Fredoka One',cursive;font-size:0.75rem;color:rgba(125,211,248,0.55);pointer-events:none;letter-spacing:1px;padding:4px 6px;border-radius:6px;">mustier-v1.5</div>
+
+<script>
+if (new URLSearchParams(location.search).get('embed') === '1') {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('header').style.display = 'none';
+    document.getElementById('share-btn').style.display = 'none';
+
+    document.getElementById('reset-btn').addEventListener('click', function(e) {
+      e.stopImmediatePropagation();
+      parent.postMessage({ type: 'ff_do_reset' }, '*');
+    }, true);
+
+    document.getElementById('share-btn').addEventListener('click', function(e) {
+      e.stopImmediatePropagation();
+      parent.postMessage({ type: 'ff_do_share' }, '*');
+    }, true);
+
+    parent.postMessage({ type: 'ff_ready' }, '*');
+  });
+}
+</script>
+</body>
+</html>

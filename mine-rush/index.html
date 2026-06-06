@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mine Rush — Idle Clicker Game | ClickingGame</title>
+<meta name="description" content="Dig deep, collect rare ores, and automate your mining operation in Mine Rush! A free idle clicker game in your browser.">
+<meta name="keywords" content="mine rush, idle game, clicker game, browser game, mining game, incremental game">
+<meta name="author" content="ClickingGame">
+<link rel="canonical" href="https://clickingame.com/mine-rush/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://clickingame.com/mine-rush/">
+<meta property="og:title" content="Mine Rush — Idle Clicker Game">
+<meta property="og:description" content="Dig deep, collect rare ores, and automate your mining operation in this free idle clicker game.">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --cave:   #0e0a04;
+    --deep:   #1a0f05;
+    --mid:    #2a1a08;
+    --rock:   #3d2b12;
+    --amber:  #c97c1a;
+    --gold:   #f9c74f;
+    --orange: #f77f00;
+    --iron:   #a0b4c8;
+    --gem:    #9b5de5;
+    --emerald:#43aa8b;
+    --ruby:   #f94144;
+    --white:  #f5ead8;
+    --panel:  rgba(42,26,8,0.9);
+    --border: rgba(201,124,26,0.25);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--cave);
+    font-family: 'Nunito', sans-serif;
+    color: var(--white);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(201,124,26,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(155,93,229,0.06) 0%, transparent 50%),
+      linear-gradient(180deg, #0e0a04 0%, #1a0f05 40%, #2a1a08 100%);
+    z-index:0; pointer-events:none;
+  }
+
+  /* Dust particles */
+  .dust { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .dust-particle {
+    position:absolute; border-radius:50%;
+    background: rgba(201,124,26,0.4);
+    animation: dust-rise linear infinite;
+    bottom: -10px;
+  }
+  @keyframes dust-rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
+
+  header {
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    padding: 8px 20px;
+    background: linear-gradient(90deg, var(--deep), var(--mid), var(--deep));
+    border-bottom: 2px solid var(--border);
+    gap: 12px;
+  }
+  header.embed .pick-emoji,
+  header.embed h1 { display: none; }
+  body.embed-mode header { display: none; }
+  body.embed-mode .share-btn-fixed { display: none; }
+  .header-right {
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    display:flex; align-items:center; gap:10px;
+  }
+  .share-btn-fixed {
+    position: fixed; top: 12px; left: 16px; z-index: 100;
+    background: transparent;
+    border: 1px solid rgba(201,124,26,0.4);
+    color: var(--gold); font-family:'Fredoka One',cursive; font-size:0.82rem;
+    letter-spacing:1px; padding:5px 14px; cursor:pointer; border-radius:20px;
+    transition:all 0.2s;
+  }
+  .share-btn-fixed:hover {
+    background: rgba(201,124,26,0.15);
+    border-color: rgba(201,124,26,0.7);
+    color:#fff;
+    box-shadow: 0 2px 14px rgba(201,124,26,0.3);
+  }
+  .reset-btn {
+    background:transparent; border:none;
+    color:var(--ruby); font-family:'Fredoka One',cursive; font-size:0.85rem;
+    letter-spacing:1px; padding:4px 8px; cursor:pointer;
+    transition:color 0.2s, text-shadow 0.2s;
+    text-shadow: 0 0 8px rgba(249,65,68,0.4);
+  }
+  .reset-btn:hover { color:#ff6b6e; text-shadow:0 0 14px rgba(249,65,68,0.8); }
+
+  /* SHARE MODAL */
+  .share-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.8);
+    z-index:10000; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(8px);
+    animation: fade-in 0.2s ease;
+  }
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+  .share-modal {
+    background: linear-gradient(135deg, #0e0a04, #2a1a08);
+    border: 2px solid rgba(201,124,26,0.4);
+    border-radius: 20px; padding: 24px 28px;
+    width: min(860px, 94vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: modal-pop 0.3s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+  }
+  @keyframes modal-pop { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+  .share-modal-title {
+    font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--gold);
+    text-align:center; margin-bottom:18px; text-shadow:0 0 20px rgba(249,199,79,0.5);
+  }
+  .share-body {
+    display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:16px;
+  }
+  .share-card {
+    background: linear-gradient(135deg, #1a0f05, #3d2b12);
+    border: 1px solid rgba(201,124,26,0.3);
+    border-radius: 14px; padding: 16px 18px;
+    font-family:'Fredoka One',cursive;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .share-card-header {
+    display:flex; align-items:center; gap:8px;
+    font-size:1.1rem; color:var(--gold);
+  }
+  .share-stat-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; flex:1;
+  }
+  .share-stat {
+    background:rgba(0,0,0,0.3); border-radius:10px; padding:9px 10px;
+    text-align:center;
+  }
+  .share-stat-val { font-size:1rem; color:var(--gold); }
+  .share-stat-lbl { font-size:0.65rem; color:rgba(249,199,79,0.6); margin-top:2px; font-family:'Nunito',sans-serif; }
+  .share-right {
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .share-right-title {
+    font-family:'Fredoka One',cursive; font-size:0.85rem; color:var(--gold);
+    letter-spacing:1px;
+  }
+  .share-text-area {
+    flex:1; width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(201,124,26,0.3);
+    border-radius:10px; color:var(--gold); font-family:'Nunito',sans-serif;
+    font-size:0.78rem; line-height:1.7; padding:10px 12px; resize:none;
+    outline:none; min-height:160px;
+  }
+  .share-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .share-copy-btn {
+    flex:1; min-width:120px; background:linear-gradient(135deg,#43aa8b,#2d7a63);
+    border:none; color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-copy-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(67,170,139,0.5); }
+  .share-screenshot-btn {
+    flex:1; min-width:140px;
+    background:linear-gradient(135deg,#8b5e2a,#6b3e10);
+    border:1px solid rgba(249,199,79,0.3);
+    color:#fff; font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-screenshot-btn:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(201,124,26,0.5); }
+  .share-close-btn {
+    background:rgba(249,65,68,0.15); border:1px solid rgba(249,65,68,0.3);
+    color:var(--ruby); font-family:'Fredoka One',cursive; font-size:0.88rem;
+    padding:10px 16px; border-radius:12px; cursor:pointer; transition:all 0.15s;
+  }
+  .share-close-btn:hover { background:rgba(249,65,68,0.3); }
+
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(249,199,79,0.5);
+    letter-spacing: 2px;
+  }
+  .pick-emoji { font-size: 2rem; animation: dig 1.5s ease-in-out infinite; display:inline-block; }
+  @keyframes dig { 0%,100%{transform:rotate(-20deg) translateY(0)} 50%{transform:rotate(20deg) translateY(4px)} }
+
+  .game {
+    position:relative; z-index:5;
+    display:grid;
+    grid-template-columns: 280px 1fr 300px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .panel-title {
+    font-family:'Fredoka One',cursive; font-size:1rem; color: var(--gold);
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); display:flex; align-items:center; gap:6px;
+  }
+
+  /* CENTER */
+  .panel-center {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: 14px; padding: 14px 20px;
+    position: relative; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--amber) transparent;
+  }
+  .ore-counter { text-align: center; }
+  .ore-count {
+    font-family: 'Fredoka One', cursive; font-size: 2.8rem;
+    color: var(--gold); text-shadow: 0 0 30px rgba(249,199,79,0.5); line-height: 1;
+  }
+  .ore-count-label { font-size: 0.85rem; color: var(--gold); opacity: 0.7; margin-top: 4px; }
+  .ore-per-sec { font-size: 0.9rem; color: var(--amber); margin-top: 2px; }
+
+  .mine-btn-wrap {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    width: 100%; height: 220px;
+  }
+  .mine-btn {
+    width: 170px; height: 170px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #6b4a1a 0%, #3d2b12 40%, #2a1a08 70%, #1a0f05 100%);
+    border: 4px solid rgba(201,124,26,0.5);
+    box-shadow: 0 0 40px rgba(201,124,26,0.4), 0 0 80px rgba(201,124,26,0.1), inset 0 2px 8px rgba(255,255,255,0.1);
+    cursor: pointer; transition: transform 0.08s, box-shadow 0.08s;
+    font-size: 4.5rem; display: flex; align-items:center; justify-content:center;
+    user-select: none; -webkit-user-select: none; position: relative; overflow: hidden;
+    z-index: 4;
+  }
+  .mine-btn::after {
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 38% 30%, rgba(255,255,255,0.15), transparent 60%);
+    pointer-events:none;
+  }
+  .mine-btn:hover { transform: scale(1.04); box-shadow: 0 0 60px rgba(201,124,26,0.6), 0 0 100px rgba(201,124,26,0.2), inset 0 2px 8px rgba(255,255,255,0.15); }
+  .mine-btn:active { transform: scale(0.94); }
+  .glow-ring {
+    position:absolute; width:190px; height:190px; border-radius:50%;
+    border: 2px solid rgba(201,124,26,0.2); animation: pulse-ring 2s ease-in-out infinite; pointer-events:none;
+    z-index: 2;
+  }
+  .glow-ring2 { width:220px; height:220px; animation-delay:0.5s; border-color:rgba(201,124,26,0.1); }
+  @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.05);opacity:1} }
+
+  .click-zone {
+    position: absolute; inset: 0;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    z-index: 3;
+  }
+
+  /* Mine shaft animation canvas */
+  .mine-anim {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 16px;
+  }
+  #mine-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    border-radius: 16px;
+  }
+
+  /* BUILDING SCENE */
+  .building-scene {
+    width: 100%; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 0; display:flex; flex-direction:column; gap:0;
+    flex: 1; min-height: 0; overflow: hidden;
+  }
+  .scene-title {
+    font-family:'Fredoka One',cursive; font-size:1rem;
+    color: var(--gold); text-align:center; letter-spacing:1px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2); flex-shrink:0;
+  }
+  .scene-row {
+    display:flex; align-items:center; gap:0;
+    height: var(--row-h); flex-shrink:0;
+    border-bottom: 1px solid rgba(201,124,26,0.07);
+    overflow: hidden;
+  }
+  .scene-row-label {
+    font-size:0.6rem; color:rgba(249,199,79,0.35);
+    width: 80px; flex-shrink:0; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; padding-left:2px;
+  }
+  .scene-row-icons {
+    flex:1; display:flex; align-items:center;
+    overflow:hidden; gap:1px;
+  }
+  .scene-unit {
+    display:inline-block; flex-shrink:0; line-height:1;
+    animation: bob 1.5s ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  .scene-overflow {
+    font-family:'Fredoka One',cursive; font-size:0.7rem;
+    color:var(--gold); flex-shrink:0; margin-left:2px;
+  }
+  .scene-row-count {
+    font-family:'Fredoka One',cursive; font-size:0.75rem;
+    color:var(--amber); flex-shrink:0; width:28px; text-align:right;
+    padding-right:4px;
+  }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+  .scene-empty { font-size:0.7rem; color:rgba(249,199,79,0.2); text-align:center; padding:12px 0; }
+
+  .click-info { font-size:0.8rem; color:rgba(249,199,79,0.4); text-align:center; }
+
+  /* PARTICLES */
+  .particle {
+    position:fixed; pointer-events:none; font-size:1.4rem;
+    font-family:'Fredoka One',cursive; color: var(--gold);
+    text-shadow: 0 0 10px rgba(249,199,79,0.8);
+    animation: float-up 0.9s ease-out forwards; z-index:999;
+  }
+  @keyframes float-up { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-80px) scale(0.5);opacity:0} }
+
+  .milestone {
+    position:fixed; top:70px; left:50%; transform:translateX(-50%);
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: var(--deep); font-family:'Fredoka One',cursive; font-size:1.1rem;
+    padding: 8px 24px; border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(249,199,79,0.5); z-index:999;
+    animation: banner-in 0.4s ease, banner-out 0.4s ease 2.5s forwards;
+  }
+  @keyframes banner-in{ from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+  @keyframes banner-out{ to{opacity:0;transform:translateX(-50%) translateY(-20px)} }
+
+  /* RIGHT PANEL */
+  .panel-right {
+    background: var(--panel); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .scroll-list {
+    flex:1; overflow-y: auto; padding: 8px;
+    scrollbar-width: thin; scrollbar-color: var(--amber) transparent;
+  }
+  .scroll-list::-webkit-scrollbar { width:4px; }
+  .scroll-list::-webkit-scrollbar-thumb { background:var(--amber); border-radius:2px; }
+
+  /* BUILDING CARD */
+  @keyframes unlock-slide {
+    from { opacity:0; transform: translateX(30px) scale(0.95); }
+    to   { opacity:1; transform: translateX(0)    scale(1); }
+  }
+  .building-card {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 10px; margin-bottom: 5px; border-radius: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s; position:relative; overflow:hidden;
+  }
+  .building-card.unlocked-new {
+    animation: unlock-slide 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .building-card::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(201,124,26,0.07), transparent);
+    transform:translateX(-100%); transition:transform 0.3s;
+  }
+  .building-card:hover::before { transform:translateX(100%); }
+  .building-card:hover { background: rgba(201,124,26,0.1); border-color: rgba(201,124,26,0.4); transform:translateX(2px); }
+  .building-card.affordable { border-color: rgba(67,170,139,0.5); background: rgba(67,170,139,0.06); }
+  .building-card.affordable:hover { background: rgba(67,170,139,0.14); border-color: var(--emerald); }
+  .building-card.cant-afford { opacity:0.5; }
+  .building-icon { font-size:1.7rem; flex-shrink:0; }
+  .building-info { flex:1; min-width:0; }
+  .building-name { font-weight:800; font-size:0.82rem; color: var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .building-desc { font-size:0.68rem; color: rgba(249,199,79,0.6); line-height:1.3; }
+  .building-fps { font-size:0.65rem; color:rgba(249,199,79,0.5); }
+  .building-right { text-align:right; flex-shrink:0; }
+  .building-cost { font-family:'Fredoka One',cursive; font-size:0.85rem; color: var(--gold); }
+  .building-count { font-family:'Fredoka One',cursive; font-size:1.1rem; color: var(--amber); }
+
+  /* UPGRADE CARD */
+  .upgrade-card {
+    display:flex; align-items:center; gap:10px; padding:7px 10px; margin-bottom:4px;
+    border-radius:8px; cursor:pointer; transition:all 0.15s; position:relative;
+  }
+  .upgrade-card.available {
+    background:rgba(249,199,79,0.07); border:1px solid rgba(249,199,79,0.3);
+  }
+  .upgrade-card.available:hover {
+    background:rgba(249,199,79,0.18); border-color:rgba(249,199,79,0.7);
+    transform:translateX(2px);
+  }
+  .upgrade-card.cant-afford-upg {
+    background:rgba(249,199,79,0.03); border:1px solid rgba(249,199,79,0.1);
+    opacity:0.55; cursor:not-allowed;
+  }
+  .upgrade-card.purchased {
+    background:rgba(67,170,139,0.08); border:1px solid rgba(67,170,139,0.25);
+    cursor:default; opacity:0.55;
+  }
+  .upgrade-icon { font-size:1.4rem; flex-shrink:0; }
+  .upgrade-info { flex:1; }
+  .upgrade-name { font-weight:800; font-size:0.8rem; color:var(--gold); }
+  .upgrade-desc { font-size:0.67rem; color:rgba(249,199,79,0.6); }
+  .upgrade-cost-lbl { font-family:'Fredoka One',cursive; font-size:0.78rem; color:var(--gold); text-align:right; flex-shrink:0; }
+
+  .stats-bar {
+    padding:6px 14px; border-top:1px solid var(--border); background:rgba(0,0,0,0.3);
+    display:grid; grid-template-columns:1fr 1fr; gap:4px 16px; font-size:0.72rem; color:rgba(249,199,79,0.6);
+  }
+  .stat-item strong { color:var(--gold); }
+
+  .tooltip {
+    position:fixed; z-index:9999; background:rgba(14,10,4,0.97);
+    border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+    font-size:0.78rem; max-width:220px; pointer-events:none;
+    backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none;
+  }
+  .tooltip-title { font-family:'Fredoka One',cursive; color:var(--gold); margin-bottom:4px; }
+  .tooltip-body { color:rgba(249,199,79,0.7); line-height:1.5; }
+  .tooltip-bonus { color:var(--emerald); font-size:0.75rem; margin-top:4px; }
+
+  /* BONUS ORE */
+  .bonus-ore {
+    position: fixed;
+    cursor: pointer;
+    z-index: 200;
+    pointer-events: all;
+    user-select: none;
+    animation: bonus-float var(--float-dur) linear forwards;
+    transition: transform 0.12s;
+    transform-origin: center;
+  }
+  .bonus-ore:hover { transform: scale(1.35) rotate(10deg) !important; }
+  .bonus-ore:active { transform: scale(0.85) !important; }
+  .bonus-ore.type-common  { font-size: 2rem;   animation: bonus-float-wobble var(--float-dur) ease-in-out forwards; }
+  .bonus-ore.type-rare    { font-size: 2.4rem; animation: bonus-float-spiral var(--float-dur) linear forwards; }
+  .bonus-ore.type-epic    { font-size: 2.8rem; animation: bonus-float-bounce var(--float-dur) ease-in-out forwards; }
+  .bonus-ore.type-legendary { font-size: 3.4rem; animation: bonus-float-flash var(--float-dur) linear forwards; }
+
+  @keyframes bonus-float-wobble {
+    0%   { opacity:0; transform: scale(0.4) rotate(-10deg); }
+    8%   { opacity:1; transform: scale(1) rotate(5deg); }
+    30%  { transform: scale(1.05) rotate(-5deg) translateY(-8px); }
+    60%  { transform: scale(1) rotate(5deg) translateY(5px); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-float-spiral {
+    0%   { opacity:0; transform: scale(0.3) rotate(0deg); }
+    8%   { opacity:1; transform: scale(1) rotate(180deg); }
+    50%  { transform: scale(1.1) rotate(360deg) translateY(var(--mid-y,0px)); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.5) rotate(720deg) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-float-bounce {
+    0%   { opacity:0; transform: scale(0.2); }
+    5%   { opacity:1; transform: scale(1.3); }
+    15%  { transform: scale(0.9); }
+    25%  { transform: scale(1.15) translateY(-15px); }
+    40%  { transform: scale(1) translateY(0); }
+    60%  { transform: scale(1.1) translateY(-10px); }
+    80%  { transform: scale(1) translateY(0); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.7) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+  @keyframes bonus-float-flash {
+    0%   { opacity:0; transform: scale(0) rotate(0deg); }
+    6%   { opacity:1; transform: scale(1.4) rotate(-15deg); }
+    12%  { transform: scale(1) rotate(10deg); }
+    25%  { transform: scale(1.2) rotate(-5deg); filter: brightness(1.5); }
+    50%  { transform: scale(1) rotate(5deg); filter: brightness(1); }
+    75%  { transform: scale(1.15) rotate(-8deg); filter: brightness(2); }
+    90%  { opacity:1; }
+    100% { opacity:0; transform: scale(0.6) translateY(var(--drift-y)) translateX(var(--drift-x)); }
+  }
+
+  .bonus-ore-label {
+    position: absolute;
+    bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-family:'Fredoka One',cursive; font-size: 0.65rem;
+    white-space: nowrap; padding: 1px 6px; border-radius: 8px;
+    pointer-events: none;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bonus-ore-wrap {
+    position: fixed; z-index: 200; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* CRISIS */
+  .crisis-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 490;
+    box-shadow: inset 0 0 80px 20px rgba(249,65,68,0.22);
+    animation: vignette-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes vignette-pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+  .crisis-banner {
+    position: fixed;
+    bottom: 70px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-family:'Fredoka One',cursive;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    z-index: 500; width: 370px;
+    animation: crisis-in 0.45s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+  @keyframes crisis-in {
+    from { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  }
+  @keyframes crisis-out {
+    to   { opacity:0; transform: translateX(-50%) translateY(60px) scale(0.88); }
+  }
+  .crisis-banner.resolving { animation: crisis-out 0.35s ease forwards; }
+  .crisis-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px 10px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .crisis-icon-wrap {
+    font-size: 2.2rem; flex-shrink: 0;
+    animation: crisis-icon-anim var(--icon-anim, shake) 0.5s infinite;
+  }
+  @keyframes shake { 0%,100%{ transform:translateX(0) rotate(0deg); } 20%{ transform:translateX(-4px) rotate(-6deg); } 40%{ transform:translateX(4px) rotate(6deg); } 60%{ transform:translateX(-3px) rotate(-4deg); } 80%{ transform:translateX(3px) rotate(4deg); } }
+  @keyframes spin-crisis { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes bob-crisis { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+  @keyframes flash-crisis { 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.4; transform:scale(1.3); } }
+  .crisis-titles { flex: 1; }
+  .crisis-title  { font-size: 1rem; line-height: 1.2; }
+  .crisis-building-tag { font-size: 0.68rem; opacity: 0.7; margin-top: 2px; font-family: 'Nunito', sans-serif; font-weight: 700; }
+  .crisis-body { padding: 10px 16px 14px; }
+  .crisis-desc { font-size: 0.76rem; font-family:'Nunito',sans-serif; opacity: 0.85; margin-bottom: 10px; line-height: 1.5; }
+  .crisis-action-hint {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.3); border-radius: 10px;
+    padding: 7px 12px; margin-bottom: 10px;
+    font-size: 0.78rem; font-family:'Nunito',sans-serif;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .crisis-action-icon { font-size: 1.3rem; flex-shrink:0; }
+  .crisis-action-text { flex:1; line-height:1.4; }
+  .crisis-bar-wrap { background: rgba(0,0,0,0.4); border-radius: 8px; height: 12px; overflow: hidden; }
+  .crisis-bar {
+    height: 100%; border-radius: 8px;
+    background: linear-gradient(90deg, #f9c74f, #f77f00);
+    transition: width 0.12s ease-out;
+    position: relative;
+  }
+  .crisis-bar::after { content:''; position:absolute; right:0; top:0; bottom:0; width:6px; background: rgba(255,255,255,0.5); border-radius:0 8px 8px 0; }
+  .crisis-progress-row { display:flex; justify-content:space-between; align-items:center; margin-top:5px; }
+  .crisis-clicks { font-size: 0.7rem; opacity: 0.65; }
+  .crisis-pct    { font-size: 0.7rem; color: #f9c74f; }
+  .scene-row.crisis-building { animation: row-crisis 0.6s ease-in-out infinite; border-radius: 6px; }
+  @keyframes row-crisis { 0%,100%{ background: transparent; } 50%{ background: rgba(249,65,68,0.18); box-shadow: inset 0 0 8px rgba(249,65,68,0.3); } }
+  body.in-crisis .mine-btn {
+    border-color: rgba(249,65,68,0.7) !important;
+    box-shadow: 0 0 50px rgba(249,65,68,0.5), inset 0 2px 8px rgba(255,255,255,0.15) !important;
+  }
+
+  #banner-ad {
+    flex-shrink: 0;
+    background: rgba(14,10,4,0.97);
+    border-top: 1px solid rgba(201,124,26,0.25);
+    display: none; align-items: center; justify-content: center;
+    height: 36px; padding: 2px;
+    position: relative; z-index: 200;
+  }
+  #banner-ad.loaded { display: flex; }
+  #banner-ad ins { display: block; width: 728px; max-width: 90vw; height: 30px; }
+</style>
+</head>
+<body>
+<div class="dust" id="dust"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-body" id="tt-body"></div>
+  <div class="tooltip-bonus" id="tt-bonus"></div>
+</div>
+
+<header>
+  <span class="pick-emoji">⛏️</span>
+  <h1>MINE RUSH</h1>
+  <span class="pick-emoji" style="animation-delay:.4s">💎</span>
+  <div class="header-right">
+    <button class="reset-btn" id="reset-btn">RESET GAME</button>
+  </div>
+</header>
+<button class="share-btn-fixed" id="share-btn">SHARE GAME</button>
+
+<div class="game">
+
+  <!-- LEFT: Upgrades -->
+  <div class="panel-left">
+    <div class="panel-title">⚡ Upgrades</div>
+    <div class="scroll-list" id="upgrades-list"></div>
+    <div class="stats-bar" id="stats-bar"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="panel-center">
+    <div class="ore-counter">
+      <div class="ore-count" id="ore-count">0</div>
+      <div class="ore-count-label">ores mined</div>
+      <div class="ore-per-sec" id="ore-ps">0 ore/sec</div>
+    </div>
+
+    <div class="mine-btn-wrap">
+      <div class="mine-anim" id="mine-bg"><canvas id="mine-canvas"></canvas></div>
+      <div class="click-zone" id="click-zone-main"></div>
+      <div class="glow-ring"></div>
+      <div class="glow-ring glow-ring2"></div>
+      <button class="mine-btn" id="mine-btn">⛏️</button>
+    </div>
+
+    <div class="click-info">
+      per click <span id="click-power" style="color:var(--gold)">1</span> ore
+    </div>
+
+    <!-- Mine Scene -->
+    <div class="building-scene" id="building-scene">
+      <div class="scene-title">◈ MINE ◈</div>
+      <div id="scene-content" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;padding:6px 8px;">
+        <div class="scene-empty">Buy a building to see it here...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Buildings -->
+  <div class="panel-right">
+    <div class="panel-title">🏗️ Buildings</div>
+    <div class="scroll-list" id="buildings-list"></div>
+  </div>
+</div>
+
+<div id="banner-ad">
+  <ins class="adsbygoogle" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"
+       onload="document.getElementById('banner-ad').classList.add('loaded')"></ins>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────
+const state = {
+  ore: 0,
+  totalOre: 0,
+  orePerClick: 1,
+  baseClickPower: 1,
+  clickMultiplier: 1,
+  clickSynergyRate: 0,
+  orePerSec: 0,
+  buildings: {},
+  purchasedUpgrades: new Set(),
+  totalClicks: 0,
+  oreFromClicks: 0,
+  crisisActive: null,
+  crisisClicksLeft: 0,
+  crisisMultPenalty: 1,
+  boostHarvestMult: 1,
+  totalCrisesResolved: 0,
+  catchedBonusOre: 0,
+  firstPlayedAt: 0,
+  totalPlayTime: 0,
+};
+
+// ── PICKAXE EVOLUTION ──────────────────────────────────────
+const MINE_STAGES = [
+  { min:0,         emoji:'⛏️',  label:'Rusty Pickaxe',    glow:'rgba(201,124,26,0.4)' },
+  { min:500,       emoji:'🪨',  label:'Stone Chunk',      glow:'rgba(160,180,200,0.5)' },
+  { min:5000,      emoji:'🔩',  label:'Iron Vein',        glow:'rgba(160,180,200,0.6)' },
+  { min:50000,     emoji:'💛',  label:'Gold Nugget',      glow:'rgba(249,199,79,0.6)' },
+  { min:500000,    emoji:'💎',  label:'Diamond Seam',     glow:'rgba(100,200,255,0.7)' },
+  { min:5000000,   emoji:'🔮',  label:'Crystal Core',     glow:'rgba(155,93,229,0.7)' },
+  { min:50000000,  emoji:'🌟',  label:'Star Metal',       glow:'rgba(249,199,79,0.9)' },
+  { min:500000000, emoji:'🌋',  label:'Volcanic Forge',   glow:'rgba(255,80,0,0.9)' },
+];
+
+function getCurrentStage() {
+  let stage = MINE_STAGES[0];
+  for(const s of MINE_STAGES) { if(state.totalOre >= s.min) stage = s; }
+  return stage;
+}
+
+let lastStageIdx = 0;
+function updateMineBtn() {
+  const stage = getCurrentStage();
+  const idx = MINE_STAGES.indexOf(stage);
+  const btn = document.getElementById('mine-btn');
+  btn.textContent = stage.emoji;
+  btn.style.boxShadow = `0 0 40px ${stage.glow}, 0 0 80px ${stage.glow.replace('0.','0.0')}, inset 0 2px 8px rgba(255,255,255,0.1)`;
+  if(idx > lastStageIdx) {
+    lastStageIdx = idx;
+    showMilestone(`${stage.emoji} Discovered: ${stage.label}!`);
+  }
+}
+
+// ── BUILDINGS ────────────────────────────────────────────────
+const BUILDINGS = [
+  { id:'pickaxe',    name:'Pickaxe',            icon:'⛏️', sceneIcon:'⛏️', desc:'A worn pickaxe. Slow but trusty.',                       baseCost:10,        baseFps:0.1,    req:()=>true },
+  { id:'miner',      name:'Miner',              icon:'👷', sceneIcon:'👷', desc:'A dedicated miner digs day and night.',                  baseCost:100,       baseFps:0.5,    req:()=>(state.buildings.pickaxe||0)>=3 },
+  { id:'cart',       name:'Ore Cart',           icon:'🛒', sceneIcon:'🛒', desc:'Speeds up ore transport from the shaft.',               baseCost:500,       baseFps:2,      req:()=>(state.buildings.miner||0)>=2 && (state.buildings.pickaxe||0)>=5 },
+  { id:'shaft',      name:'Mine Shaft',         icon:'🕳️', sceneIcon:'🕳️', desc:'A deeper shaft uncovers richer ore veins.',             baseCost:1200,      baseFps:5,      req:()=>(state.buildings.cart||0)>=2 && (state.buildings.miner||0)>=4 },
+  { id:'drill',      name:'Power Drill',        icon:'🔩', sceneIcon:'🔩', desc:'Mechanized drilling for rapid extraction.',             baseCost:2000,      baseFps:8,      req:()=>(state.buildings.shaft||0)>=2 && (state.buildings.cart||0)>=3 },
+  { id:'smelter',    name:'Ore Smelter',        icon:'🔥', sceneIcon:'🔥', desc:'Smelting raw ore into pure refined bars.',              baseCost:5000,      baseFps:18,     req:()=>(state.buildings.drill||0)>=2 && (state.buildings.shaft||0)>=3 },
+  { id:'blaster',    name:'Blasting Crew',      icon:'💥', sceneIcon:'💥', desc:'Controlled explosions expose massive ore deposits.',    baseCost:8000,      baseFps:25,     req:()=>(state.buildings.smelter||0)>=2 && (state.buildings.drill||0)>=4 },
+  { id:'excavator',  name:'Excavator',          icon:'🏗️', sceneIcon:'🏗️', desc:'Heavy machinery digs entire hillsides.',               baseCost:20000,     baseFps:55,     req:()=>(state.buildings.blaster||0)>=2 && (state.buildings.smelter||0)>=3 },
+  { id:'refinery',   name:'Ore Refinery',       icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale refining of every ore type.',         baseCost:30000,     baseFps:80,     req:()=>(state.buildings.excavator||0)>=2 && (state.buildings.blaster||0)>=3 },
+  { id:'geoscanner', name:'Geo Scanner',        icon:'📡', sceneIcon:'📡', desc:'Detects hidden ore pockets deep underground.',         baseCost:75000,     baseFps:160,    req:()=>(state.buildings.refinery||0)>=2 && (state.buildings.excavator||0)>=4 },
+  { id:'lab',        name:'Geology Lab',        icon:'🔬', sceneIcon:'🔬', desc:'Scientists synthesise ultra-dense ore compounds.',      baseCost:100000,    baseFps:250,    req:()=>(state.buildings.geoscanner||0)>=2 && (state.buildings.refinery||0)>=3 },
+  { id:'deepdriller',name:'Deep Core Drill',    icon:'🌀', sceneIcon:'🌀', desc:'Drills to the mantle for volcanic ore.',               baseCost:300000,    baseFps:600,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.geoscanner||0)>=4 },
+  { id:'satellite',  name:'Mining Satellite',   icon:'🛸', sceneIcon:'🛸', desc:'Orbital scans locate global ore deposits.',            baseCost:800000,    baseFps:1500,   req:()=>(state.buildings.deepdriller||0)>=2 && (state.buildings.lab||0)>=3 },
+  { id:'asteroid',   name:'Asteroid Miner',     icon:'☄️', sceneIcon:'☄️', desc:'Space mining yields exotic extraterrestrial ore.',     baseCost:500000,    baseFps:1000,   req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.deepdriller||0)>=4 },
+  { id:'volcano',    name:'Volcano Tap',        icon:'🌋', sceneIcon:'🌋', desc:'Tapping volcanic magma for the rarest metals.',       baseCost:2000000,   baseFps:3000,   req:()=>(state.buildings.asteroid||0)>=2 && (state.buildings.satellite||0)>=3 },
+  { id:'timeborer',  name:'Time Borer',         icon:'⏱️', sceneIcon:'⏱️', desc:'Mining ore from ancient geological eras.',            baseCost:5000000,   baseFps:6000,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.asteroid||0)>=4 },
+  { id:'singularity',name:'Ore Singularity',    icon:'⚫', sceneIcon:'⚫', desc:'A micro black hole compresses ore to infinity.',       baseCost:20000000,  baseFps:20000,  req:()=>(state.buildings.timeborer||0)>=2 && (state.buildings.volcano||0)>=3 },
+  { id:'earthgod',   name:'Earth God\'s Vein',  icon:'🔱', sceneIcon:'🔱', desc:'The Earth herself gifts you her purest ore.',          baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.singularity||0)>=2 && (state.buildings.timeborer||0)>=3 },
+];
+
+// ── UPGRADES ─────────────────────────────────────────────────
+const UPGRADES = [
+  // Click upgrades
+  { id:'sharp_pick',   name:'Sharp Pickaxe',      icon:'⛏️', desc:'+1 extra ore per click.',           cost:200,       req:()=>state.totalOre>=150,                  effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'iron_pick',    name:'Iron Pickaxe',        icon:'🔩', desc:'x2 ore per click!',                 cost:1500,      req:()=>state.totalOre>=600,                  effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'gold_pick',    name:'Golden Pickaxe',      icon:'💛', desc:'+5 ore per click.',                 cost:8000,      req:()=>state.totalOre>=3000,                 effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
+  { id:'pick_frenzy',  name:'Pick Frenzy',         icon:'💥', desc:'+10 ore per click.',                cost:150000,    req:()=>state.totalOre>=40000,                effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
+  { id:'ancient_vein', name:'Ancient Vein',        icon:'🗺️', desc:'Discover mother lode: click x3.',   cost:12000000,  req:()=>state.totalOre>=3000000,              effect:()=>{ state.clickMultiplier *= 3; } },
+  { id:'earth_claw',   name:'Earth Claw',          icon:'🦾', desc:'+50 ore per click + x1.5 mult.',    cost:60000000,  req:()=>state.totalOre>=15000000,             effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
+
+  // Building upgrades - Pickaxe
+  { id:'pick_x2',      name:'Double Pick',         icon:'⛏️', desc:'Pickaxes are twice as efficient.',  cost:500,       req:()=>(state.buildings.pickaxe||0)>=10,     effect:()=>{ boostBuilding('pickaxe',2); } },
+  { id:'pick_x3',      name:'Diamond Pick',        icon:'💎', desc:'Pickaxes are 3x as efficient.',     cost:5000,      req:()=>(state.buildings.pickaxe||0)>=40,     effect:()=>{ boostBuilding('pickaxe',3); } },
+
+  // Building upgrades - Miner
+  { id:'miner_coffee', name:'Miner\'s Coffee',     icon:'☕', desc:'Miners work 2x faster.',             cost:3000,      req:()=>(state.buildings.miner||0)>=10,       effect:()=>{ boostBuilding('miner',2); } },
+  { id:'miner_helmet', name:'Hard Hat',            icon:'⛑️', desc:'Miners dig 3x deeper.',              cost:30000,     req:()=>(state.buildings.miner||0)>=40,       effect:()=>{ boostBuilding('miner',3); } },
+
+  // Building upgrades - Cart
+  { id:'cart_rails',   name:'Steel Rails',         icon:'🛒', desc:'Ore carts move 2x faster.',          cost:15000,     req:()=>(state.buildings.cart||0)>=10,        effect:()=>{ boostBuilding('cart',2); } },
+  { id:'cart_turbo',   name:'Turbo Cart',          icon:'💨', desc:'Ore carts are now 3x faster.',       cost:150000,    req:()=>(state.buildings.cart||0)>=40,        effect:()=>{ boostBuilding('cart',3); } },
+
+  // Building upgrades - Shaft
+  { id:'shaft_brace',  name:'Shaft Bracing',       icon:'🕳️', desc:'Mine shafts yield 2x ore.',          cost:25000,     req:()=>(state.buildings.shaft||0)>=10,       effect:()=>{ boostBuilding('shaft',2); } },
+
+  // Building upgrades - Drill
+  { id:'drill_grease', name:'Industrial Grease',   icon:'🔩', desc:'Drills spin 2x faster.',             cost:60000,     req:()=>(state.buildings.drill||0)>=10,       effect:()=>{ boostBuilding('drill',2); } },
+  { id:'plasma_drill', name:'Plasma Drill',        icon:'🌀', desc:'Drills produce 4x more.',            cost:800000,    req:()=>(state.buildings.drill||0)>=40,       effect:()=>{ boostBuilding('drill',4); } },
+
+  // Building upgrades - Smelter
+  { id:'heat_boost',   name:'Heat Boost',          icon:'🔥', desc:'Smelters run 2x hotter.',            cost:120000,    req:()=>(state.buildings.smelter||0)>=10,     effect:()=>{ boostBuilding('smelter',2); } },
+
+  // Building upgrades - Blaster
+  { id:'big_bang',     name:'Big Bang Charge',     icon:'💥', desc:'Blasting crews yield 2x more.',      cost:250000,    req:()=>(state.buildings.blaster||0)>=10,     effect:()=>{ boostBuilding('blaster',2); } },
+  { id:'mega_blast',   name:'Mega Blast',          icon:'💣', desc:'Blasting crews yield 4x more.',      cost:2500000,   req:()=>(state.buildings.blaster||0)>=40,     effect:()=>{ boostBuilding('blaster',4); } },
+
+  // Building upgrades - Excavator
+  { id:'big_bucket',   name:'Mega Bucket',         icon:'🏗️', desc:'Excavators scoop 2x more.',          cost:600000,    req:()=>(state.buildings.excavator||0)>=10,   effect:()=>{ boostBuilding('excavator',2); } },
+
+  // Building upgrades - Refinery
+  { id:'ai_refinery',  name:'AI Refinery',         icon:'🤖', desc:'Refinery runs 3x more efficiently.', cost:1000000,   req:()=>(state.buildings.refinery||0)>=10,    effect:()=>{ boostBuilding('refinery',3); } },
+
+  // Building upgrades - Geo Scanner
+  { id:'deep_scan',    name:'Deep Scan Array',     icon:'📡', desc:'Geo scanners find 2x more ore.',     cost:2000000,   req:()=>(state.buildings.geoscanner||0)>=10,  effect:()=>{ boostBuilding('geoscanner',2); } },
+
+  // Building upgrades - Lab
+  { id:'ore_synthesis',name:'Ore Synthesis',       icon:'🔬', desc:'Labs produce 3x more.',              cost:5000000,   req:()=>(state.buildings.lab||0)>=10,         effect:()=>{ boostBuilding('lab',3); } },
+
+  // Building upgrades - Deep Driller
+  { id:'ultra_drill',  name:'Ultra Core Drill',    icon:'🌀', desc:'Core drills run 2x faster.',         cost:10000000,  req:()=>(state.buildings.deepdriller||0)>=10, effect:()=>{ boostBuilding('deepdriller',2); } },
+
+  // Building upgrades - Satellite
+  { id:'quantum_scan', name:'Quantum Scanner',     icon:'🛸', desc:'Satellite coverage x3.',             cost:25000000,  req:()=>(state.buildings.satellite||0)>=10,   effect:()=>{ boostBuilding('satellite',3); } },
+
+  // Global boosts
+  { id:'earth_song',   name:'Earth Song',          icon:'🎵', desc:'All buildings 50% more productive.', cost:3000000,   req:()=>state.totalOre>=1500000,              effect:()=>{ globalBoost(1.5); } },
+  { id:'ore_god',      name:'Ore God\'s Blessing', icon:'🔱', desc:'All production x2!',                 cost:150000000, req:()=>state.totalOre>=30000000,             effect:()=>{ globalBoost(2); } },
+  { id:'earth_pact',   name:'Earth Pact',          icon:'🌋', desc:'All production x3 — debt forgiven!', cost:800000000, req:()=>state.totalOre>=200000000,            effect:()=>{ globalBoost(3); } },
+
+  // Synergy
+  { id:'synergy1', name:'Miner\'s Instinct',  icon:'🌊', desc:'Each click gains +1% of your ore/sec.',  cost:5000,    req:()=>(state.buildings.pickaxe||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2', name:'Vein Harmony',       icon:'⛰️', desc:'Each click gains +5% of your ore/sec.',  cost:250000,  req:()=>(state.buildings.cart||0)>=5,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3', name:'Tectonic Mastery',   icon:'🌀', desc:'Each click gains +15% of your ore/sec.', cost:5000000, req:()=>(state.buildings.blaster||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  { id:'synergy4', name:'Core Bond',          icon:'⚫', desc:'Each click gains +30% of your ore/sec.', cost:60000000,req:()=>(state.buildings.excavator||0)>=5,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
+];
+
+// ── CRISES ────────────────────────────────────────────────────
+const CRISES = [
+  { id:'cave_in',      icon:'🪨', title:'Cave-In!',              desc:'The mine tunnel has collapsed! Clear the rubble before ore flow stops!',            color:'#3a2a10', accentColor:'rgba(180,120,40,0.6)',  building:'shaft',      buildingTag:'🕳️ Mine Shaft blocked',      iconAnim:'shake',       solveType:'mash',  actionIcon:'⛏️', actionText:'Spam-click to clear the cave-in!',                    clicksNeeded:25, fpsPenalty:0.5,  minOre:200,     resolveMsg:'🪨 Rubble cleared! Ore flowing again.' },
+  { id:'gas_leak',     icon:'☣️', title:'Gas Leak!',             desc:'Toxic mine gas is flooding the tunnels. Your miners are in danger!',                 color:'#1a3a0a', accentColor:'rgba(60,180,60,0.5)',   building:'smelter',    buildingTag:'🔥 Smelter venting gas',      iconAnim:'flash-crisis',solveType:'rapid', actionIcon:'🔧', actionText:'Rapidly click to seal the gas vents!',                clicksNeeded:40, fpsPenalty:0.3,  minOre:2000,    resolveMsg:'🔥 Gas sealed! Miners are safe.' },
+  { id:'flood',        icon:'💧', title:'Tunnel Flood!',         desc:'Groundwater is flooding the lower shafts. Pump it out now!',                        color:'#0a2a4a', accentColor:'rgba(60,120,220,0.6)',  building:'cart',       buildingTag:'🛒 Ore Carts submerged',      iconAnim:'bob-crisis',  solveType:'click', actionIcon:'🚿', actionText:'Click steadily to pump out the water!',              clicksNeeded:50, fpsPenalty:0.4,  minOre:5000,    resolveMsg:'💧 Flood drained! Carts running again.' },
+  { id:'equipment',    icon:'🔩', title:'Equipment Failure!',    desc:'A critical machine has broken down and halted ore processing!',                      color:'#4a2a00', accentColor:'rgba(200,140,0,0.5)',   building:'drill',      buildingTag:'🔩 Power Drill offline',      iconAnim:'spin-crisis', solveType:'hold',  actionIcon:'🔧', actionText:'Hold down to repair the drill mechanism!',           clicksNeeded:35, fpsPenalty:0.25, minOre:1000,    resolveMsg:'🔩 Equipment repaired! Back to work.' },
+  { id:'raiders',      icon:'🦹', title:'Ore Raiders!',          desc:'Bandits are stealing ore from your carts! Chase them off!',                          color:'#2a0a4a', accentColor:'rgba(160,80,240,0.5)', building:'cart',       buildingTag:'🛒 Cart convoy hijacked',     iconAnim:'flash-crisis',solveType:'mash',  actionIcon:'🚔', actionText:'Spam-click to call the mine guard!',                  clicksNeeded:30, fpsPenalty:0.6,  minOre:500,     resolveMsg:'🦹 Raiders driven off! Ore secured.' },
+  { id:'seismic',      icon:'🌍', title:'Seismic Event!',        desc:'An earthquake is shaking the mine! Stabilise the support beams!',                   color:'#3a1a10', accentColor:'rgba(220,80,40,0.6)',   building:'shaft',      buildingTag:'🕳️ Shaft walls cracking',     iconAnim:'shake',       solveType:'rapid', actionIcon:'🏗️', actionText:'Rapidly click to brace the support pillars!',         clicksNeeded:45, fpsPenalty:0.4,  minOre:10000,   resolveMsg:'🌍 Earthquake survived! Shafts stable.' },
+  { id:'explosion',    icon:'💣', title:'Premature Blast!',      desc:'An accidental detonation has blocked the main tunnel exit!',                         color:'#5a1a00', accentColor:'rgba(255,80,0,0.6)',    building:'blaster',    buildingTag:'💥 Blast crew in trouble',    iconAnim:'flash-crisis',solveType:'click', actionIcon:'🧯', actionText:'Click to clear the debris and open the exit!',        clicksNeeded:60, fpsPenalty:0.2,  minOre:50000,   resolveMsg:'💣 Debris cleared! Tunnel open.' },
+  { id:'power_cut',    icon:'⚡', title:'Power Cut!',            desc:'The main generator is down — drills and machinery have stopped!',                    color:'#2a2a2a', accentColor:'rgba(220,220,0,0.5)',   building:'drill',      buildingTag:'🔩 All drills offline',       iconAnim:'flash-crisis',solveType:'hold',  actionIcon:'🔌', actionText:'Hold the button to restart the generator!',           clicksNeeded:30, fpsPenalty:0.45, minOre:20000,   resolveMsg:'⚡ Power restored! Drills running.' },
+  { id:'smelter_fire', icon:'🔥', title:'Smelter Fire!',         desc:'Molten ore overflow has started a fire in the smelting hall!',                       color:'#5a1a00', accentColor:'rgba(255,80,0,0.6)',    building:'smelter',    buildingTag:'🔥 Smelter Hall burning',     iconAnim:'flash-crisis',solveType:'mash',  actionIcon:'🧯', actionText:'Spam-click to unleash the fire suppressors!',         clicksNeeded:45, fpsPenalty:0.35, minOre:80000,   resolveMsg:'🔥 Fire extinguished! Smelter back online.' },
+  { id:'ore_shortage', icon:'📦', title:'Ore Shortage!',         desc:'The ore carts are empty — the current vein has run dry. Find a new one!',            color:'#1a0f05', accentColor:'rgba(100,60,0,0.5)',    building:'pickaxe',    buildingTag:'⛏️ Pickaxes idling',          iconAnim:'bob-crisis',  solveType:'rapid', actionIcon:'🗺️', actionText:'Rapidly click to survey new ore veins!',              clicksNeeded:35, fpsPenalty:0.3,  minOre:300,     resolveMsg:'📦 New vein found! Ore flowing again.' },
+];
+
+// ── BONUS ORE TYPES ─────────────────────────────────────────
+const BONUS_ORE_TYPES = [
+  // common — instant
+  { rarity:'common',    icon:'🪨', label:'Stone Chunk',    mult:1.5, minOre:0,       boostType:'instant' },
+  { rarity:'common',    icon:'🔸', label:'Copper Ore',     mult:2,   minOre:50,      boostType:'instant' },
+  // common — harvest
+  { rarity:'common',    icon:'🪵', label:'Coal Seam',      mult:1,   minOre:100,     boostType:'harvest', boostMult:1.2, boostDur:8000 },
+
+  // rare — instant
+  { rarity:'rare',      icon:'🔩', label:'Iron Vein',      mult:3,   minOre:500,     boostType:'instant' },
+  { rarity:'rare',      icon:'🔶', label:'Gold Flake',     mult:4,   minOre:800,     boostType:'instant' },
+  // rare — frenzy
+  { rarity:'rare',      icon:'💥', label:'Blasting Cap',   mult:2,   minOre:1000,    boostType:'frenzy',  boostMult:1.5, boostDur:12000 },
+  // rare — harvest
+  { rarity:'rare',      icon:'🧲', label:'Magnet Ore',     mult:3,   minOre:1500,    boostType:'harvest', boostMult:1.3, boostDur:18000 },
+
+  // epic — instant
+  { rarity:'epic',      icon:'💎', label:'Diamond',        mult:8,   minOre:5000,    boostType:'instant' },
+  { rarity:'epic',      icon:'🔷', label:'Sapphire',       mult:6,   minOre:8000,    boostType:'instant' },
+  // epic — frenzy
+  { rarity:'epic',      icon:'⚡', label:'Power Surge',    mult:5,   minOre:10000,   boostType:'frenzy',  boostMult:2,   boostDur:12000 },
+  { rarity:'epic',      icon:'🌀', label:'Drill Frenzy',   mult:7,   minOre:20000,   boostType:'frenzy',  boostMult:2,   boostDur:10000 },
+  // epic — harvest
+  { rarity:'epic',      icon:'🔮', label:'Crystal Core',   mult:12,  minOre:15000,   boostType:'harvest', boostMult:1.5, boostDur:18000 },
+
+  // legendary — instant
+  { rarity:'legendary', icon:'✨', label:'Mythril',         mult:20,  minOre:500000,  boostType:'instant' },
+  // legendary — frenzy
+  { rarity:'legendary', icon:'🌋', label:'Magma Surge',    mult:20,  minOre:100000,  boostType:'frenzy',  boostMult:3,   boostDur:20000 },
+  { rarity:'legendary', icon:'☄️', label:'Meteor Ore',     mult:25,  minOre:1000000, boostType:'frenzy',  boostMult:4,   boostDur:15000 },
+  // legendary — harvest
+  { rarity:'legendary', icon:'🌟', label:'Star Metal',     mult:40,  minOre:200000,  boostType:'harvest', boostMult:2.5, boostDur:25000 },
+  { rarity:'legendary', icon:'🔱', label:'Earth God\'s Gift', mult:60, minOre:5000000, boostType:'harvest', boostMult:4, boostDur:30000 },
+];
+
+const RARITY_COLORS = {
+  common:    { border:'rgba(201,124,26,0.5)', bg:'rgba(14,10,4,0.7)',   label:'#c97c1a' },
+  rare:      { border:'rgba(67,170,139,0.7)', bg:'rgba(10,40,20,0.8)',  label:'#43aa8b' },
+  epic:      { border:'rgba(155,93,229,0.8)', bg:'rgba(30,10,60,0.8)',  label:'#c77dff' },
+  legendary: { border:'rgba(249,199,79,0.9)', bg:'rgba(50,30,0,0.9)',   label:'#f9c74f' },
+};
+const RARITY_WEIGHTS = { common:50, rare:30, epic:15, legendary:5 };
+
+const activeBoosts = { frenzy: null, harvest: null };
+
+function applyBoost(type, mult, durationMs, emoji, label) {
+  // Cancel existing boost of same type cleanly
+  if(activeBoosts[type]) {
+    clearTimeout(activeBoosts[type].timerId);
+    if(activeBoosts[type].barEl) activeBoosts[type].barEl.remove();
+    if(type === 'frenzy')  state.clickMultiplier  = Math.max(1, state.clickMultiplier / activeBoosts[type].mult);
+    if(type === 'harvest') state.boostHarvestMult = Math.max(1, (state.boostHarvestMult||1) / activeBoosts[type].mult);
+  }
+
+  if(type === 'frenzy')  state.clickMultiplier  *= mult;
+  if(type === 'harvest') state.boostHarvestMult  = (state.boostHarvestMult||1) * mult;
+  recalcFPS();
+
+  const bar = createBoostBar(type, emoji||'⚡', label||type, mult, durationMs);
+
+  const timerId = setTimeout(() => {
+    if(type === 'frenzy')  state.clickMultiplier  = Math.max(1, state.clickMultiplier / mult);
+    if(type === 'harvest') state.boostHarvestMult = Math.max(1, (state.boostHarvestMult||1) / mult);
+    recalcFPS();
+    if(activeBoosts[type]) { activeBoosts[type].barEl?.remove(); activeBoosts[type] = null; }
+    showMilestone(`${emoji||'⚡'} ${label||type} boost ended`);
+  }, durationMs);
+
+  activeBoosts[type] = { mult, timerId, barEl: bar };
+}
+
+function createBoostBar(type, emoji, label, mult, durationMs) {
+  let container = document.getElementById('boost-bars');
+  if(!container) {
+    container = document.createElement('div');
+    container.id = 'boost-bars';
+    container.style.cssText = `position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:6px;z-index:600;pointer-events:none;`;
+    document.body.appendChild(container);
+  }
+  const isClick   = type === 'frenzy';
+  const accentCol = isClick ? '#f9c74f' : '#43aa8b';
+  const bgCol     = isClick ? 'rgba(50,30,0,0.9)' : 'rgba(10,40,20,0.9)';
+  const bar = document.createElement('div');
+  bar.style.cssText = `background:${bgCol};border:1px solid ${accentCol}55;border-radius:30px;
+    padding:5px 14px 5px 10px;display:flex;align-items:center;gap:8px;min-width:200px;
+    box-shadow:0 2px 14px ${accentCol}33;`;
+  bar.innerHTML = `
+    <span style="font-size:1.2rem">${emoji}</span>
+    <div style="flex:1">
+      <div style="font-family:'Fredoka One',cursive;font-size:0.78rem;color:${accentCol};white-space:nowrap">
+        ${label} <span style="opacity:0.7;font-size:0.7rem">×${mult} ${isClick?'click':'production'}</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.4);border-radius:4px;height:5px;margin-top:3px;overflow:hidden">
+        <div class="boost-progress" style="height:100%;border-radius:4px;background:${accentCol};width:100%;transition:width 0.25s linear"></div>
+      </div>
+    </div>`;
+  container.appendChild(bar);
+  const prog = bar.querySelector('.boost-progress');
+  const start = Date.now();
+  const ticker = setInterval(() => {
+    const pct = Math.max(0, 100 - ((Date.now()-start)/durationMs)*100);
+    prog.style.width = pct+'%';
+    if(pct<=0) clearInterval(ticker);
+  }, 100);
+  return bar;
+}
+
+// ── SESSION TIMER ─────────────────────────────────────────────
+let sessionStart = Date.now();
+
+function fmtDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if(d > 0)  return `${d}d ${h%24}h ${m%60}m`;
+  if(h > 0)  return `${h}h ${m%60}m`;
+  if(m > 0)  return `${m}m ${s%60}s`;
+  return `${s}s`;
+}
+
+function fmtDate(ts) {
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function fmt(n) {
+  if(n>=1e12) return (n/1e12).toFixed(2)+'T';
+  if(n>=1e9)  return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6)  return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3)  return Math.floor(n).toLocaleString('de-DE');
+  return Math.floor(n).toString();
+}
+
+function fmtShort(n) {
+  if(n>=1e12) return (n/1e12).toFixed(2)+'t';
+  if(n>=1e9)  return (n/1e9).toFixed(2)+'b';
+  if(n>=1e6)  return (n/1e6).toFixed(2)+'m';
+  if(n>=1e3)  return (n/1e3).toFixed(2)+'k';
+  return Math.floor(n).toString();
+}
+
+function fmtRate(n) {
+  if(n===0)    return '0';
+  if(n>=1e6)   return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3)   return (n/1e3).toFixed(2)+'K';
+  if(n>=100)   return n.toFixed(1);
+  if(n>=1)     return n.toFixed(2);
+  return n.toFixed(2);
+}
+
+function getCost(b) {
+  const cnt = state.buildings[b.id] || 0;
+  return Math.ceil(b.baseCost * Math.pow(1.22, cnt));
+}
+
+function getTotalFps(b) {
+  const cnt = state.buildings[b.id] || 0;
+  return (state.bldBoost?.[b.id] || 1) * (state.globalMult || 1) * b.baseFps * cnt;
+}
+
+function recalcFPS() {
+  let fps = 0;
+  for(const b of BUILDINGS) fps += getTotalFps(b);
+  const crisisPenalty  = state.crisisActive ? state.crisisActive.fpsPenalty : 1;
+  const harvestMult    = state.boostHarvestMult || 1;
+  state.orePerSec  = fps * crisisPenalty * harvestMult;
+  state.orePerClick = Math.max(1, (state.baseClickPower + Math.floor(fps * state.clickSynergyRate)) * state.clickMultiplier);
+  document.getElementById('click-power').textContent = fmtRate(state.orePerClick);
+  document.getElementById('ore-ps').textContent = fmtRate(state.orePerSec)+' ore/sec';
+}
+
+function boostBuilding(id, mult) {
+  if(!state.bldBoost) state.bldBoost = {};
+  state.bldBoost[id] = (state.bldBoost[id] || 1) * mult;
+  recalcFPS();
+}
+
+function globalBoost(mult) {
+  state.globalMult = (state.globalMult || 1) * mult;
+  recalcFPS();
+}
+
+// ── SAVE / LOAD ──────────────────────────────────────────────
+const SAVE_KEY = 'mineRushSave';
+const _XK = [0x4d,0x49,0x4e,0x45,0x52,0x55,0x53,0x48];
+
+function _encode(obj) {
+  const str = JSON.stringify(obj);
+  let out = '';
+  for(let i=0;i<str.length;i++) out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i%_XK.length]);
+  return btoa(out);
+}
+function _decode(enc) {
+  const str = atob(enc);
+  let out = '';
+  for(let i=0;i<str.length;i++) out += String.fromCharCode(str.charCodeAt(i) ^ _XK[i%_XK.length]);
+  return JSON.parse(out);
+}
+function _checksum(data) {
+  const s = Math.floor(data.ore) + Math.floor(data.totalOre) +
+    Object.values(data.buildings||{}).reduce((a,b)=>a+b,0);
+  return (s*31+7) % 999983;
+}
+
+function saveGame() {
+  const now = Date.now();
+  state.totalPlayTime += now - sessionStart;
+  sessionStart = now;
+  if(!state.firstPlayedAt) state.firstPlayedAt = now;
+  const data = {
+    ore: state.ore,
+    totalOre: state.totalOre,
+    buildings: state.buildings,
+    purchasedUpgrades: [...state.purchasedUpgrades],
+    totalClicks: state.totalClicks,
+    oreFromClicks: state.oreFromClicks,
+    totalCrisesResolved: state.totalCrisesResolved,
+    catchedBonusOre: state.catchedBonusOre,
+    lastMilestone: lastMilestone,
+    firstPlayedAt: state.firstPlayedAt,
+    totalPlayTime: state.totalPlayTime,
+    savedAt: now,
+  };
+  data._c = _checksum(data);
+  localStorage.setItem(SAVE_KEY, _encode(data));
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
+    const data = _decode(raw);
+    if(data._c !== _checksum(data)) {
+      localStorage.removeItem(SAVE_KEY);
+      showMilestone('Save data corrupted — starting fresh ⛏️');
+      return;
+    }
+    state.ore                 = data.ore || 0;
+    state.totalOre            = data.totalOre || 0;
+    state.buildings           = data.buildings || {};
+    state.purchasedUpgrades   = new Set(data.purchasedUpgrades || []);
+    state.totalClicks         = data.totalClicks || 0;
+    state.oreFromClicks       = data.oreFromClicks || 0;
+    state.totalCrisesResolved = data.totalCrisesResolved || 0;
+    state.catchedBonusOre     = data.catchedBonusOre || 0;
+    state.firstPlayedAt       = data.firstPlayedAt || 0;
+    state.totalPlayTime       = data.totalPlayTime || 0;
+    lastMilestone             = data.lastMilestone || 0;
+
+    // reset derived state before reapplying upgrades
+    state.baseClickPower   = 1;
+    state.clickMultiplier  = 1;
+    state.clickSynergyRate = 0;
+    state.boostHarvestMult = 1;
+    state.bldBoost = {};
+    state.globalMult = 1;
+    for(const u of UPGRADES) {
+      if(state.purchasedUpgrades.has(u.id)) u.effect();
+    }
+    recalcFPS();
+
+    // Sync stage index to avoid false milestone on load
+    lastStageIdx = MINE_STAGES.indexOf(getCurrentStage());
+
+    // Offline progress
+    if(data.savedAt && state.orePerSec > 0) {
+      const elapsed = Math.min((Date.now() - data.savedAt) / 1000, 3600);
+      if(elapsed > 10) {
+        const gained = state.orePerSec * elapsed;
+        state.ore += gained;
+        state.totalOre += gained;
+        setTimeout(() => showMilestone(`⏱️ Away ${Math.round(elapsed)}s — +${fmt(gained)} ore!`), 800);
+      }
+    }
+  } catch(e) { localStorage.removeItem(SAVE_KEY); }
+}
+
+function resetGame() {
+  if(!confirm('Reset all progress and start over? This cannot be undone.')) return;
+  window.removeEventListener('beforeunload', saveGame);
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+// ── UI RENDERS ───────────────────────────────────────────────
+const unlockedBuildings = new Set(BUILDINGS.filter(b=>b.req()).map(b=>b.id));
+
+function renderBuildings() {
+  const list = document.getElementById('buildings-list');
+  list.innerHTML = '';
+  for(const b of BUILDINGS) {
+    if(!b.req() && !(state.buildings[b.id]||0)) continue;
+    const isNew = !unlockedBuildings.has(b.id);
+    if(isNew) unlockedBuildings.add(b.id);
+    const cost = getCost(b);
+    const cnt  = state.buildings[b.id]||0;
+    const fps  = getTotalFps(b);
+    const can  = state.ore >= cost;
+    const div  = document.createElement('div');
+    div.className = 'building-card' + (can?' affordable':' cant-afford') + (isNew?' unlocked-new':'');
+    div.dataset.id = b.id;
+    div.innerHTML = `
+      <div class="building-icon">${b.icon}</div>
+      <div class="building-info">
+        <div class="building-name">${b.name}</div>
+        <div class="building-desc">${b.desc}</div>
+        <div class="building-fps">+${fmtRate(b.baseFps * (state.bldBoost?.[b.id]||1))} ore/sec each</div>
+      </div>
+      <div class="building-right">
+        <div class="building-count">${cnt}</div>
+        <div class="building-cost">⛏️ ${fmt(cost)}</div>
+      </div>`;
+    div.addEventListener('click', () => buyBuilding(b));
+    div.addEventListener('mouseenter', e => {
+      const bonus = cnt > 0 ? `Total: ${fmtRate(fps)} ore/sec` : '';
+      showTooltip(e, b.name, b.desc, bonus);
+    });
+    div.addEventListener('mouseleave', hideTooltip);
+    list.appendChild(div);
+  }
+}
+
+function renderUpgrades() {
+  const list = document.getElementById('upgrades-list');
+  list.innerHTML = '';
+  for(const u of UPGRADES) {
+    const purchased = state.purchasedUpgrades.has(u.id);
+    const unlocked  = u.req();
+    if(!unlocked && !purchased) continue;
+    const can = state.ore >= u.cost;
+    const div = document.createElement('div');
+    let cls = 'upgrade-card ';
+    if(purchased) cls += 'purchased';
+    else if(can)  cls += 'available';
+    else          cls += 'cant-afford-upg';
+    div.className = cls;
+    div.dataset.id = u.id;
+    div.innerHTML = `
+      <div class="upgrade-icon">${u.icon}</div>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${u.name}</div>
+        <div class="upgrade-desc">${u.desc}</div>
+      </div>
+      <div class="upgrade-cost-lbl">${purchased ? '✓' : '⛏️ '+fmt(u.cost)}</div>`;
+    if(!purchased && can) div.addEventListener('click', () => buyUpgrade(u));
+    div.addEventListener('mouseenter', e => showTooltip(e, u.icon+' '+u.name, u.desc,
+      purchased ? '✓ Purchased' : (can ? '⬅ Click to buy!' : `Not enough ore (need ${fmt(u.cost - state.ore)} more)`)));
+    div.addEventListener('mouseleave', hideTooltip);
+    list.appendChild(div);
+  }
+}
+
+function initStatsBar() {
+  document.getElementById('stats-bar').innerHTML = `
+    <span class="stat-item">Total Mined: <strong id="stat-total"></strong></span>
+    <span class="stat-item">Relics Found: <strong id="stat-relics"></strong></span>
+    <span class="stat-item">Total Clicks: <strong id="stat-clicks"></strong></span>
+    <span class="stat-item">Click Earnings: <strong id="stat-click-earn"></strong></span>
+    <span class="stat-item">Buildings: <strong id="stat-buildings"></strong></span>
+    <span class="stat-item">Upgrades: <strong id="stat-upgrades"></strong></span>
+    <span class="stat-item">Started: <strong id="stat-started"></strong></span>
+    <span class="stat-item">Play Time: <strong id="stat-playtime"></strong></span>
+    <span class="stat-item">Crises Solved: <strong id="stat-crises"></strong></span>`;
+}
+
+function renderStats() {
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  const te = document.getElementById('stat-total');      if(te) te.textContent = fmtShort(state.totalOre);
+  const re = document.getElementById('stat-relics');     if(re) re.textContent = fmtShort(state.catchedBonusOre||0);
+  const ce = document.getElementById('stat-clicks');     if(ce) ce.textContent = fmtShort(state.totalClicks);
+  const cke= document.getElementById('stat-click-earn');if(cke)cke.textContent = fmtShort(state.oreFromClicks);
+  const be = document.getElementById('stat-buildings');  if(be) be.textContent = totalBuildings;
+  const ue = document.getElementById('stat-upgrades');   if(ue) ue.textContent = state.purchasedUpgrades.size;
+  const ste= document.getElementById('stat-started');    if(ste)ste.textContent = fmtDate(state.firstPlayedAt);
+  const pt = document.getElementById('stat-playtime');
+  if(pt) pt.textContent = fmtDuration(state.totalPlayTime + (Date.now() - sessionStart));
+  const cr = document.getElementById('stat-crises');     if(cr) cr.textContent = state.totalCrisesResolved;
+}
+
+function renderCounter() {
+  document.getElementById('ore-count').textContent = fmt(state.ore);
+}
+
+// ── SCENE VISUALIZATION ──────────────────────────────────────
+function renderScene() {
+  const el = document.getElementById('scene-content');
+  const ownedBuildings = BUILDINGS.filter(b => (state.buildings[b.id]||0) > 0);
+  if(ownedBuildings.length === 0) {
+    el.innerHTML = '<div class="scene-empty">Buy a building to see it here...</div>';
+    return;
+  }
+  const ROW_H = Math.max(20, Math.min(36, Math.floor((el.clientHeight || 200) / ownedBuildings.length)));
+  el.style.setProperty('--row-h', ROW_H+'px');
+  const MAX_ICONS = Math.floor((el.clientWidth || 200) / (ROW_H * 0.9));
+  let html = '';
+  for(const b of ownedBuildings) {
+    const cnt = state.buildings[b.id];
+    const show = Math.min(cnt, MAX_ICONS);
+    const overflow = cnt - show;
+    const isCrisisBuilding = state.crisisActive && state.crisisActive.building === b.id;
+    let icons = '';
+    for(let i=0;i<show;i++) icons += `<span class="scene-unit" style="--delay:${(i*0.13).toFixed(2)}s;font-size:${ROW_H*0.72}px">${b.sceneIcon}</span>`;
+    if(overflow>0) icons += `<span class="scene-overflow">+${overflow}</span>`;
+    html += `<div class="scene-row${isCrisisBuilding?' crisis-building':''}" style="--row-h:${ROW_H}px">
+      <div class="scene-row-label">${b.name}</div>
+      <div class="scene-row-icons">${icons}</div>
+      <div class="scene-row-count">${cnt}</div>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── BUY ──────────────────────────────────────────────────────
+function buyBuilding(b) {
+  const cost = getCost(b);
+  if(state.ore < cost) return;
+  state.ore -= cost;
+  state.buildings[b.id] = (state.buildings[b.id]||0) + 1;
+  recalcFPS();
+  // check new unlocks (unlockedBuildings tracks in renderBuildings, but milestone here)
+  for(const nb of BUILDINGS) {
+    if(!unlockedBuildings.has(nb.id) && nb.req()) {
+      showMilestone(`🔓 Unlocked: ${nb.name}!`);
+    }
+  }
+  renderBuildings();
+  renderScene();
+}
+
+function buyUpgrade(u) {
+  if(state.ore < u.cost || state.purchasedUpgrades.has(u.id)) return;
+  state.ore -= u.cost;
+  state.purchasedUpgrades.add(u.id);
+  u.effect();
+  recalcFPS();
+  renderUpgrades();
+}
+
+// ── CLICK BOT PROTECTION ─────────────────────────────────────
+const clickGuard = {
+  times: [], window: 2000, maxClicks: 30,
+  penalised: false, penaltyUntil: 0, penaltyMs: 4000,
+  lastX: null, lastY: null, sameSpotCount: 0, sameSpotLimit: 15,
+  check(x, y) {
+    const now = Date.now();
+    if(this.penalised && now < this.penaltyUntil) return false;
+    this.penalised = false;
+    this.times = this.times.filter(t => now - t < this.window);
+    this.times.push(now);
+    if(this.times.length > this.maxClicks) { this._penalise('Too fast! Slow down ⛏️'); return false; }
+    if(this.lastX === x && this.lastY === y) {
+      if(++this.sameSpotCount >= this.sameSpotLimit) { this._penalise('Suspicious clicks! 🤖'); return false; }
+    } else { this.sameSpotCount = 0; }
+    this.lastX = x; this.lastY = y;
+    return true;
+  },
+  _penalise(msg) {
+    this.penalised = true; this.penaltyUntil = Date.now() + this.penaltyMs;
+    this.times = []; this.sameSpotCount = 0;
+    showWarning(msg);
+  }
+};
+
+function showWarning(msg) {
+  let el = document.getElementById('mine-warning');
+  if(!el) {
+    el = document.createElement('div'); el.id = 'mine-warning';
+    el.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,#f94144,#c1121f);color:#fff;
+      font-family:'Fredoka One',cursive;font-size:1rem;padding:8px 24px;
+      border-radius:30px;z-index:9999;box-shadow:0 4px 20px rgba(249,65,68,0.5);
+      animation:banner-in 0.3s ease;pointer-events:none;`;
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.remove(), 3000);
+}
+
+// ── MILESTONES ───────────────────────────────────────────────
+let lastMilestone = 0;
+const MILESTONES      = [100,1000,10000,100000,1000000,10000000,100000000];
+const MILESTONE_MSGS  = ['100 Ore! ⛏️','1,000 Ore! 🪨','10,000! 🔩','100,000! 💛','One Million! 💎','Ten Million! 🔮','100 Million! 🌋'];
+
+// ── HOLD CRISIS support ───────────────────────────────────────
+let holdInterval = null;
+
+// ── CLICK ────────────────────────────────────────────────────
+function handleClick(e) {
+  if(!clickGuard.check(e.clientX, e.clientY)) return;
+
+  if(state.crisisActive && state.crisisActive.solveType !== 'hold') {
+    const deduct = state.crisisActive.solveType === 'mash' ? 2 : 1;
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - deduct);
+    updateCrisisBar();
+    if(state.crisisClicksLeft <= 0) resolveCrisis();
+  }
+
+  const gain = state.orePerClick;
+  state.ore           += gain;
+  state.totalOre      += gain;
+  state.oreFromClicks += gain;
+  state.totalClicks++;
+
+  for(let i=0;i<MILESTONES.length;i++) {
+    if(state.totalOre >= MILESTONES[i] && lastMilestone < MILESTONES[i]) {
+      lastMilestone = MILESTONES[i];
+      showMilestone(MILESTONE_MSGS[i]);
+    }
+  }
+
+  spawnParticle(e.clientX, e.clientY, '+'+fmt(gain));
+  renderCounter();
+  updateMineBtn();
+}
+
+// ── CANVAS ───────────────────────────────────────────────────
+const sparkles = [];
+function initCanvas() {
+  const canvas = document.getElementById('mine-canvas');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize();
+  new ResizeObserver(resize).observe(canvas);
+
+  const ORES = ['🪨','⚪','💛','💎','🔩'];
+  let rafRunning = false;
+  function drawFrame() {
+    if(document.hidden) { rafRunning = false; return; }
+    rafRunning = true;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const now = Date.now()/1000;
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = '#c97c1a';
+    for(let i=0;i<40;i++) {
+      const x = ((i*137.5+now*3)%canvas.width);
+      const y = ((i*97.3+now*2)%canvas.height);
+      ctx.fillRect(x,y,2,2);
+    }
+    ctx.restore();
+    if(Math.random()<0.05 && state.orePerSec>0) {
+      const totalOwned = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+      if(totalOwned>0) sparkles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, life:1, vx:(Math.random()-0.5)*30, vy:-Math.random()*40-10, icon:ORES[Math.floor(Math.random()*ORES.length)]});
+    }
+    for(let i=sparkles.length-1;i>=0;i--) {
+      const s=sparkles[i];
+      s.life-=0.025; s.x+=s.vx*0.016; s.y+=s.vy*0.016;
+      if(s.life<=0){sparkles.splice(i,1);continue;}
+      ctx.save();
+      ctx.globalAlpha=s.life*0.9;
+      ctx.font=`${14+s.life*8}px serif`;
+      ctx.fillText(s.icon, s.x, s.y);
+      ctx.restore();
+    }
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && !rafRunning) requestAnimationFrame(drawFrame);
+  });
+}
+
+// ── PARTICLES ────────────────────────────────────────────────
+function spawnParticle(x, y, text) {
+  const el = document.createElement('div');
+  el.className = 'particle';
+  el.textContent = text;
+  el.style.left = (x-10)+'px';
+  el.style.top  = (y-10)+'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', ()=>el.remove());
+}
+
+function showMilestone(msg) {
+  const el = document.createElement('div');
+  el.className = 'milestone';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+// ── TOOLTIP ──────────────────────────────────────────────────
+const tt = document.getElementById('tooltip');
+function showTooltip(e, title, body, bonus) {
+  document.getElementById('tt-title').textContent = title;
+  document.getElementById('tt-body').textContent  = body;
+  document.getElementById('tt-bonus').textContent = bonus||'';
+  tt.style.display = 'block';
+  posTooltip(e);
+}
+function posTooltip(e) {
+  let x=e.clientX+14, y=e.clientY+14;
+  if(x+240>window.innerWidth)  x=e.clientX-240;
+  if(y+120>window.innerHeight) y=e.clientY-120;
+  tt.style.left=x+'px'; tt.style.top=y+'px';
+}
+function hideTooltip() { tt.style.display='none'; }
+document.addEventListener('mousemove', e=>{ if(tt.style.display!=='none') posTooltip(e); });
+
+// ── BONUS ORE ────────────────────────────────────────────────
+const BONUS_INTERVAL_MIN = 18000;
+const BONUS_INTERVAL_MAX = 40000;
+let bonusOreTimer = null;
+
+function scheduleBonus() {
+  const delay = BONUS_INTERVAL_MIN + Math.random() * (BONUS_INTERVAL_MAX - BONUS_INTERVAL_MIN);
+  bonusOreTimer = setTimeout(spawnBonusOre, delay);
+}
+
+function pickBonusOreType() {
+  const available = BONUS_ORE_TYPES.filter(t => state.totalOre >= t.minOre);
+  if(!available.length) return null;
+  const pool = [];
+  available.forEach(t => { const w = RARITY_WEIGHTS[t.rarity]||10; for(let i=0;i<w;i++) pool.push(t); });
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function spawnBonusOre() {
+  const type = pickBonusOreType();
+  if(!type) { scheduleBonus(); return; }
+
+  const baseVal = Math.max(state.orePerClick, state.orePerSec * 3);
+  const reward  = Math.max(1, Math.floor(baseVal * type.mult));
+  const rc      = RARITY_COLORS[type.rarity];
+
+  const dur = 4000 + Math.random()*4000;
+  const x   = 80 + Math.random()*(window.innerWidth - 160);
+  const y   = 80 + Math.random()*(window.innerHeight - 180);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'bonus-ore-wrap';
+  wrap.style.cssText = `left:${x}px;top:${y}px;pointer-events:none;`;
+
+  const ore = document.createElement('div');
+  ore.className = `bonus-ore type-${type.rarity}`;
+  ore.style.cssText = `--float-dur:${dur}ms;--drift-y:${-40+Math.random()*80}px;--drift-x:${-30+Math.random()*60}px;pointer-events:all;position:relative;`;
+  ore.textContent = type.icon;
+
+  const boostTag = type.boostType === 'frenzy'  ? ` ×${type.boostMult} CLICK`
+                 : type.boostType === 'harvest' ? ` ×${type.boostMult} MINE`
+                 : '';
+  const label = document.createElement('div');
+  label.className = 'bonus-ore-label';
+  label.textContent = type.label + boostTag;
+  label.style.color = rc.label;
+  label.style.borderColor = type.boostType !== 'instant' ? 'rgba(249,199,79,0.6)' : rc.border;
+  label.style.background  = rc.bg;
+
+  ore.appendChild(label);
+  wrap.appendChild(ore);
+
+  let clicked = false;
+  ore.addEventListener('click', e => {
+    if(clicked) return;
+    clicked = true;
+    e.stopPropagation();
+    state.catchedBonusOre++;
+    const rarityTag = type.rarity === 'legendary' ? ' ✨LEGENDARY✨' : type.rarity === 'epic' ? ' ⚡EPIC' : '';
+
+    if(type.boostType === 'instant') {
+      state.ore += reward; state.totalOre += reward;
+      spawnParticle(e.clientX, e.clientY, `${type.icon} +${fmt(reward)}`);
+      showMilestone(`${type.icon}${rarityTag} ${type.label}! +${fmt(reward)} ore!`);
+    } else if(type.boostType === 'frenzy') {
+      state.ore += reward; state.totalOre += reward;
+      const secs = Math.round(type.boostDur/1000);
+      spawnParticle(e.clientX, e.clientY, `${type.icon} ×${type.boostMult} CLICK!`);
+      showMilestone(`${type.icon}${rarityTag} ${type.label} — Click Frenzy ×${type.boostMult} for ${secs}s!`);
+      applyBoost('frenzy', type.boostMult, type.boostDur);
+    } else if(type.boostType === 'harvest') {
+      state.ore += reward; state.totalOre += reward;
+      const secs = Math.round(type.boostDur/1000);
+      spawnParticle(e.clientX, e.clientY, `${type.icon} ×${type.boostMult} MINE!`);
+      showMilestone(`${type.icon}${rarityTag} ${type.label} — Harvest Boost ×${type.boostMult} for ${secs}s!`);
+      applyBoost('harvest', type.boostMult, type.boostDur);
+    }
+    wrap.remove();
+    updateMineBtn();
+  });
+
+  document.body.appendChild(wrap);
+  setTimeout(() => { if(!clicked) wrap.remove(); scheduleBonus(); }, dur+200);
+}
+
+// ── CRISIS ───────────────────────────────────────────────────
+const CRISIS_MIN_INTERVAL = 45000;
+const CRISIS_MAX_INTERVAL = 120000;
+let crisisTimer       = null;
+let crisisExpireTimer = null;
+let crisisBannerEl    = null;
+
+function scheduleCrisis() {
+  const totalBuildings = Object.values(state.buildings).reduce((a,b)=>a+b, 0);
+  if(totalBuildings < 3) { crisisTimer = setTimeout(scheduleCrisis, 15000); return; }
+  const delay = CRISIS_MIN_INTERVAL + Math.random() * (CRISIS_MAX_INTERVAL - CRISIS_MIN_INTERVAL);
+  crisisTimer = setTimeout(trySpawnCrisis, delay);
+}
+
+function trySpawnCrisis() {
+  if(state.crisisActive) { scheduleCrisis(); return; }
+  const eligible = CRISES.filter(c => state.totalOre >= c.minOre);
+  if(!eligible.length) { scheduleCrisis(); return; }
+  const crisis = eligible[Math.floor(Math.random()*eligible.length)];
+  startCrisis(crisis);
+}
+
+function startCrisis(crisis) {
+  state.crisisActive      = crisis;
+  state.crisisClicksLeft  = crisis.clicksNeeded;
+  state.crisisMultPenalty = crisis.fpsPenalty;
+  state.crisisExpiresAt   = Date.now() + 60000;
+  recalcFPS();
+  document.body.classList.add('in-crisis');
+  renderScene();
+
+  let vig = document.getElementById('crisis-vignette');
+  if(!vig) { vig = document.createElement('div'); vig.id='crisis-vignette'; vig.className='crisis-vignette'; document.body.appendChild(vig); }
+
+  if(crisisBannerEl) crisisBannerEl.remove();
+  crisisBannerEl = document.createElement('div');
+  crisisBannerEl.className = 'crisis-banner';
+  crisisBannerEl.id = 'crisis-banner';
+  crisisBannerEl.style.cssText = `background:linear-gradient(160deg,${crisis.color} 0%,rgba(5,5,5,0.97) 100%);border:1.5px solid ${crisis.accentColor};box-shadow:0 8px 40px rgba(0,0,0,0.7),0 0 30px ${crisis.accentColor};`;
+  crisisBannerEl.innerHTML = `
+    <div class="crisis-header">
+      <div class="crisis-icon-wrap" style="--icon-anim:${crisis.iconAnim}">${crisis.icon}</div>
+      <div class="crisis-titles">
+        <div class="crisis-title">${crisis.title}</div>
+        <div class="crisis-building-tag">${crisis.buildingTag}</div>
+      </div>
+    </div>
+    <div class="crisis-body">
+      <div class="crisis-desc">${crisis.desc}</div>
+      <div class="crisis-action-hint">
+        <div class="crisis-action-icon">${crisis.actionIcon}</div>
+        <div class="crisis-action-text">${crisis.actionText}</div>
+      </div>
+      <div class="crisis-bar-wrap"><div class="crisis-bar" id="crisis-bar" style="width:100%"></div></div>
+      <div class="crisis-progress-row">
+        <div class="crisis-clicks" id="crisis-clicks">${crisis.clicksNeeded} actions needed</div>
+        <div class="crisis-pct" id="crisis-pct">100%</div>
+      </div>
+      <div style="font-size:0.72rem;color:rgba(249,65,68,0.85);margin-top:4px;text-align:center;letter-spacing:0.5px;">
+        ⚠️ Production -${Math.round((1-crisis.fpsPenalty)*100)}% &nbsp;|&nbsp; <span id="crisis-countdown">60s</span> left or lose ore!
+      </div>
+    </div>`;
+  document.body.appendChild(crisisBannerEl);
+
+  crisisExpireTimer = setTimeout(() => {
+    if(!state.crisisActive) return;
+    const lostOre = Math.floor(state.ore * 0.15);
+    state.ore = Math.max(0, state.ore - lostOre);
+    const msg = state.crisisActive.resolveMsg.replace('!', ' — too late!') + ` Lost ${fmt(lostOre)} ore! 💀`;
+    resolveCrisis(true);
+    showMilestone(msg);
+  }, 60000);
+}
+
+function updateCrisisBar() {
+  const crisis = state.crisisActive;
+  if(!crisis) return;
+  const total = crisis.clicksNeeded;
+  const left  = state.crisisClicksLeft;
+  const pct   = Math.max(0, (left/total)*100);
+  const bar   = document.getElementById('crisis-bar');
+  const cl    = document.getElementById('crisis-clicks');
+  const cp    = document.getElementById('crisis-pct');
+  if(bar) {
+    bar.style.width = pct+'%';
+    const g = Math.round(199*(pct/100));
+    bar.style.background = `linear-gradient(90deg,rgb(249,${g},79),#f77f00)`;
+  }
+  if(cl)  cl.textContent = left+' actions remaining';
+  if(cp)  cp.textContent = Math.round(pct)+'%';
+  const cdEl = document.getElementById('crisis-countdown');
+  if(cdEl && state.crisisExpiresAt) {
+    const secs = Math.max(0, Math.ceil((state.crisisExpiresAt - Date.now())/1000));
+    cdEl.textContent = secs+'s';
+    cdEl.style.color = secs<=10 ? '#ff4444' : 'rgba(249,65,68,0.85)';
+  }
+}
+
+function resolveCrisis(expired=false) {
+  const crisis = state.crisisActive;
+  clearTimeout(crisisExpireTimer); crisisExpireTimer = null;
+  clearInterval(holdInterval); holdInterval = null;
+  state.crisisActive      = null;
+  state.crisisClicksLeft  = 0;
+  state.crisisMultPenalty = 1;
+  state.crisisExpiresAt   = null;
+  if(!expired) state.totalCrisesResolved++;
+  recalcFPS();
+  document.body.classList.remove('in-crisis');
+  document.getElementById('crisis-vignette')?.remove();
+  if(crisisBannerEl) {
+    crisisBannerEl.classList.add('resolving');
+    setTimeout(()=>{ if(crisisBannerEl){ crisisBannerEl.remove(); crisisBannerEl=null; } }, 380);
+  }
+  renderScene();
+  if(!expired) showMilestone(crisis.resolveMsg);
+  scheduleCrisis();
+}
+
+// ── DUST PARTICLES ───────────────────────────────────────────
+function initDust() {
+  const container = document.getElementById('dust');
+  for(let i=0;i<18;i++) {
+    const p=document.createElement('div');
+    p.className='dust-particle';
+    const size=2+Math.random()*4;
+    const dur=8+Math.random()*12;
+    const delay=-Math.random()*dur;
+    p.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${dur}s;animation-delay:${delay}s;--drift:${-20+Math.random()*40}px;opacity:${0.2+Math.random()*0.4}`;
+    container.appendChild(p);
+  }
+}
+
+// ── SHARE ────────────────────────────────────────────────────
+function openShare() {
+  const modal = document.createElement('div');
+  modal.className='share-overlay';
+  const stage = getCurrentStage();
+  const totalB = Object.values(state.buildings).reduce((a,b)=>a+b,0);
+  const topBuilding = BUILDINGS.slice().reverse().find(b=>(state.buildings[b.id]||0)>0);
+  const text = [
+    `⛏️ Mine Rush Stats`,
+    `─────────────────`,
+    `${stage.emoji} Stage: ${stage.label}`,
+    `💎 Ore: ${fmt(state.totalOre)} total`,
+    `⚡ Production: ${fmtRate(state.orePerSec)}/sec`,
+    `🖱️ Clicks: ${fmt(state.totalClicks)}`,
+    `🏗️ Buildings: ${totalB}`,
+    `⬆️ Upgrades: ${state.purchasedUpgrades.size}`,
+    topBuilding ? `🏆 Best building: ${topBuilding.icon} ${topBuilding.name}` : '',
+    state.totalCrisesResolved > 0 ? `🛡️ Crises resolved: ${state.totalCrisesResolved}` : '',
+    `─────────────────`,
+    `Play Mine Rush free at clickingame.com`,
+  ].filter(Boolean).join('\n');
+  modal.innerHTML = `
+    <div class="share-modal" id="share-modal">
+      <div class="share-modal-title">⛏️ Share Your Mine!</div>
+      <div class="share-body">
+        <div class="share-card">
+          <div class="share-card-header">${stage.emoji} ${stage.label}</div>
+          <div class="share-stat-grid">
+            <div class="share-stat"><div class="share-stat-val">${fmt(state.totalOre)}</div><div class="share-stat-lbl">Total Ores</div></div>
+            <div class="share-stat"><div class="share-stat-val">${fmtRate(state.orePerSec)}</div><div class="share-stat-lbl">Ore/sec</div></div>
+            <div class="share-stat"><div class="share-stat-val">${fmt(state.totalClicks)}</div><div class="share-stat-lbl">Clicks</div></div>
+            <div class="share-stat"><div class="share-stat-val">${state.totalCrisesResolved}</div><div class="share-stat-lbl">Crises Solved</div></div>
+          </div>
+        </div>
+        <div class="share-right">
+          <div class="share-right-title">COPY &amp; SHARE</div>
+          <textarea class="share-text-area" id="share-text" readonly>${text}</textarea>
+        </div>
+      </div>
+      <div class="share-actions">
+        <button class="share-copy-btn" id="share-copy-btn">📋 Copy Text</button>
+        <button class="share-screenshot-btn" id="share-ss-btn">📷 Screenshot</button>
+        <button class="share-close-btn" id="share-close-btn">✕ Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('share-copy-btn').onclick = () => {
+    navigator.clipboard.writeText(text).then(()=>{
+      document.getElementById('share-copy-btn').textContent='✔ Copied!';
+    });
+  };
+  document.getElementById('share-ss-btn').onclick = () => {
+    const btn = document.getElementById('share-ss-btn');
+    btn.textContent='📷 Capturing...';
+    html2canvas(document.getElementById('share-modal'),{backgroundColor:'#0e0a04'}).then(canvas=>{
+      const link=document.createElement('a');
+      link.download='mine-rush-progress.png';
+      link.href=canvas.toDataURL();
+      link.click();
+      btn.textContent='✔ Saved!';
+    });
+  };
+  document.getElementById('share-close-btn').onclick = () => modal.remove();
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+}
+
+// ── POSTMESSAGE (embed) ──────────────────────────────────────
+window.addEventListener('message', e => {
+  if(e.data?.type === 'mr_do_share') openShare();
+  if(e.data?.type === 'mr_do_reset') resetGame();
+});
+
+// ── MAIN LOOP ────────────────────────────────────────────────
+let lastTick = Date.now();
+function tick() {
+  const now = Date.now();
+  const dt  = Math.min((now - lastTick) / 1000, 5);
+  lastTick  = now;
+  if(state.orePerSec > 0) {
+    const gain = state.orePerSec * dt;
+    state.ore      += gain;
+    state.totalOre += gain;
+  }
+}
+
+let frameCount = 0;
+let rafRunning = false;
+function renderLoop() {
+  if(document.hidden) { rafRunning = false; return; }
+  rafRunning = true;
+  frameCount++;
+
+  // Incremental building affordability update
+  document.querySelectorAll('.building-card').forEach(card => {
+    const b = BUILDINGS.find(x => x.id === card.dataset.id);
+    if(!b) return;
+    const can = state.ore >= getCost(b);
+    card.classList.toggle('affordable',  can);
+    card.classList.toggle('cant-afford', !can);
+  });
+
+  // Incremental upgrade affordability update
+  document.querySelectorAll('.upgrade-card:not(.purchased)').forEach(card => {
+    const u = UPGRADES.find(x => x.id === card.dataset.id);
+    if(!u) return;
+    const can = state.ore >= u.cost;
+    if(can && card.classList.contains('cant-afford-upg')) {
+      card.classList.remove('cant-afford-upg');
+      card.classList.add('available');
+      card.addEventListener('click', () => buyUpgrade(u));
+    }
+  });
+
+  // Counter + stat-total update every frame
+  document.getElementById('ore-count').textContent = fmt(state.ore);
+  document.getElementById('ore-ps').textContent = fmtRate(state.orePerSec) + ' ore/sec';
+  const te = document.getElementById('stat-total');
+  if(te) te.textContent = fmtShort(state.totalOre);
+
+  // Full re-renders every ~30 frames (~500ms at 60fps)
+  if(frameCount % 30 === 0) { renderUpgrades(); renderBuildings(); renderStats(); renderScene(); }
+  // Crisis countdown ticks every ~60 frames (~1s at 60fps)
+  if(frameCount % 60 === 0 && state.crisisActive) updateCrisisBar();
+
+  requestAnimationFrame(renderLoop);
+}
+
+setInterval(tick, 250);
+
+document.addEventListener('visibilitychange', () => {
+  lastTick = Date.now();
+  if(!document.hidden && !rafRunning) requestAnimationFrame(renderLoop);
+});
+
+setInterval(saveGame, 10000);
+
+// ── INIT ─────────────────────────────────────────────────────
+loadGame();
+if(!state.firstPlayedAt) { state.firstPlayedAt = Date.now(); }
+initDust();
+initCanvas();
+
+// Click zone + button
+const clickZone = document.getElementById('click-zone-main');
+const mineBtn   = document.getElementById('mine-btn');
+clickZone.addEventListener('click', handleClick);
+mineBtn.addEventListener('click', e => { e.stopPropagation(); handleClick(e); });
+
+// Hold crisis support
+mineBtn.addEventListener('mousedown', function() {
+  if(!state.crisisActive || state.crisisActive.solveType !== 'hold') return;
+  if(holdInterval) return;
+  holdInterval = setInterval(() => {
+    if(!state.crisisActive) { clearInterval(holdInterval); holdInterval = null; return; }
+    state.crisisClicksLeft = Math.max(0, state.crisisClicksLeft - 1);
+    updateCrisisBar();
+    if(state.crisisClicksLeft <= 0) { clearInterval(holdInterval); holdInterval = null; resolveCrisis(); }
+  }, 120);
+});
+mineBtn.addEventListener('mouseup',    () => { clearInterval(holdInterval); holdInterval = null; });
+mineBtn.addEventListener('mouseleave', () => { clearInterval(holdInterval); holdInterval = null; });
+
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+document.getElementById('share-btn').addEventListener('click', openShare);
+window.addEventListener('beforeunload', saveGame);
+
+// Embed mode
+const isEmbed = new URLSearchParams(location.search).has('embed');
+if(isEmbed) {
+  document.querySelector('header').classList.add('embed');
+  document.body.classList.add('embed-mode');
+}
+
+recalcFPS();
+updateMineBtn();
+initStatsBar();
+renderBuildings();
+renderUpgrades();
+requestAnimationFrame(renderLoop);
+scheduleBonus();
+scheduleCrisis();
+</script>
+</body>
+</html>
