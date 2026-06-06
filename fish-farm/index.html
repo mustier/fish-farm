@@ -795,35 +795,35 @@ function updateFishBtn() {
 
 // ── BUILDINGS ────────────────────────────────────────────────
 const BUILDINGS = [
-  { id:'rod',         name:'Fishing Rod',        icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',              baseCost:10,        baseFps:0.1,    req:()=>true },
-  { id:'granny',      name:'Fisher Granny',       icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',                  baseCost:100,       baseFps:0.5,    req:()=>(state.buildings.rod||0)>=3 },
-  { id:'boat',        name:'Boat',                icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',          baseCost:500,       baseFps:2,      req:()=>(state.buildings.granny||0)>=2 && (state.buildings.rod||0)>=5 },
-  { id:'dock',        name:'Fishing Dock',        icon:'🪝', sceneIcon:'🪝', desc:'A proper dock where fishermen gather and trade.',          baseCost:1200,      baseFps:5,      req:()=>(state.buildings.boat||0)>=2 && (state.buildings.granny||0)>=4 },
-  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🐠', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:8,      req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
-  { id:'hatchery',    name:'Hatchery',            icon:'🥚', sceneIcon:'🥚', desc:'Spawning millions of fish from carefully laid eggs.',      baseCost:5000,      baseFps:18,     req:()=>(state.buildings.farm||0)>=2 && (state.buildings.dock||0)>=3 },
-  { id:'trawler',     name:'Trawler',             icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',           baseCost:8000,      baseFps:25,     req:()=>(state.buildings.hatchery||0)>=2 && (state.buildings.farm||0)>=4 },
-  { id:'submarine',   name:'Submarine',           icon:'🤿', sceneIcon:'🤿', desc:'Deep-sea fishing where the big ones hide.',               baseCost:20000,     baseFps:55,     req:()=>(state.buildings.trawler||0)>=2 && (state.buildings.hatchery||0)>=3 },
-  { id:'sonar',       name:'Sonar Station',       icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',             baseCost:30000,     baseFps:80,     req:()=>(state.buildings.submarine||0)>=2 && (state.buildings.trawler||0)>=3 },
-  { id:'reef',        name:'Coral Reef Farm',     icon:'🪸', sceneIcon:'🪸', desc:'An artificial reef teeming with exotic species.',         baseCost:75000,     baseFps:160,    req:()=>(state.buildings.sonar||0)>=2 && (state.buildings.submarine||0)>=4 },
-  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🔬', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:250,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
-  { id:'factory',     name:'Processing Factory',  icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale fish processing and cloning.',           baseCost:300000,    baseFps:600,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.reef||0)>=4 },
-  { id:'satellite',   name:'Fish Satellite',      icon:'🛸', sceneIcon:'🛸', desc:'Orbital scanner detects fish migrations globally.',       baseCost:800000,    baseFps:1500,   req:()=>(state.buildings.factory||0)>=2 && (state.buildings.lab||0)>=3 },
-  { id:'portal',      name:'Ocean Portal',        icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',         baseCost:500000,    baseFps:1000,   req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.factory||0)>=4 },
-  { id:'volcano',     name:'Volcano Aquafarm',    icon:'🌋', sceneIcon:'🌋', desc:'Geothermal vents breed impossible fish lifeforms.',       baseCost:2000000,   baseFps:3000,   req:()=>(state.buildings.portal||0)>=2 && (state.buildings.satellite||0)>=3 },
-  { id:'timemachine', name:'Time Machine',        icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',   baseCost:5000000,   baseFps:6000,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.portal||0)>=4 },
-  { id:'blackhole',   name:'Black Hole Fisher',   icon:'⚫', sceneIcon:'⚫', desc:'Siphoning fish from across the universe.',               baseCost:20000000,  baseFps:20000,  req:()=>(state.buildings.timemachine||0)>=2 && (state.buildings.volcano||0)>=3 },
-  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🔱', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:75000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
+  { id:'rod',         name:'Fishing Rod',        icon:'🎣', sceneIcon:'🎣', desc:'An old fisherman\'s rod. Slow but reliable.',              baseCost:10,        baseFps:0.08,   req:()=>true },
+  { id:'granny',      name:'Fisher Granny',       icon:'👵', sceneIcon:'👵', desc:'Granny wakes at 5am and casts her net.',                  baseCost:100,       baseFps:0.4,    req:()=>(state.buildings.rod||0)>=3 },
+  { id:'boat',        name:'Boat',                icon:'⛵', sceneIcon:'⛵', desc:'A small fishing boat venturing into open water.',          baseCost:500,       baseFps:1.6,    req:()=>(state.buildings.granny||0)>=2 && (state.buildings.rod||0)>=5 },
+  { id:'dock',        name:'Fishing Dock',        icon:'🪝', sceneIcon:'🪝', desc:'A proper dock where fishermen gather and trade.',          baseCost:1200,      baseFps:4,      req:()=>(state.buildings.boat||0)>=2 && (state.buildings.granny||0)>=4 },
+  { id:'farm',        name:'Fish Farm',           icon:'🐠', sceneIcon:'🐠', desc:'Fresh fish raised in a controlled environment.',          baseCost:2000,      baseFps:6.5,    req:()=>(state.buildings.dock||0)>=2 && (state.buildings.boat||0)>=3 },
+  { id:'hatchery',    name:'Hatchery',            icon:'🥚', sceneIcon:'🥚', desc:'Spawning millions of fish from carefully laid eggs.',      baseCost:5000,      baseFps:14,     req:()=>(state.buildings.farm||0)>=2 && (state.buildings.dock||0)>=3 },
+  { id:'trawler',     name:'Trawler',             icon:'🚢', sceneIcon:'🚢', desc:'Hauling tons of fish with massive trawl nets.',           baseCost:8000,      baseFps:20,     req:()=>(state.buildings.hatchery||0)>=2 && (state.buildings.farm||0)>=4 },
+  { id:'submarine',   name:'Submarine',           icon:'🤿', sceneIcon:'🤿', desc:'Deep-sea fishing where the big ones hide.',               baseCost:20000,     baseFps:44,     req:()=>(state.buildings.trawler||0)>=2 && (state.buildings.hatchery||0)>=3 },
+  { id:'sonar',       name:'Sonar Station',       icon:'📡', sceneIcon:'📡', desc:'Detects fish schools with underwater sonar.',             baseCost:30000,     baseFps:64,     req:()=>(state.buildings.submarine||0)>=2 && (state.buildings.trawler||0)>=3 },
+  { id:'reef',        name:'Coral Reef Farm',     icon:'🪸', sceneIcon:'🪸', desc:'An artificial reef teeming with exotic species.',         baseCost:75000,     baseFps:128,    req:()=>(state.buildings.sonar||0)>=2 && (state.buildings.submarine||0)>=4 },
+  { id:'lab',         name:'Aquarium Lab',        icon:'🔬', sceneIcon:'🔬', desc:'Scientists engineer ultra-productive fish.',              baseCost:100000,    baseFps:200,    req:()=>(state.buildings.reef||0)>=2 && (state.buildings.sonar||0)>=3 },
+  { id:'factory',     name:'Processing Factory',  icon:'🏭', sceneIcon:'🏭', desc:'Industrial-scale fish processing and cloning.',           baseCost:300000,    baseFps:480,    req:()=>(state.buildings.lab||0)>=2 && (state.buildings.reef||0)>=4 },
+  { id:'satellite',   name:'Fish Satellite',      icon:'🛸', sceneIcon:'🛸', desc:'Orbital scanner detects fish migrations globally.',       baseCost:800000,    baseFps:1200,   req:()=>(state.buildings.factory||0)>=2 && (state.buildings.lab||0)>=3 },
+  { id:'portal',      name:'Ocean Portal',        icon:'🌀', sceneIcon:'🌀', desc:'Importing fish from a parallel ocean dimension.',         baseCost:500000,    baseFps:800,    req:()=>(state.buildings.satellite||0)>=2 && (state.buildings.factory||0)>=4 },
+  { id:'volcano',     name:'Volcano Aquafarm',    icon:'🌋', sceneIcon:'🌋', desc:'Geothermal vents breed impossible fish lifeforms.',       baseCost:2000000,   baseFps:2400,   req:()=>(state.buildings.portal||0)>=2 && (state.buildings.satellite||0)>=3 },
+  { id:'timemachine', name:'Time Machine',        icon:'⏱️', sceneIcon:'⏱️', desc:'Fetching fish from the past — dinosaur fish included.',   baseCost:5000000,   baseFps:4800,   req:()=>(state.buildings.volcano||0)>=2 && (state.buildings.portal||0)>=4 },
+  { id:'blackhole',   name:'Black Hole Fisher',   icon:'⚫', sceneIcon:'⚫', desc:'Siphoning fish from across the universe.',               baseCost:20000000,  baseFps:16000,  req:()=>(state.buildings.timemachine||0)>=2 && (state.buildings.volcano||0)>=3 },
+  { id:'poseidon',    name:'Poseidon\'s Palace',  icon:'🔱', sceneIcon:'🔱', desc:'You struck a deal with the god of the sea.',             baseCost:100000000, baseFps:60000,  req:()=>(state.buildings.blackhole||0)>=2 && (state.buildings.timemachine||0)>=3 },
 ];
 
 // ── UPGRADES ─────────────────────────────────────────────────
 const UPGRADES = [
   // Click upgrades
-  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',         cost:200,       req:()=>state.totalFish>=150,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
-  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x2 fish per click!',               cost:1500,      req:()=>state.totalFish>=600,                   effect:()=>{ state.clickMultiplier *= 2; } },
-  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+5 fish per click.',               cost:8000,      req:()=>state.totalFish>=3000,                  effect:()=>{ state.baseClickPower += 5; recalcFPS(); } },
-  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+10 fish per click.',              cost:150000,    req:()=>state.totalFish>=40000,                 effect:()=>{ state.baseClickPower += 10; recalcFPS(); } },
-  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x3.', cost:12000000, req:()=>state.totalFish>=3000000,      effect:()=>{ state.clickMultiplier *= 3; } },
-  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+50 fish per click + x1.5 multiplier.', cost:60000000, req:()=>state.totalFish>=15000000,        effect:()=>{ state.baseClickPower += 50; state.clickMultiplier *= 1.5; recalcFPS(); } },
+  { id:'sharp_hook',    name:'Sharp Hook',           icon:'🪝', desc:'+1 extra fish per click.',                   cost:350,       req:()=>state.totalFish>=150,                   effect:()=>{ state.baseClickPower += 1; recalcFPS(); } },
+  { id:'titanium_hook', name:'Titanium Hook',        icon:'⚓', desc:'x1.5 fish per click.',                       cost:2500,      req:()=>state.totalFish>=600,                   effect:()=>{ state.clickMultiplier *= 1.5; } },
+  { id:'golden_rod',    name:'Golden Rod',           icon:'🌟', desc:'+3 fish per click.',                         cost:14000,     req:()=>state.totalFish>=3000,                  effect:()=>{ state.baseClickPower += 3; recalcFPS(); } },
+  { id:'click_frenzy',  name:'Click Frenzy',         icon:'💥', desc:'+6 fish per click.',                         cost:250000,    req:()=>state.totalFish>=40000,                 effect:()=>{ state.baseClickPower += 6; recalcFPS(); } },
+  { id:'ancient_map',   name:'Ancient Map',          icon:'🗺️', desc:'Discover hidden fish grounds: click x2.',    cost:20000000,  req:()=>state.totalFish>=3000000,               effect:()=>{ state.clickMultiplier *= 2; } },
+  { id:'kraken_claw',   name:'Kraken Claw',          icon:'🦑', desc:'+25 fish per click + x1.3 multiplier.',      cost:100000000, req:()=>state.totalFish>=15000000,              effect:()=>{ state.baseClickPower += 25; state.clickMultiplier *= 1.3; recalcFPS(); } },
 
   // Building upgrades - Rod
   { id:'rod_x2',        name:'Double Rod',           icon:'🎣', desc:'Fishing rods are twice as efficient.',     cost:500,       req:()=>(state.buildings.rod||0)>=10,     effect:()=>{ boostBuilding('rod',2); } },
@@ -875,10 +875,10 @@ const UPGRADES = [
   { id:'poseidon_pact', name:'Poseidon Pact',        icon:'🌊', desc:'All production x3 — ocean debt forgiven!', cost:800000000, req:()=>state.totalFish>=200000000,           effect:()=>{ globalBoost(3); } },
 
   // Synergy upgrades
-  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:5000,      req:()=>(state.buildings.rod||0)>=5,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
-  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:250000,    req:()=>(state.buildings.boat||0)>=5,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
-  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:5000000,   req:()=>(state.buildings.trawler||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
-  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:60000000,  req:()=>(state.buildings.submarine||0)>=5,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
+  { id:'synergy1',      name:'Fisher\'s Intuition',  icon:'🌊', desc:'Each click gains +1% of your fish/sec.',  cost:8000,      req:()=>(state.buildings.rod||0)>=5,          effect:()=>{ state.clickSynergyRate += 0.01; recalcFPS(); } },
+  { id:'synergy2',      name:'Ocean Harmony',        icon:'🐋', desc:'Each click gains +5% of your fish/sec.',  cost:400000,    req:()=>(state.buildings.boat||0)>=5,         effect:()=>{ state.clickSynergyRate += 0.05; recalcFPS(); } },
+  { id:'synergy3',      name:'Tidal Mastery',        icon:'🌀', desc:'Each click gains +15% of your fish/sec.', cost:8000000,   req:()=>(state.buildings.trawler||0)>=5,      effect:()=>{ state.clickSynergyRate += 0.15; recalcFPS(); } },
+  { id:'synergy4',      name:'Abyssal Bond',         icon:'⚫', desc:'Each click gains +30% of your fish/sec.', cost:100000000, req:()=>(state.buildings.submarine||0)>=5,    effect:()=>{ state.clickSynergyRate += 0.30; recalcFPS(); } },
 ];
 
 // ── CRISIS DEFINITIONS ────────────────────────────────────────
@@ -899,8 +899,8 @@ const CRISES = [
     solveType: 'mash',
     actionIcon: '⛵',
     actionText: 'Spam-click to bail water from the boats! Every click counts!',
-    clicksNeeded: 25,
-    fpsPenalty: 0.5,
+    clicksNeeded: 35,
+    fpsPenalty: 0.35,
     minFish: 200,
     resolveMsg: '⛈️ Storm passed! Boats are safe.',
   },
@@ -917,8 +917,8 @@ const CRISES = [
     solveType: 'rapid',
     actionIcon: '🔧',
     actionText: 'Rapidly click to seal the pipes before more fish die!',
-    clicksNeeded: 40,
-    fpsPenalty: 0.3,
+    clicksNeeded: 55,
+    fpsPenalty: 0.2,
     minFish: 2000,
     resolveMsg: '🏭 Pipes sealed! Waters are clean again.',
   },
@@ -935,8 +935,8 @@ const CRISES = [
     solveType: 'click',
     actionIcon: '🆘',
     actionText: 'Click steadily to coordinate the rescue operation!',
-    clicksNeeded: 50,
-    fpsPenalty: 0.4,
+    clicksNeeded: 70,
+    fpsPenalty: 0.25,
     minFish: 5000,
     resolveMsg: '🚢 Trawler saved! Crew rescued safely.',
   },
@@ -953,8 +953,8 @@ const CRISES = [
     solveType: 'hold',
     actionIcon: '💉',
     actionText: 'Hold the fish button down to administer the vaccine!',
-    clicksNeeded: 35,
-    fpsPenalty: 0.25,
+    clicksNeeded: 50,
+    fpsPenalty: 0.15,
     minFish: 1000,
     resolveMsg: '🦠 Disease cured! All fish healthy again.',
   },
@@ -971,8 +971,8 @@ const CRISES = [
     solveType: 'mash',
     actionIcon: '🚔',
     actionText: 'Spam-click to call the coast guard and chase them off!',
-    clicksNeeded: 30,
-    fpsPenalty: 0.6,
+    clicksNeeded: 42,
+    fpsPenalty: 0.45,
     minFish: 500,
     resolveMsg: '🦹 Poachers driven away! Waters secured.',
   },
@@ -989,8 +989,8 @@ const CRISES = [
     solveType: 'rapid',
     actionIcon: '🌿',
     actionText: 'Rapidly click to scrub the algae off the reef!',
-    clicksNeeded: 45,
-    fpsPenalty: 0.4,
+    clicksNeeded: 63,
+    fpsPenalty: 0.25,
     minFish: 10000,
     resolveMsg: '🪸 Reef restored! Algae cleared.',
   },
@@ -1007,8 +1007,8 @@ const CRISES = [
     solveType: 'click',
     actionIcon: '🌊',
     actionText: 'Click to reinforce the sea walls — hold the line!',
-    clicksNeeded: 60,
-    fpsPenalty: 0.2,
+    clicksNeeded: 84,
+    fpsPenalty: 0.1,
     minFish: 50000,
     resolveMsg: '🌊 Tsunami survived! Docks are holding.',
   },
@@ -1025,8 +1025,8 @@ const CRISES = [
     solveType: 'hold',
     actionIcon: '🔌',
     actionText: 'Hold the button to reboot the sonar systems!',
-    clicksNeeded: 30,
-    fpsPenalty: 0.45,
+    clicksNeeded: 42,
+    fpsPenalty: 0.3,
     minFish: 20000,
     resolveMsg: '📡 Sonar back online! Fleet redirected.',
   },
@@ -1043,8 +1043,8 @@ const CRISES = [
     solveType: 'mash',
     actionIcon: '🧯',
     actionText: 'Spam-click to deploy fire extinguishers before it spreads!',
-    clicksNeeded: 45,
-    fpsPenalty: 0.35,
+    clicksNeeded: 63,
+    fpsPenalty: 0.2,
     minFish: 80000,
     resolveMsg: '🔬 Fire out! Lab is back to work.',
   },
@@ -1061,8 +1061,8 @@ const CRISES = [
     solveType: 'rapid',
     actionIcon: '🪣',
     actionText: 'Rapidly click to pump the water out before the eggs are lost!',
-    clicksNeeded: 35,
-    fpsPenalty: 0.4,
+    clicksNeeded: 49,
+    fpsPenalty: 0.25,
     minFish: 3000,
     resolveMsg: '🥚 Hatchery drained! Eggs are safe.',
   },
@@ -1077,7 +1077,7 @@ function boostBuilding(id, factor) { buildingMult[id] = (buildingMult[id]||1) * 
 function globalBoost(factor) { BUILDINGS.forEach(b => buildingMult[b.id] *= factor); recalcFPS(); }
 
 function getBuildingCost(b) {
-  return Math.ceil(b.baseCost * Math.pow(1.22, state.buildings[b.id]||0));
+  return Math.ceil(b.baseCost * Math.pow(1.28, state.buildings[b.id]||0));
 }
 
 // ── SESSION TIMER ─────────────────────────────────────────────
@@ -1319,6 +1319,7 @@ function renderBuildings() {
     card.addEventListener('mouseleave', hideTooltip);
     card.addEventListener('mousemove',  moveTooltip);
     list.appendChild(card);
+    if(isNew) setTimeout(()=>card.scrollIntoView({ behavior:'smooth', block:'center' }), 50);
   });
 }
 
