@@ -464,11 +464,11 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
     <div class="modal-title" id="combat-title">⚔️ Battle</div>
     <div id="combat-howto" style="display:none;background:rgba(249,199,79,0.08);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--white)">
       <b style="color:var(--gold);font-size:12px">⚔️ How Combat Works</b><br>
-      • Rounds auto-fire every 2 seconds — both sides deal damage.<br>
-      • Click <b>STRIKE!</b> anytime for a bonus burst of damage.<br>
+      • Rounds auto-fire every <b>5 seconds</b> — both sides deal damage each round.<br>
+      • Click <b>STRIKE!</b> anytime to build up bonus damage (applied at round end).<br>
       • Your HP = combined power of your deployed troops.<br>
-      • Units are permanently lost when you take damage — they won't come back after battle.<br>
-      • <b>Win</b>: destroy the enemy HP. <b>Lose</b>: your HP hits 0. <b>Retreat</b>: flee with no further losses.
+      • Units are permanently lost when you take damage.<br>
+      • <b>Retreat</b> anytime — but you'll lose units proportional to damage taken.
     </div>
     <div id="combat-summary" style="display:none;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;line-height:2"></div>
     <div class="hp-bars">
@@ -1532,33 +1532,49 @@ function openCombat(regionId) {
     </div>`;
   }).join('');
 
-  // Terrain preview
+  // Savaş öncesi analiz paneli: terrain + faction
   const rd2 = REGIONS.find(r => r.id === regionId);
+  const rs2 = state.regions[regionId];
   const previewEl = document.getElementById('terrain-preview');
   if (previewEl && rd2) {
     const terrain = rd2.terrain;
     const tm = TERRAIN_MOD[terrain] || TERRAIN_MOD.plains;
     const TERRAIN_EMOJI = { plains:'🌾', mountains:'⛰️', coast:'🌊', desert:'🏜️', forest:'🌲', tech:'🏙️', polar:'❄️' };
-    const hasUnit = cat => Object.keys(state.mil).some(id => {
-      const u = UNIT_DEFS.find(u => u.id === id);
-      return u && u.category === cat && (state.mil[id]||0) > 0;
-    });
+    const hasUnit = cat => UNIT_DEFS.some(u => u.category === cat && (state.mil[u.id]||0) > 0);
     const modRow = (cat, icon, mod, active) => {
       let cls, label;
       if (mod === 0) { cls='blocked'; label='Blocked'; }
       else if (mod > 1) { cls='bonus'; label=`+${Math.round((mod-1)*100)}%`; }
       else if (mod < 1) { cls='penalty'; label=`-${Math.round((1-mod)*100)}%`; }
       else { cls='neutral'; label='No effect'; }
-      return `<div class="tp-row" style="${active?'':'opacity:0.4'}"><span>${icon} ${cat}</span><span class="tp-mod ${cls}">${label}</span></div>`;
+      return `<div class="tp-row" style="${active?'':'opacity:0.35'}"><span>${icon} ${cat}</span><span class="tp-mod ${cls}">${label}</span></div>`;
     };
+
+    const faction = ENEMY_FACTIONS.find(f => f.id === rs2?.owner);
+    const enemyDef = Math.round(getRegionDefense(regionId));
+    const attitudeBadge = faction ? {
+      aggressive:'🔴 Aggressive', militarist:'🔴 Militarist', expansionist:'🟡 Expansionist',
+      defensive:'🟢 Defensive', neutral:'⚪ Neutral', isolationist:'🟢 Isolationist'
+    }[faction.attitude] || faction.attitude : rs2?.owner === 'neutral' ? '⚪ Undefended' : '🟡 Rebels';
+
     previewEl.style.display = '';
     previewEl.innerHTML = `
-      <div class="tp-title">${TERRAIN_EMOJI[terrain]||'🗺️'} Terrain: <b>${terrain}</b></div>
-      ${modRow('Land',  '🪖', tm.land,       hasUnit('land'))}
-      ${modRow('Sea',   '🚢', tm.sea||0,      hasUnit('sea'))}
-      ${modRow('Air',   '✈️', tm.air,         hasUnit('air'))}
-      ${modRow('Space', '🛸', tm.space,       hasUnit('space'))}
-    `;
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <div style="flex:1;background:rgba(61,156,212,0.08);border:1px solid var(--border);border-radius:7px;padding:7px 10px">
+          <div class="tp-title" style="margin-bottom:4px">${TERRAIN_EMOJI[terrain]||'🗺️'} <b>${terrain.charAt(0).toUpperCase()+terrain.slice(1)}</b></div>
+          ${modRow('Land',  '🪖', tm.land,  hasUnit('land'))}
+          ${modRow('Sea',   '🚢', tm.sea||0, hasUnit('sea'))}
+          ${modRow('Air',   '✈️', tm.air,   hasUnit('air'))}
+          ${modRow('Space', '🛸', tm.space, hasUnit('space'))}
+        </div>
+        <div style="flex:1;background:rgba(230,57,70,0.07);border:1px solid var(--border);border-radius:7px;padding:7px 10px">
+          <div class="tp-title" style="margin-bottom:4px">⚔️ <b>Enemy</b></div>
+          <div class="tp-row"><span>Faction</span><span style="color:var(--gold);font-size:10px">${faction ? faction.name : (rs2?.owner === 'neutral' ? 'Neutral' : 'Rebels')}</span></div>
+          <div class="tp-row"><span>Attitude</span><span style="font-size:10px">${attitudeBadge}</span></div>
+          <div class="tp-row"><span>Defense</span><span style="color:var(--red);font-weight:700">${enemyDef.toLocaleString()}</span></div>
+          ${rd2.specialRes?.length ? `<div class="tp-row"><span>Resource</span><span style="color:var(--green);font-size:10px">${rd2.specialRes.join(', ')}</span></div>` : ''}
+        </div>
+      </div>`;
   }
   const titleEl = document.getElementById('troop-select-title');
   if (titleEl && rd2) titleEl.textContent = `🪖 Attack ${rd2.name}`;
@@ -1643,46 +1659,63 @@ function startCombatWithForce(regionId, force) {
     howto.style.display = 'none';
   }
   document.getElementById('retreat-btn').textContent = '🏃 Retreat';
+  document.getElementById('strike-btn').disabled = false;
   updateCombatUI();
   document.getElementById('combat-modal').classList.remove('hidden');
-  addCombatLog(`Battle begins! Your power: ${playerPow} vs Enemy: ${Math.round(enemyPow)}`, 'sys');
-  document.getElementById('strike-btn').disabled = false;
+  addCombatLog(`⚔️ Battle begins! Your power: ${playerPow.toLocaleString()} vs Enemy: ${Math.round(enemyPow).toLocaleString()}`, 'sys');
 
+  // Her round 5 saniyede otomatik ateşlenir
   if (combatRoundTimer) clearInterval(combatRoundTimer);
+  state.combat.round = 0;
+  state.combat.clickDmgAccum = 0;
   combatRoundTimer = setInterval(() => {
     if (!state.combat || state.combat.done) { clearInterval(combatRoundTimer); combatRoundTimer = null; return; }
     autoCombatRound();
-  }, 2000);
+  }, 5000);
 }
 
 function autoCombatRound() {
   if (!state.combat || state.combat.done) return;
   const c = state.combat;
-  const playerDmg = Math.round(c.playerPow * 0.05 + Math.random() * 8 + 3);
-  const enemyDmg  = Math.round(c.enemyPow  * 0.04 + Math.random() * 5 + 2);
-  c.enemyHP  = Math.max(0, c.enemyHP  - playerDmg);
-  c.playerHP = Math.max(0, c.playerHP - enemyDmg);
-  addCombatLog(`Round: You deal ${playerDmg} ▸ Enemy deals ${enemyDmg}`, 'sys');
-  const unitsLost = Math.floor(enemyDmg / 60);
+  c.round = (c.round || 0) + 1;
+
+  // Her round ~10% maxHP hasar, ±4% rastgelelik — ~10 round sürer
+  const basePlayerDmg = Math.round(c.enemyMaxHP  * 0.10 + Math.random() * c.enemyMaxHP  * 0.04);
+  const baseEnemyDmg  = Math.round(c.playerMaxHP * 0.10 + Math.random() * c.playerMaxHP * 0.04);
+
+  // Birikmiş click bonusu bu round'a eklenir (0.2x / click)
+  const clickBonus = Math.round(c.clickDmgAccum || 0);
+  c.clickDmgAccum = 0;
+
+  const totalPlayerDmg = basePlayerDmg + clickBonus;
+  c.enemyHP  = Math.max(0, c.enemyHP  - totalPlayerDmg);
+  c.playerHP = Math.max(0, c.playerHP - baseEnemyDmg);
+
+  const unitsLost = Math.floor(baseEnemyDmg / Math.max(1, c.playerMaxHP * 0.08));
   if (unitsLost > 0) {
     loseUnits(unitsLost);
     state.stats.unitsLost += unitsLost;
-    showNotif(`⚔️ Lost ${unitsLost} unit${unitsLost > 1 ? 's' : ''} in combat!`, true);
   }
+
+  const clickNote = clickBonus > 0 ? ` (+${clickBonus} click)` : '';
+  addCombatLog(`Round ${c.round}: ⚔️ ${totalPlayerDmg}${clickNote} dmg dealt ▸ 💥 ${baseEnemyDmg} received${unitsLost > 0 ? ` — lost ${unitsLost} unit${unitsLost>1?'s':''}` : ''}`, 'sys');
+
   if (c.enemyHP <= 0) { combatVictory(); return; }
   if (c.playerHP <= 0) { combatDefeat(); return; }
   updateCombatUI();
 }
 
+// Her click: round başına düşen hasarın 0.2x'i kadar birikir, round sonunda uygulanır
 function strikeEnemy() {
   if (!state.combat || state.combat.done) return;
   const c = state.combat;
-  const playerDmg = Math.round(c.playerPow * 0.12 + Math.random() * 15 + 5);
-  c.enemyHP = Math.max(0, c.enemyHP - playerDmg);
-  addCombatLog(`⚔️ Strike! You deal ${playerDmg} bonus damage!`, 'player');
+  const clickDmg = 0.1;
+  c.clickDmgAccum = (c.clickDmgAccum || 0) + clickDmg;
   state.stats.clicks++;
-  if (c.enemyHP <= 0) { combatVictory(); return; }
-  updateCombatUI();
+  // Küçük görsel feedback — log'a her click yazmasın, sadece HP bar titresin
+  document.getElementById('enemy-hp-fill').style.transition = 'none';
+  setTimeout(() => { document.getElementById('enemy-hp-fill').style.transition = ''; }, 100);
+  showFloat(0, 0, `+${clickDmg}`, 'var(--gold)');
 }
 
 function loseUnits(count) {
@@ -1794,7 +1827,20 @@ function retreatOrClose() {
 
 function retreatCombat() {
   if (combatRoundTimer) { clearInterval(combatRoundTimer); combatRoundTimer = null; }
-  addCombatLog('You retreated from battle.', 'sys');
+  // Retreat bedeli: savaşa gönderilen kuvvetin %20'si kayıp
+  const c = state.combat;
+  if (c && !c.done && c.round > 0) {
+    const hpLostRatio = 1 - (c.playerHP / c.playerMaxHP);
+    const penaltyPct = 0.10 + hpLostRatio * 0.10; // %10 + hasar oranına göre ekstra %10 (max %20)
+    const unitsBefore = UNIT_DEFS.reduce((s, ud) => s + (state.mil[ud.id] || 0), 0);
+    const penalty = Math.max(1, Math.round(unitsBefore * penaltyPct));
+    loseUnits(penalty);
+    state.stats.unitsLost += penalty;
+    addCombatLog(`🏃 Retreated — ${penalty} unit${penalty>1?'s':''} lost in the withdrawal.`, 'enemy');
+    showNotif(`🏃 Retreat: lost ${penalty} units`, true);
+  } else {
+    addCombatLog('Retreated before battle began.', 'sys');
+  }
   closeCombatModal();
 }
 
