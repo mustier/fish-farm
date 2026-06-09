@@ -335,6 +335,26 @@
         </div>
       </div>
 
+      <div class="game-card" onclick="openGame('world-conquest')">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#050a14 0%,#0a1628 55%,#0f2040 100%)">
+          <span class="thumb-icon" style="filter:drop-shadow(0 3px 20px rgba(230,57,70,0.55))">🌍</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">World Conquest</div>
+          <div class="card-desc">Build an empire, command armies, and conquer the world — then face the alien invasion.</div>
+          <div class="card-footer">
+            <div class="card-tags">
+              <span class="tag tag-idle">Strategy</span>
+              <span class="tag tag-new">New</span>
+            </div>
+            <div class="play-label">
+              <span style="font-size:0.9rem">⚔️</span>
+              Play
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -353,8 +373,8 @@
 </div>
 
 <script>
-  const GAME_MSG_SHARE = { 'fish-farm': 'ff_do_share',  'mine-rush': 'mr_do_share' };
-  const GAME_MSG_RESET = { 'fish-farm': 'ff_do_reset',  'mine-rush': 'mr_do_reset' };
+  const GAME_MSG_SHARE = { 'fish-farm': 'ff_do_share',  'mine-rush': 'mr_do_share',  'world-conquest': '' };
+  const GAME_MSG_RESET = { 'fish-farm': 'ff_do_reset',  'mine-rush': 'mr_do_reset',  'world-conquest': '' };
   let activeSlug = '';
 
   function gameAction(msgMap) {
@@ -387,6 +407,19 @@
         '--hdr-hover-bg':     'rgba(201,124,26,0.12)',
         '--hdr-hover-border': 'rgba(201,124,26,0.5)',
         '--hdr-share-border': 'rgba(201,124,26,0.35)',
+      }
+    },
+    'world-conquest': {
+      src: 'world-conquest/index.html',
+      title: 'World Conquest',
+      theme: {
+        '--hdr-bg':           'rgba(5, 8, 18, 0.98)',
+        '--hdr-border':       'rgba(230,57,70,0.3)',
+        '--hdr-logo':         '#f9c74f',
+        '--hdr-accent':       '#e63946',
+        '--hdr-hover-bg':     'rgba(230,57,70,0.1)',
+        '--hdr-hover-border': 'rgba(230,57,70,0.5)',
+        '--hdr-share-border': 'rgba(230,57,70,0.3)',
       }
     }
   };
