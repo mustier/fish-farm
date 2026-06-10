@@ -1,0 +1,2964 @@
+// =====================================================================
+// CONSTANTS
+// =====================================================================
+
+const REGIONS = [
+
+  // ══ POLAR / ARCTIC TOP STRIP ════════════════════════════════════════════
+
+  { id:'arctic', name:'Arctic', x:550, y:5,
+    pts:'0,0 1100,0 1100,100 0,100',
+    terrain:'polar', specialRes:['ice_core','rare_earth'],
+    baseDefense:100, neighbors:['greenland','scandinavia','russia','north_america_west','north_america_east']},
+
+  { id:'greenland', name:'Greenland', x:389, y:10,
+    pts:'367,0 428,0 458,4 464,22 446,45 403,67 361,80 342,67 330,49 336,18 349,4 367,0',
+    terrain:'polar', specialRes:['ice_core','iron'],
+    baseDefense:80, neighbors:['arctic','north_america_east','scandinavia']},
+
+  // ══ EUROPE ══════════════════════════════════════════════════════════════
+  { id:'scandinavia', name:'Scandinavia', x:571, y:57,
+    pts:'532,76 550,85 574,85 596,80 611,58 611,31 596,18 574,18 559,45 544,58 532,76',
+    terrain:'mountains', specialRes:['iron','wood'],
+    baseDefense:150, neighbors:['arctic','northern_europe','russia','greenland']},
+
+  { id:'british_isles', name:'British Isles', x:508, y:98,
+    pts:'495,112 513,112 526,107 526,94 519,76 507,76 498,80 495,94 504,112 495,112',
+    terrain:'coast', specialRes:['copper'],
+    baseDefense:120, neighbors:['western_europe','northern_europe']},
+
+  { id:'northern_europe', name:'N. Europe', x:581, y:95,
+    pts:'550,85 574,85 596,80 623,80 623,103 593,112 574,112 550,112 550,85',
+    terrain:'plains', specialRes:['iron'],
+    baseDefense:130, neighbors:['western_europe','scandinavia','eastern_europe','british_isles','balkans']},
+
+  { id:'western_europe', name:'W. Europe', x:522, y:126,
+    pts:'495,138 513,138 526,138 544,138 562,138 562,112 544,112 526,112 513,112 495,112 489,125 495,138',
+    terrain:'tech', specialRes:['silicon','surplus_food'],
+    baseDefense:180, neighbors:['northern_europe','eastern_europe','north_africa','iberia','british_isles']},
+
+  { id:'iberia', name:'Iberia', x:507, y:154,
+    pts:'492,138 513,138 532,147 529,170 513,174 495,170 489,156 492,138',
+    terrain:'coast', specialRes:['copper'],
+    baseDefense:100, neighbors:['western_europe','north_africa']},
+
+  { id:'eastern_europe', name:'E. Europe', x:597, y:126,
+    pts:'562,112 593,112 623,112 636,112 636,138 623,138 605,138 587,138 574,138 562,138 562,112',
+    terrain:'plains', specialRes:['copper','iron'],
+    baseDefense:140, neighbors:['western_europe','northern_europe','russia','balkans','caucasus']},
+
+  { id:'balkans', name:'Balkans', x:584, y:149,
+    pts:'562,138 587,138 605,138 611,156 599,165 581,165 562,156 562,138',
+    terrain:'mountains', specialRes:['copper','iron'],
+    baseDefense:130, neighbors:['eastern_europe','northern_europe','middle_east','caucasus']},
+
+  // ══ RUSSIA / NORTH ASIA ════════════════════════════════════════════════
+  { id:'russia', name:'Russia', x:656, y:62,
+    pts:'605,31 648,31 703,31 764,45 770,76 709,94 648,103 623,112 605,80 593,67 605,45 605,31',
+    terrain:'plains', specialRes:['oil','iron','wood'],
+    baseDefense:250, neighbors:['arctic','scandinavia','eastern_europe','central_asia','caucasus','mongolia','north_america_west','siberia_far_east']},
+
+  // ══ CAUCASUS / CENTRAL ASIA ════════════════════════════════════════════
+  { id:'caucasus', name:'Caucasus', x:649, y:153,
+    pts:'636,138 660,138 672,147 672,165 654,174 636,165 629,156 636,138',
+    terrain:'mountains', specialRes:['oil','iron'],
+    baseDefense:120, neighbors:['eastern_europe','balkans','middle_east','central_asia','russia']},
+
+  { id:'central_asia', name:'Central Asia', x:704, y:147,
+    pts:'672,129 703,120 733,120 764,129 764,165 733,174 703,183 678,174 660,156 660,138 672,129',
+    terrain:'mountains', specialRes:['uranium','rare_earth'],
+    baseDefense:140, neighbors:['russia','caucasus','middle_east','china','india']},
+
+  // ══ MIDDLE EAST ════════════════════════════════════════════════════════
+  { id:'middle_east', name:'Middle East', x:638, y:196,
+    pts:'605,165 636,165 654,174 678,174 684,201 672,228 654,236 636,236 623,228 611,201 599,183 605,165',
+    terrain:'desert', specialRes:['oil','rare_earth'],
+    baseDefense:200, neighbors:['balkans','caucasus','central_asia','north_africa','arabian_peninsula']},
+
+  { id:'arabian_peninsula', name:'Arabian Pen.', x:662, y:252,
+    pts:'636,236 654,236 672,228 697,236 703,254 691,281 672,281 654,272 636,263 629,254 636,236',
+    terrain:'desert', specialRes:['oil','diamond'],
+    baseDefense:160, neighbors:['middle_east','east_africa']},
+
+  // ══ AFRICA ═════════════════════════════════════════════════════════════
+  { id:'north_africa', name:'N. Africa', x:551, y:227,
+    pts:'464,263 495,263 532,263 568,263 599,254 623,254 636,236 623,228 611,201 599,183 562,165 526,174 513,174 532,201 526,236 495,245 464,263',
+    terrain:'desert', specialRes:['oil','copper'],
+    baseDefense:150, neighbors:['western_europe','iberia','middle_east','west_africa','east_africa']},
+
+  { id:'west_africa', name:'W. Africa', x:508, y:288,
+    pts:'464,263 495,263 532,263 562,290 550,317 532,317 519,308 507,308 489,299 471,281 464,263',
+    terrain:'plains', specialRes:['diamond','wood'],
+    baseDefense:100, neighbors:['north_africa','central_africa']},
+
+  { id:'central_africa', name:'C. Africa', x:586, y:308,
+    pts:'562,290 599,254 623,254 623,290 623,317 605,335 587,352 562,352 550,335 550,317 562,290',
+    terrain:'forest', specialRes:['diamond','wood','copper'],
+    baseDefense:120, neighbors:['west_africa','east_africa','south_africa']},
+
+  { id:'east_africa', name:'E. Africa', x:635, y:318,
+    pts:'623,281 642,281 660,290 666,308 654,335 642,352 629,370 617,352 605,335 623,317 623,281',
+    terrain:'plains', specialRes:['surplus_food','copper'],
+    baseDefense:130, neighbors:['north_africa','arabian_peninsula','central_africa']},
+
+  { id:'south_africa', name:'S. Africa', x:590, y:393,
+    pts:'562,352 587,352 605,335 623,352 629,379 623,415 605,451 574,468 562,451 562,415 562,352',
+    terrain:'plains', specialRes:['diamond','uranium'],
+    baseDefense:130, neighbors:['central_africa']},
+
+  // ══ ASIA ═══════════════════════════════════════════════════════════════
+  { id:'mongolia', name:'Mongolia', x:822, y:127,
+    pts:'788,103 813,103 837,103 868,112 874,129 862,156 837,156 813,156 788,147 776,129 788,103',
+    terrain:'plains', specialRes:['iron','rare_earth','copper'],
+    baseDefense:110, neighbors:['russia','china','japan_korea']},
+
+  { id:'china', name:'China', x:808, y:190,
+    pts:'752,156 764,156 788,156 813,156 837,156 868,156 880,165 880,210 862,236 843,245 825,245 807,236 788,219 770,210 752,192 752,174 752,156',
+    terrain:'tech', specialRes:['silicon','rare_earth'],
+    baseDefense:280, neighbors:['central_asia','mongolia','india','southeast_asia','japan_korea']},
+
+  { id:'japan_korea', name:'Japan & Korea', x:923, y:172,
+    pts:'904,165 917,174 923,192 917,210 929,201 941,183 947,165 941,147 923,138 911,156 904,165',
+    terrain:'coast', specialRes:['silicon','copper'],
+    baseDefense:160, neighbors:['china','mongolia','pacific_islands']},
+
+  { id:'india', name:'India', x:739, y:254,
+    pts:'727,228 752,228 764,228 770,245 764,272 752,290 733,299 721,281 709,254 715,236 727,228',
+    terrain:'plains', specialRes:['surplus_food','copper'],
+    baseDefense:200, neighbors:['central_asia','china','southeast_asia']},
+
+  { id:'southeast_asia', name:'SE. Asia', x:840, y:266,
+    pts:'813,236 831,236 849,236 868,236 880,254 880,281 868,299 849,308 831,317 813,299 807,272 813,254 813,236',
+    terrain:'forest', specialRes:['wood','oil','surplus_food'],
+    baseDefense:150, neighbors:['china','india','pacific_islands','australia']},
+
+  // ══ AMERICAS ═══════════════════════════════════════════════════════════
+  { id:'north_america_west', name:'NA West', x:125, y:107,
+    pts:'6,22 92,22 153,40 165,85 153,120 141,156 153,183 159,210 189,219 189,192 177,156 159,120 141,76 92,49 31,40 6,22',
+    terrain:'plains', specialRes:['oil','wood'],
+    baseDefense:180, neighbors:['arctic','north_america_east','central_america','russia','siberia_far_east']},
+
+  { id:'north_america_east', name:'NA East', x:279, y:115,
+    pts:'244,22 299,22 336,31 354,67 348,103 330,129 318,138 306,156 287,174 275,219 244,219 220,210 220,174 226,138 244,129 263,112 275,76 269,40 244,22',
+    terrain:'tech', specialRes:['silicon','surplus_food'],
+    baseDefense:220, neighbors:['arctic','north_america_west','central_america','greenland']},
+
+  { id:'central_america', name:'C. America', x:251, y:258,
+    pts:'238,236 263,254 281,299 287,299 275,272 263,272 251,254 238,254 226,245 220,236 232,236 238,236',
+    terrain:'coast', specialRes:['oil','wood'],
+    baseDefense:100, neighbors:['north_america_east','north_america_west','caribbean','south_america_north']},
+
+  { id:'caribbean', name:'Caribbean', x:283, y:245,
+    pts:'263,228 287,228 299,245 306,254 299,263 281,263 263,254 263,228',
+    terrain:'coast', specialRes:['surplus_food'],
+    baseDefense:70, neighbors:['central_america','south_america_north']},
+
+  { id:'south_america_north', name:'SA North', x:323, y:314,
+    pts:'287,281 318,281 336,290 354,308 367,326 361,352 342,352 324,335 312,344 299,317 287,299 287,281',
+    terrain:'plains', specialRes:['oil','surplus_food'],
+    baseDefense:130, neighbors:['central_america','caribbean','amazon','south_america_east']},
+
+  { id:'amazon', name:'Amazon', x:360, y:369,
+    pts:'361,352 385,352 397,370 397,397 385,406 367,388 354,379 336,379 324,361 312,344 342,352 361,352',
+    terrain:'forest', specialRes:['wood','diamond'],
+    baseDefense:120, neighbors:['south_america_north','south_america_east','south_america_west']},
+
+  { id:'south_america_east', name:'SA East', x:393, y:396,
+    pts:'409,370 409,397 403,424 397,433 385,433 367,415 367,388 385,370 397,361 409,370',
+    terrain:'plains', specialRes:['iron','copper'],
+    baseDefense:110, neighbors:['south_america_north','amazon']},
+
+  { id:'south_america_west', name:'SA West', x:311, y:391,
+    pts:'287,299 299,317 312,344 312,406 306,433 299,468 312,495 324,495 330,460 336,433 330,397 318,361 312,344 299,317 287,299',
+    terrain:'mountains', specialRes:['copper','uranium'],
+    baseDefense:100, neighbors:['amazon']},
+
+  // ══ OCEANIA ════════════════════════════════════════════════════════════
+  { id:'pacific_islands', name:'Pacific Isles', x:968, y:390,
+    pts:'947,361 978,370 1002,388 1002,433 978,433 953,406 941,370 947,361',
+    terrain:'coast', specialRes:['surplus_food'],
+    baseDefense:60, neighbors:['southeast_asia','japan_korea','australia','new_zealand']},
+
+  { id:'australia', name:'Australia', x:922, y:445,
+    pts:'868,433 892,415 911,406 929,388 941,397 953,415 966,442 978,468 972,504 947,504 917,495 892,477 868,451 868,433',
+    terrain:'desert', specialRes:['uranium','iron'],
+    baseDefense:140, neighbors:['southeast_asia','pacific_islands','new_zealand']},
+
+  { id:'new_zealand', name:'New Zealand', x:1035, y:510,
+    pts:'1027,486 1045,486 1051,504 1045,531 1039,540 1027,531 1021,513 1027,486',
+    terrain:'coast', specialRes:['wood','copper'],
+    baseDefense:80, neighbors:['australia','pacific_islands']},
+
+  // ══ SIBERIA FAR EAST (Alaska'nın solunda, haritanın sol kenarı) ═══════════
+  { id:'siberia_far_east', name:'Siberia Far East', x:-50, y:50,
+    pts:'6,18 6,49 6,85 -8,112 -30,120 -60,112 -75,94 -70,58 -55,31 -30,18 6,18',
+    terrain:'polar', specialRes:['oil','rare_earth'],
+    baseDefense:100, neighbors:['russia','arctic','north_america_west']},
+
+  // ══ ANTARCTICA (altta) ═══════════════════════════════════════════════════
+  { id:'antarctica', name:'Antarctica', x:480, y:660,
+    pts:'80,690 200,678 350,672 500,670 650,672 800,676 950,682 1080,690 1100,700 950,710 800,706 650,704 500,702 350,704 200,708 80,704 60,700 80,690',
+    terrain:'polar', specialRes:['ice_core','uranium'],
+    baseDefense:200, neighbors:[]},
+];
+
+const UNIT_DEFS = [
+  // LAND — starts locked except militia
+  { id:'militia',         name:'Militia',           icon:'🪖', category:'land',  power:1,    cost:{gold:15,food:3},                    upkeep:{food:0.01},               limit:200, requires:[],                                             unlockPhase:1, desc:'Basic recruits. Always available.' },
+  { id:'infantry',        name:'Infantry',           icon:'⚔️', category:'land',  power:5,    cost:{gold:50,iron:5},                    upkeep:{food:0.03},               limit:300, requires:['military_org'],                               unlockPhase:1, desc:'Standard soldiers' },
+  { id:'sniper',          name:'Sniper',             icon:'🎯', category:'land',  power:12,   cost:{gold:120,iron:8,copper:5},          upkeep:{food:0.05},               limit:100, requires:['military_org'],                               unlockPhase:1, desc:'Precision fighters' },
+  { id:'apc',             name:'APC',                icon:'🚛', category:'land',  power:20,   cost:{gold:180,iron:12,oil:8},            upkeep:{oil:0.02},                limit:80,  requires:['mechanized'],                                 unlockPhase:2, desc:'Armored personnel carrier' },
+  { id:'artillery',       name:'Artillery',          icon:'💥', category:'land',  power:35,   cost:{gold:350,iron:20,copper:10},        upkeep:{food:0.05},               limit:50,  requires:['siege_warfare'],                              unlockPhase:2, desc:'Long range bombardment' },
+  { id:'tank',            name:'Tank',               icon:'🛡️', category:'land',  power:60,   cost:{gold:600,iron:30,oil:15},           upkeep:{oil:0.05},                limit:60,  requires:['armor_doctrine'],                             unlockPhase:2, desc:'Armored assault' },
+  { id:'missile_battery', name:'Missile Battery',   icon:'🚀', category:'land',  power:150,  cost:{gold:2000,uranium:10,iron:20},      upkeep:{energy:0.15},             limit:20,  requires:['missile_program'],                            unlockPhase:3, desc:'Tactical missiles' },
+  { id:'war_robot',       name:'War Robot',          icon:'🤖', category:'land',  power:280,  cost:{gold:5000,silicon:50,energy:30},    upkeep:{energy:0.3},              limit:15,  requires:['automation'],                                 unlockPhase:4, desc:'Autonomous combat robot' },
+  { id:'nuclear_land',    name:'Nuclear Artillery',  icon:'☢️', category:'land',  power:800,  cost:{gold:15000,uranium:50,iron:30},     upkeep:{energy:0.8,uranium:0.05}, limit:5,   requires:['nuclear_weapons'],                            unlockPhase:4, desc:'Nuclear-armed artillery' },
+  { id:'titan',           name:'Titan Mech',         icon:'🦾', category:'land',  power:2000, cost:{gold:50000,iron:80,silicon:40},     upkeep:{energy:1.5},              limit:3,   requires:['nuclear_weapons','automation','satellite'],   unlockPhase:5, desc:'Massive war machine' },
+  // SEA — all locked behind naval_doctrine or copper_smelting
+  { id:'boat',            name:'Patrol Boat',        icon:'⛵', category:'sea',   power:4,    cost:{gold:80,wood:10},                   upkeep:{food:0.02},               limit:50,  requires:['copper_smelting'],                            unlockPhase:1, desc:'Basic naval unit' },
+  { id:'corvette',        name:'Corvette',           icon:'🚢', category:'sea',   power:15,   cost:{gold:300,iron:15,wood:10},          upkeep:{oil:0.03},                limit:40,  requires:['naval_doctrine'],                             unlockPhase:1, desc:'Fast warship' },
+  { id:'frigate',         name:'Frigate',            icon:'⚓', category:'sea',   power:40,   cost:{gold:700,iron:25,oil:15},           upkeep:{oil:0.06},                limit:25,  requires:['naval_doctrine'],                             unlockPhase:2, desc:'Multipurpose warship' },
+  { id:'landing_ship',    name:'Landing Ship',       icon:'🛥️', category:'sea',   power:25,   cost:{gold:600,wood:20,iron:15},          upkeep:{oil:0.04},                limit:15,  requires:['amphibious'],                                 unlockPhase:2, desc:'Amphibious operations' },
+  { id:'destroyer',       name:'Destroyer',          icon:'🚤', category:'sea',   power:90,   cost:{gold:2000,iron:40,oil:25},          upkeep:{oil:0.1},                 limit:15,  requires:['naval_domination'],                           unlockPhase:3, desc:'Anti-submarine destroyer' },
+  { id:'submarine',       name:'Submarine',          icon:'🔱', category:'sea',   power:180,  cost:{gold:5000,oil:50,silicon:20},       upkeep:{oil:0.15},                limit:10,  requires:['naval_domination','electronics'],              unlockPhase:3, desc:'Stealth submarine' },
+  { id:'carrier',         name:'Carrier',            icon:'🛳️', category:'sea',   power:350,  cost:{gold:12000,oil:80,silicon:40},      upkeep:{oil:0.3,energy:0.2},      limit:5,   requires:['carrier_ops'],                                unlockPhase:4, desc:'Aircraft carrier' },
+  { id:'nuclear_sub',     name:'Nuclear Sub',        icon:'☢️', category:'sea',   power:700,  cost:{gold:25000,uranium:35,oil:60},      upkeep:{uranium:0.05,oil:0.2},    limit:3,   requires:['nuclear_weapons','naval_domination'],         unlockPhase:4, desc:'Nuclear-armed submarine' },
+  { id:'ocean_titan',     name:'Ocean Titan',        icon:'🌊', category:'sea',   power:1800, cost:{gold:60000,silicon:60,uranium:30},  upkeep:{energy:1.0,oil:0.5},      limit:2,   requires:['naval_domination','nuclear_weapons','automation'], unlockPhase:5, desc:'Titanic warship' },
+  // AIR — all locked behind air_superiority or electronics
+  { id:'drone',           name:'Combat Drone',       icon:'🚁', category:'air',   power:8,    cost:{gold:150,copper:8,silicon:5},       upkeep:{energy:0.05},             limit:80,  requires:['electronics'],                                unlockPhase:2, desc:'Unmanned aerial vehicle' },
+  { id:'fighter',         name:'Fighter Jet',        icon:'✈️', category:'air',   power:22,   cost:{gold:500,oil:15},                   upkeep:{oil:0.08},                limit:60,  requires:['air_superiority'],                            unlockPhase:2, desc:'Air superiority fighter' },
+  { id:'bomber',          name:'Bomber',             icon:'💣', category:'air',   power:55,   cost:{gold:1500,oil:30,iron:15},          upkeep:{oil:0.15},                limit:30,  requires:['air_superiority'],                            unlockPhase:2, desc:'Strategic bomber' },
+  { id:'helicopter',      name:'Helicopter',         icon:'🚁', category:'air',   power:45,   cost:{gold:1200,oil:20},                  upkeep:{oil:0.1},                 limit:30,  requires:['air_superiority'],                            unlockPhase:2, desc:'+35% land power synergy' },
+  { id:'stealth',         name:'Stealth Jet',        icon:'🛩️', category:'air',   power:130,  cost:{gold:4000,silicon:30,oil:40},       upkeep:{oil:0.2},                 limit:20,  requires:['stealth_tech'],                               unlockPhase:3, desc:'Invisible to radar' },
+  { id:'ew_plane',        name:'EW Aircraft',        icon:'📡', category:'air',   power:80,   cost:{gold:3000,silicon:40,copper:20},    upkeep:{energy:0.3,oil:0.1},      limit:15,  requires:['stealth_tech','satellite'],                   unlockPhase:4, desc:'Disables enemy electronics' },
+  { id:'hypersonic',      name:'Hypersonic',         icon:'⚡', category:'air',   power:300,  cost:{gold:8000,uranium:20,silicon:30},   upkeep:{energy:0.2},              limit:10,  requires:['missile_program','air_superiority'],          unlockPhase:4, desc:'Mach 10 missile carrier' },
+  { id:'strato_bomber',   name:'Strato Bomber',      icon:'🌩️', category:'air',   power:500,  cost:{gold:20000,uranium:40,oil:60},      upkeep:{oil:0.4,uranium:0.05},    limit:5,   requires:['air_doctrine2'],                              unlockPhase:5, desc:'Stratospheric bomber' },
+  { id:'orbital_bomb',    name:'Orbital Bomb',       icon:'💫', category:'air',   power:1000, cost:{gold:40000,rare_earth:20,uranium:30},upkeep:{energy:0.8},             limit:3,   requires:['air_doctrine2','space_doctrine'],              unlockPhase:5, desc:'Orbital bombardment' },
+  // SPACE — all locked behind space_doctrine
+  { id:'recon_sat',       name:'Recon Sat',          icon:'🛸', category:'space', power:50,   cost:{gold:5000,silicon:50,energy:10},    upkeep:{},                        limit:5,   requires:['space_doctrine'],                             unlockPhase:5, desc:'Intelligence gathering' },
+  { id:'defense_sat',     name:'Defense Sat',        icon:'🛡️', category:'space', power:200,  cost:{gold:15000,rare_earth:20,silicon:40},upkeep:{},                       limit:4,   requires:['space_doctrine'],                             unlockPhase:5, desc:'Orbital defense platform' },
+  { id:'space_fighter',   name:'Space Fighter',      icon:'🚀', category:'space', power:800,  cost:{gold:30000,rare_earth:30,uranium:20},upkeep:{},                       limit:6,   requires:['space_doctrine'],                             unlockPhase:5, desc:'Orbital combat ship' },
+  { id:'laser_platform',  name:'Laser Platform',     icon:'⚡', category:'space', power:1200, cost:{gold:60000,silicon:80,energy:40},   upkeep:{},                        limit:3,   requires:['space_doctrine','ai'],                        unlockPhase:5, desc:'Directed energy weapon' },
+  { id:'star_destroyer',  name:'Star Destroyer',     icon:'🌟', category:'space', power:3500, cost:{gold:150000,ice_core:30,rare_earth:50},upkeep:{},                     limit:3,   requires:['galactic_war'],                               unlockPhase:5, desc:'Capital space warship' },
+  { id:'asteroid_launcher',name:'Asteroid Launcher', icon:'☄️', category:'space', power:5000, cost:{gold:300000,rare_earth:60,ice_core:20},upkeep:{},                    limit:2,   requires:['galactic_war'],                               unlockPhase:5, desc:'Kinetic mass driver' },
+  { id:'nuclear_torpedo',  name:'Nuclear Torpedo',   icon:'💥', category:'space', power:8000, cost:{gold:500000,uranium:100,rare_earth:50},upkeep:{},                     limit:2,   requires:['galactic_war','nuclear_weapons'],             unlockPhase:5, desc:'Deep space torpedo' },
+  { id:'quantum_weapon',  name:'Quantum Weapon',     icon:'🔮', category:'space', power:25000,cost:{gold:2000000,silicon:100,rare_earth:80,ice_core:30},upkeep:{},        limit:1,   requires:['galactic_war','automation','quantum'],        unlockPhase:5, desc:'Reality-bending weapon' },
+];
+
+const TECH_DEFS = [
+  // ── ECONOMY BRANCH ──────────────────────────────────────────────────────
+  // Tier 0 (roots)
+  { id:'basic_industry',   name:'Basic Industry',      icon:'⚙️',  branch:'economy', cost:{gold:80,iron:10},              req:[],                               desc:'Unlocks iron production +30% & infantry' },
+  { id:'agriculture',      name:'Agriculture',         icon:'🌾',  branch:'economy', cost:{gold:80},                      req:[],                               desc:'+1 food/s per plains region' },
+  { id:'carpentry',        name:'Carpentry',           icon:'🪵',  branch:'economy', cost:{gold:60},                      req:[],                               desc:'+30% wood output; unlocks wooden buildings' },
+  { id:'copper_smelting',  name:'Copper Smelting',     icon:'🔧',  branch:'economy', cost:{gold:70,copper:5},             req:[],                               desc:'+30% copper output; unlocks early sea units' },
+  // Tier 1
+  { id:'oil_drilling',     name:'Oil Drilling',        icon:'🛢️',  branch:'economy', cost:{gold:120,iron:15},             req:['basic_industry'],               desc:'+50% oil output; unlocks oil-powered units' },
+  { id:'logistics',        name:'Logistics',           icon:'🚛',  branch:'economy', cost:{gold:130},                     req:['basic_industry'],               desc:'+30% gold income; faster supply chains' },
+  { id:'taxation',         name:'Taxation',            icon:'💰',  branch:'economy', cost:{gold:90},                      req:['logistics'],                    desc:'+20% gold per pop; reduces unrest in regions' },
+  { id:'population_growth',name:'Population Growth',   icon:'👶',  branch:'economy', cost:{gold:150,food:100},            req:['agriculture'],                  desc:'+200 pop cap; +0.2 pop/s per region' },
+  { id:'aquaculture',      name:'Aquaculture',         icon:'🐟',  branch:'economy', cost:{gold:140,wood:15,food:50},     req:['agriculture','copper_smelting'],desc:'+1 food/s per coastal region; surplus_food +20%' },
+  { id:'timber_industry',  name:'Timber Industry',     icon:'🌲',  branch:'economy', cost:{gold:100,wood:20},             req:['carpentry'],                    desc:'+50% wood output; unlocks Forest Mine' },
+  // Tier 2
+  { id:'trade_routes',     name:'Trade Routes',        icon:'🗺️',  branch:'economy', cost:{gold:200},                    req:['logistics'],                    desc:'+30% gold production globally' },
+  { id:'mercantile_guilds',name:'Mercantile Guilds',   icon:'⚖️',  branch:'economy', cost:{gold:220,wood:25},             req:['trade_routes','taxation'],      desc:'+25% gold; +10% wood & copper trade value' },
+  { id:'steel_production', name:'Steel Production',    icon:'🏗️',  branch:'economy', cost:{gold:200,iron:30,copper:10},  req:['basic_industry','copper_smelting'], desc:'+50% iron output; unlocks mid-tier buildings' },
+  { id:'irrigation',       name:'Irrigation',          icon:'💧',  branch:'economy', cost:{gold:180,wood:20},             req:['agriculture','carpentry'],      desc:'+1.5 food/s per region; removes terrain food penalty' },
+  { id:'urbanization',     name:'Urbanization',        icon:'🏙️',  branch:'economy', cost:{gold:250,iron:30},             req:['population_growth'],            desc:'+500 pop cap; City building available' },
+  { id:'mining_guilds',    name:'Mining Guilds',       icon:'⛏️',  branch:'economy', cost:{gold:180,iron:20},             req:['basic_industry'],               desc:'+25% all ore output (iron/copper/diamond/uranium)' },
+  { id:'energy_grid',      name:'Energy Grid',         icon:'🔌',  branch:'economy', cost:{gold:320,copper:30,iron:25},   req:['steel_production'],             desc:'+40% energy distribution; -15% upkeep costs' },
+  // Tier 3
+  { id:'banking',          name:'Banking System',      icon:'🏦',  branch:'economy', cost:{gold:400,surplus_food:30},     req:['trade_routes','urbanization'],  desc:'+50% gold income; gold cap +2000' },
+  { id:'industrial_farming',name:'Industrial Farming', icon:'🚜',  branch:'economy', cost:{gold:300,iron:20},             req:['irrigation'],                   desc:'+2 food/s per region; unlocks Farm complex' },
+  { id:'cold_storage',     name:'Cold Storage',        icon:'🧊',  branch:'economy', cost:{gold:340,iron:30,energy:20},   req:['industrial_farming','energy_grid'], desc:'Food spoilage -50%; surplus_food cap +500' },
+  { id:'oil_refining',     name:'Oil Refining',        icon:'🏭',  branch:'economy', cost:{gold:350,oil:30,iron:20},      req:['oil_drilling','steel_production'], desc:'+75% oil output; unlocks Oil Refinery upgrade' },
+  { id:'recycling',        name:'Recycling',           icon:'♻️',  branch:'economy', cost:{gold:280,iron:20,copper:15},   req:['steel_production','chemistry'], desc:'10% of unit costs refunded; -20% resource waste' },
+  { id:'rare_earth_extraction',name:'Rare Earth Extraction',icon:'🪨',branch:'economy',cost:{gold:550,iron:40,silicon:25},req:['mining_guilds','chemistry'],    desc:'+60% rare_earth output; unlocks Rare Mine' },
+  // Tier 4
+  { id:'stock_market',     name:'Stock Market',        icon:'📈',  branch:'economy', cost:{gold:600,surplus_food:20},     req:['banking','mercantile_guilds'],  desc:'+75% gold income; gold cap +5000' },
+  { id:'megaprojects',     name:'Megaprojects',        icon:'🏛️',  branch:'economy', cost:{gold:1200,iron:80,wood:40},    req:['urbanization','energy_grid'],   desc:'+1000 pop cap; unlocks Wonder buildings' },
+  { id:'automation',       name:'Automation',          icon:'🤖',  branch:'economy', cost:{gold:500,silicon:40},          req:['steel_production','electronics'], desc:'+25% all resources; unlocks War Robots' },
+  { id:'nano_mining',      name:'Nano Mining',         icon:'💎',  branch:'economy', cost:{gold:800,silicon:60,rare_earth:20}, req:['automation'],             desc:'+50% all rare resource output' },
+  // Tier 5
+  { id:'fusion_reactor',   name:'Fusion Reactor',      icon:'🌟',  branch:'economy', cost:{gold:2000,uranium:50,silicon:50}, req:['nuclear_energy','automation'], desc:'Energy x3; +30% all production' },
+  { id:'space_mining',     name:'Space Mining',        icon:'🪐',  branch:'economy', cost:{gold:2500,rare_earth:50,uranium:30}, req:['nano_mining','satellite'],desc:'Unlocks Asteroid Mine; +75% diamond & rare_earth' },
+  // Tier 6
+  { id:'antimatter_economy',name:'Antimatter Economy', icon:'✨',  branch:'economy', cost:{gold:5000,ice_core:30,rare_earth:60}, req:['fusion_reactor','space_mining'], desc:'Energy x5; all production +50%' },
+
+  // ── SCIENCE BRANCH ──────────────────────────────────────────────────────
+  // Tier 0
+  { id:'writing',          name:'Written Records',     icon:'📜',  branch:'science', cost:{gold:50},                      req:[],                               desc:'-10% all tech costs; prereq for most science' },
+  // Tier 1
+  { id:'mathematics',      name:'Mathematics',         icon:'📐',  branch:'science', cost:{gold:100},                     req:['writing'],                      desc:'+20% research speed; better resource forecasting' },
+  { id:'medicine',         name:'Medicine',            icon:'🏥',  branch:'science', cost:{gold:120,surplus_food:20},     req:['writing'],                      desc:'+0.3 pop/s per region; reduces desertion rate' },
+  { id:'psychology',       name:'Psychology',          icon:'🧩',  branch:'science', cost:{gold:130,surplus_food:15},     req:['writing','medicine'],           desc:'+15% pop growth; unrest -25%; morale boost in combat' },
+  { id:'cryptography',     name:'Cryptography',        icon:'🔐',  branch:'science', cost:{gold:140,silicon:10},          req:['mathematics'],                  desc:'-15% enemy intel; +10% research speed' },
+  // Tier 2
+  { id:'electronics',      name:'Electronics',         icon:'💡',  branch:'science', cost:{gold:150,copper:15,silicon:10},req:['mathematics'],                  desc:'+30% silicon output; unlocks drones & radar' },
+  { id:'chemistry',        name:'Chemistry',           icon:'🧪',  branch:'science', cost:{gold:160,iron:15},             req:['mathematics'],                  desc:'+20% all resource output; unlocks explosives' },
+  { id:'materials_science',name:'Materials Science',   icon:'🧱',  branch:'science', cost:{gold:240,iron:25,copper:15},   req:['chemistry'],                    desc:'+25% iron & copper output; unit HP +10%' },
+  { id:'climate_science',  name:'Climate Science',     icon:'🌦️',  branch:'science', cost:{gold:260,surplus_food:25},     req:['chemistry','medicine'],         desc:'Removes all terrain penalties; +1 food/s per region' },
+  // Tier 3
+  { id:'computing',        name:'Computing',           icon:'🖥️',  branch:'science', cost:{gold:250,silicon:30},          req:['electronics'],                  desc:'+50% research speed; unlocks satellites' },
+  { id:'nuclear_theory',   name:'Nuclear Theory',      icon:'☢️',  branch:'science', cost:{gold:300,uranium:10},          req:['chemistry','electronics'],      desc:'Unlocks nuclear weapons & energy; uranium x1.5' },
+  { id:'genetics',         name:'Genetics',            icon:'🧬',  branch:'science', cost:{gold:280,surplus_food:40},     req:['medicine','chemistry'],         desc:'+500 pop cap; food upkeep -20%' },
+  { id:'robotics',         name:'Robotics',            icon:'🦿',  branch:'science', cost:{gold:380,silicon:35,iron:25},  req:['electronics','materials_science'], desc:'+30% production efficiency; unlocks Worker Drones' },
+  // Tier 4
+  { id:'nuclear_energy',   name:'Nuclear Energy',      icon:'⚡',  branch:'science', cost:{gold:500,uranium:20},          req:['nuclear_theory'],               desc:'Energy output x2; unlocks nuclear units' },
+  { id:'satellite',        name:'Satellite Network',   icon:'🛸',  branch:'science', cost:{gold:400,silicon:50,uranium:15}, req:['computing','nuclear_theory'], desc:'Intel on all regions; +20% air power' },
+  { id:'ai',               name:'Artificial Intelligence', icon:'🧠', branch:'science', cost:{gold:600,silicon:80,rare_earth:20}, req:['computing'],           desc:'+20% all output; AI-assisted combat +30% land' },
+  { id:'cybernetics',      name:'Cybernetics',         icon:'🦾',  branch:'science', cost:{gold:700,silicon:50,rare_earth:25}, req:['robotics','bioengineering'], desc:'+25% land power; pop upkeep -25%' },
+  { id:'fusion_theory',    name:'Fusion Theory',       icon:'☀️',  branch:'science', cost:{gold:850,uranium:30,silicon:40}, req:['nuclear_energy','quantum'],  desc:'Enhances Fusion Reactor; uranium consumption -40%' },
+  // Tier 5
+  { id:'quantum',          name:'Quantum Computing',   icon:'🔮',  branch:'science', cost:{gold:1500,silicon:100,rare_earth:40}, req:['ai','satellite'],       desc:'+50% all production; research speed x2' },
+  { id:'bioengineering',   name:'Bioengineering',      icon:'🦠',  branch:'science', cost:{gold:900,rare_earth:30},       req:['genetics','ai'],               desc:'Pop grows without food; upkeep -30%' },
+  { id:'nanotech',         name:'Nanotechnology',      icon:'🔬',  branch:'science', cost:{gold:1300,silicon:80,rare_earth:35}, req:['quantum','materials_science'], desc:'+40% all output; combat unit repair x2' },
+  { id:'xenobiology',      name:'Xenobiology',         icon:'👽',  branch:'science', cost:{gold:1100,rare_earth:35,ice_core:10}, req:['bioengineering','satellite'], desc:'Unlocks alien biome bonuses; +400 pop cap' },
+  // Tier 6
+  { id:'warp_theory',      name:'Warp Theory',         icon:'🌀',  branch:'science', cost:{gold:3000,ice_core:40,rare_earth:60}, req:['quantum','fusion_theory'], desc:'Unlocks Warp Drive; military deployment speed x3' },
+  { id:'singularity',      name:'Singularity',         icon:'🕳️',  branch:'science', cost:{gold:8000,ice_core:80,rare_earth:120}, req:['warp_theory','nanotech'], desc:'Research speed x4; all production +100%' },
+
+  // ── MILITARY BRANCH ──────────────────────────────────────────────────────
+  // Tier 0
+  { id:'military_org',     name:'Military Organization', icon:'🎖️', branch:'military', cost:{gold:100},                  req:['writing'],                      desc:'Unlocks Infantry & Sniper; pop upkeep -15%' },
+  { id:'fortification',    name:'Fortification',        icon:'🧱',  branch:'military', cost:{gold:80,wood:15},            req:['carpentry'],                    desc:'+100 region defense; unlocks Defense Wall' },
+  // Tier 1
+  { id:'psychological_warfare',name:'Psychological Warfare',icon:'🎭',branch:'military',cost:{gold:160,surplus_food:10}, req:['military_org'],                 desc:'Enemy morale -20% in combat; +15% conquest speed' },
+  { id:'mechanized',       name:'Mechanized Infantry',  icon:'🦾',  branch:'military', cost:{gold:180,iron:30},           req:['military_org','basic_industry'],desc:'+50% land power; unlocks APC & Artillery' },
+  { id:'naval_doctrine',   name:'Naval Doctrine',       icon:'🚢',  branch:'military', cost:{gold:200,wood:30,iron:20},   req:['copper_smelting','logistics'],  desc:'+50% sea power; unlocks Corvette & Frigate' },
+  { id:'guerrilla',        name:'Guerrilla Warfare',    icon:'🌿',  branch:'military', cost:{gold:150,wood:20},           req:['military_org'],                 desc:'+40% land power in forests & mountains; cheaper militia' },
+  { id:'strategic_reserves',name:'Strategic Reserves',  icon:'📦',  branch:'military', cost:{gold:260,iron:30,food:50},   req:['logistics','fortification'],    desc:'+25% unit reinforcement rate; army cap +10%' },
+  // Tier 2
+  { id:'military_intelligence',name:'Military Intelligence',icon:'🔍',branch:'military',cost:{gold:220,silicon:10},      req:['military_org','electronics'],   desc:'Reveals enemy unit composition; +20% ambush damage' },
+  { id:'armor_doctrine',   name:'Armor Doctrine',       icon:'🛡️',  branch:'military', cost:{gold:350,iron:50,oil:20},   req:['mechanized','oil_drilling'],   desc:'+60% land power; unlocks Tank & APC variants' },
+  { id:'air_superiority',  name:'Air Superiority',      icon:'🛩️',  branch:'military', cost:{gold:280,oil:30,copper:15}, req:['oil_drilling','electronics'],  desc:'+50% air power; unlocks Fighters & Bombers' },
+  { id:'amphibious',       name:'Amphibious Warfare',   icon:'🏖️',  branch:'military', cost:{gold:250,iron:30,wood:25},  req:['naval_doctrine'],               desc:'Sea units can support land attacks; unlocks Landing Ship' },
+  { id:'siege_warfare',    name:'Siege Warfare',        icon:'💥',  branch:'military', cost:{gold:300,iron:40},           req:['mechanized'],                   desc:'+80% land power vs fortified regions; unlocks Artillery' },
+  // Tier 3
+  { id:'special_forces',   name:'Special Forces',       icon:'🥷',  branch:'military', cost:{gold:300,iron:20,wood:15},  req:['guerrilla','military_intelligence'], desc:'Elite units deal x1.5 damage; +40% sabotage success' },
+  { id:'land_doctrine2',   name:'Blitzkrieg',           icon:'🪖',  branch:'military', cost:{gold:500,iron:60,oil:30},   req:['armor_doctrine'],               desc:'+80% land power; conquer speed x2' },
+  { id:'naval_domination', name:'Ocean Dominance',      icon:'⚓',  branch:'military', cost:{gold:600,oil:80,iron:40},   req:['naval_doctrine','air_superiority'], desc:'+80% sea power; unlocks Destroyer & Submarine' },
+  { id:'stealth_tech',     name:'Stealth Technology',   icon:'🕵️',  branch:'military', cost:{gold:500,silicon:30,oil:40},req:['air_superiority','electronics'],desc:'Unlocks Stealth Jet & EW Aircraft; +25% surprise attack' },
+  { id:'missile_program',  name:'Missile Program',      icon:'🚀',  branch:'military', cost:{gold:400,iron:30,uranium:10},req:['nuclear_theory','siege_warfare'],desc:'Unlocks Missile Battery & Hypersonic; +100% artillery range' },
+  { id:'biological_warfare',name:'Biological Warfare',  icon:'☣️',  branch:'military', cost:{gold:650,surplus_food:30,rare_earth:15}, req:['genetics','siege_warfare'], desc:'Enemy pop -30% on conquest; weakens fortifications' },
+  // Tier 4
+  { id:'electronic_warfare',name:'Electronic Warfare',  icon:'📡',  branch:'military', cost:{gold:380,silicon:40,copper:20}, req:['stealth_tech','cryptography'], desc:'Disables enemy radar; +30% missile accuracy' },
+  { id:'drone_swarms',     name:'Drone Swarms',         icon:'🐝',  branch:'military', cost:{gold:550,silicon:50,rare_earth:15}, req:['air_superiority','robotics'], desc:'Unlocks Swarm Drones; +40% air recon & strike power' },
+  { id:'air_doctrine2',    name:'Orbital Strike',       icon:'💥',  branch:'military', cost:{gold:700,oil:80,uranium:25}, req:['naval_domination','stealth_tech'],desc:'+100% air power; unlocks Strato Bomber' },
+  { id:'nuclear_weapons',  name:'Nuclear Arsenal',      icon:'💣',  branch:'military', cost:{gold:800,uranium:40},        req:['missile_program','nuclear_theory'], desc:'Unlocks Nuclear Artillery & Nuclear Sub' },
+  { id:'carrier_ops',      name:'Carrier Operations',   icon:'🛳️',  branch:'military', cost:{gold:900,oil:60,silicon:30}, req:['naval_domination','air_superiority'], desc:'Unlocks Aircraft Carrier; sea+air synergy +30%' },
+  { id:'cyber_warfare',    name:'Cyber Warfare',        icon:'💻',  branch:'military', cost:{gold:750,silicon:60,rare_earth:20}, req:['electronic_warfare','computing'], desc:'Disables enemy production 30s; +25% all combat power' },
+  // Tier 5
+  { id:'mech_division',    name:'Mech Division',        icon:'🤖',  branch:'military', cost:{gold:1600,iron:100,silicon:60}, req:['cybernetics','land_doctrine2'], desc:'Unlocks Battle Mech unit; +120% land power' },
+  { id:'space_doctrine',   name:'Space Warfare',        icon:'🚀',  branch:'military', cost:{gold:2000,silicon:100,rare_earth:50}, req:['satellite','missile_program'], desc:'Unlocks all Space units; space power x2' },
+  { id:'orbital_defense',  name:'Orbital Defense Grid', icon:'🛰️',  branch:'military', cost:{gold:1400,silicon:80,uranium:30}, req:['space_doctrine','carrier_ops'], desc:'Region defense +500; intercepts incoming missiles' },
+  // Tier 6
+  { id:'galactic_war',     name:'Galactic Warfare',     icon:'🌌',  branch:'military', cost:{gold:10000,rare_earth:100,ice_core:50}, req:['space_doctrine','quantum'], desc:'Unlocks Tier-5 space superweapons' },
+  { id:'dimensional_tactics',name:'Dimensional Tactics',icon:'🌠',  branch:'military', cost:{gold:4000,ice_core:30,rare_earth:80}, req:['galactic_war','warp_theory'], desc:'Units phase through defenses; conquest speed x3' },
+];
+
+const ENEMY_FACTIONS = [
+  { id:'militia',     name:'Rebels',        color:'#8b3a3a', power_mult:0.5, attitude:'aggressive', pref_force:'land', regions:[] },
+  { id:'warlord',     name:'Warlord State', color:'#c44444', power_mult:0.8, attitude:'aggressive', pref_force:'land', regions:[] },
+  { id:'federation',  name:'Federation',    color:'#4466aa', power_mult:1.0, attitude:'defensive',  pref_force:'sea',  regions:[] },
+  { id:'empire',      name:'E. Empire',     color:'#aa4422', power_mult:1.3, attitude:'expansionist',pref_force:'air', regions:[] },
+  { id:'superpower',  name:'Superpower',    color:'#cc2222', power_mult:1.8, attitude:'militarist', pref_force:'all',  regions:[] },
+  { id:'sea_empire',  name:'Sea Empire',    color:'#2277aa', power_mult:1.5, attitude:'expansionist',pref_force:'sea', regions:[] },
+  { id:'tech_nation', name:'Tech Nation',   color:'#227799', power_mult:2.0, attitude:'peaceful',   pref_force:'air',  regions:[] },
+];
+
+const BUILDING_DEFS = [
+  // Always buildable (early game)
+  { id:'watchtower',   name:'Watchtower',   icon:'🗼', desc:'+50 region defense; reveals neighbors', cost:{gold:60,wood:10},               terrains:[], req_research:['carpentry'] },
+  { id:'village',      name:'Village',      icon:'🏘️', desc:'+0.5 pop/s; +50 pop cap',              cost:{gold:100},                      terrains:[], req_research:['agriculture'] },
+  { id:'granary',      name:'Granary',      icon:'🌾', desc:'+500 food storage; +0.3 food/s',       cost:{gold:80,wood:15},               terrains:['plains','coast','forest'], req_research:['agriculture'] },
+  { id:'lumber_camp',  name:'Lumber Camp',  icon:'🌲', desc:'+1.5 wood/s',                          cost:{gold:80},                       terrains:['forest'], req_research:['carpentry'] },
+  { id:'smithy',       name:'Smithy',       icon:'⚒️', desc:'+0.8 iron/s; enables barracks',        cost:{gold:120,wood:10},              terrains:[], req_research:['basic_industry'] },
+  { id:'deep_mine',    name:'Deep Mine',    icon:'⛏️', desc:'+1.5 iron/s; +0.5 copper/s',           cost:{gold:150,iron:15},              terrains:['mountains'], req_research:['mining_guilds'] },
+  // Mid-game (require tier 1-2 tech)
+  { id:'barracks',     name:'Barracks',     icon:'🏰', desc:'-20% unit recruit cost; +100 defense', cost:{gold:200,iron:20,wood:10},      terrains:[], req_research:['military_org'], req_building:'smithy' },
+  { id:'city',         name:'City',         icon:'🏙️', desc:'+2 pop/s; +5 gold/s; +150 pop cap',   cost:{gold:500,iron:20},              terrains:[], req_research:['urbanization'], req_building:'village' },
+  { id:'naval_base',   name:'Naval Base',   icon:'⚓', desc:'+30% sea power; naval upkeep -20%',   cost:{gold:350,iron:30,wood:20},      terrains:['coast'], req_research:['naval_doctrine'] },
+  { id:'oil_refinery', name:'Oil Refinery', icon:'🏭', desc:'+2 oil/s per tick',                   cost:{gold:200,iron:30},              terrains:['coast','desert'], req_research:['oil_drilling'] },
+  { id:'solar_farm',   name:'Solar Farm',   icon:'☀️', desc:'+3 energy/s',                          cost:{gold:200,silicon:15},           terrains:[], req_research:['electronics'] },
+  { id:'defense_wall', name:'Defense Wall', icon:'🛡️', desc:'+300 region defense',                 cost:{gold:300,iron:50},              terrains:[], req_research:['fortification'] },
+  { id:'warehouse',    name:'Warehouse',    icon:'📦', desc:'+500 to all resource caps',            cost:{gold:250,wood:30,iron:10},      terrains:[], req_research:['logistics'] },
+  // Late game
+  { id:'research_lab', name:'Research Lab', icon:'🔬', desc:'-20% tech cost; +research speed',     cost:{gold:400,silicon:20,copper:10}, terrains:[], req_research:['computing'] },
+  { id:'airbase',      name:'Air Base',     icon:'✈️', desc:'+30% air power; air upkeep -20%',     cost:{gold:500,iron:40,oil:20},       terrains:[], req_research:['air_superiority'] },
+  { id:'farm_complex', name:'Farm Complex', icon:'🌾', desc:'+3 food/s; +1 surplus_food/s',        cost:{gold:400,iron:20,wood:20},      terrains:['plains'], req_research:['industrial_farming'] },
+  { id:'radar',        name:'Radar Station',icon:'📡', desc:'See all enemy stats; +25% defense',   cost:{gold:250,silicon:20,copper:15}, terrains:[], req_research:['electronics','computing'] },
+  { id:'space_base',   name:'Space Base',   icon:'🚀', desc:'Space units available; rare_earth ×2',cost:{gold:5000,silicon:100,rare_earth:30}, terrains:['tech','plains'], req_research:['space_doctrine'] },
+];
+
+const RANDOM_EVENTS = [
+  { title:'Trade Windfall!',      icon:'💰', desc:'+200 gold',               effect:'res:gold:200' },
+  { title:'Rebel Uprising!',      icon:'🔴', desc:'A region grows restless', effect:'rebel_region' },
+  { title:'Oil Discovery!',       icon:'🛢️', desc:'+80 oil stockpiled',      effect:'res:oil:80' },
+  { title:'Famine Warning!',      icon:'🌾', desc:'Food -40',                effect:'res:food:-40' },
+  { title:'Tech Breakthrough!',   icon:'🔬', desc:'Production ×1.5 for 60s', effect:'boost:all_prod:1.5:60' },
+  { title:'Mercenaries!',         icon:'⚔️', desc:'+15 infantry free',       effect:'units:infantry:15' },
+  { title:'Gold Rush!',           icon:'✨', desc:'Gold ×2 for 45s',         effect:'boost:gold_mult:2:45' },
+  { title:'Earthquake!',          icon:'🌍', desc:'Random region defense -100',effect:'damage_region' },
+  { title:'Espionage Report!',    icon:'🕵️', desc:'Next battle +20%',        effect:'boost:combat_intel:1.2:180' },
+  { title:'Peace Offer!',         icon:'🕊️', desc:'Ceasefire 120s',          effect:'ceasefire:120' },
+  { title:'Iron Cache Found!',    icon:'⚙️', desc:'+100 iron discovered',    effect:'res:iron:100' },
+  { title:'Radiation Leak!',      icon:'☢️', desc:'Uranium output -50% for 60s',effect:'debuff:uranium_mult:0.5:60' },
+];
+
+const PHASES = {
+  1: { name:'Foundation', threshold:0,    desc:'Establish your nation. Conquer nearby empty lands.' },
+  2: { name:'Expansion',  threshold:0.12, desc:'Encounter rival nations. Build your military.' },
+  3: { name:'Conflict',   threshold:0.30, desc:'Major wars begin. Nations form alliances against you.' },
+  4: { name:'Dominance',  threshold:0.60, desc:'Few rivals remain. The Great Coalition rises.' },
+  5: { name:'Space Age',  threshold:1.0,  desc:'Earth conquered! Alien invasion begins. DEFEND!' },
+};
+
+const COMBAT_MATRIX = {
+  land:  { land:1.0, sea:0.4, air:0.6, space:0.2, rebel:1.5, alien:0.3 },
+  sea:   { land:1.4, sea:1.0, air:0.5, space:0.2, rebel:0.6, alien:0.4 },
+  air:   { land:1.6, sea:1.8, air:1.0, space:0.5, rebel:1.2, alien:0.6 },
+  space: { land:2.5, sea:2.0, air:2.2, space:1.0, rebel:1.0, alien:2.0 }
+};
+
+const TERRAIN_MOD = {
+  plains:    { land:1.0,  sea:0,    air:1.0, space:1.0 },
+  mountains: { land:0.7,  sea:0,    air:1.1, space:1.0 },
+  coast:     { land:0.9,  sea:1.4,  air:1.1, space:1.0 },
+  desert:    { land:0.8,  sea:0,    air:1.0, space:1.0 },
+  forest:    { land:0.85, sea:0,    air:0.8, space:1.0 },
+  tech:      { land:1.0,  sea:1.0,  air:1.2, space:1.3 },
+  polar:     { land:0.6,  sea:0.5,  air:0.9, space:1.2 }
+};
+
+const RES_ICONS  = { gold:'💰', food:'🌾', energy:'⚡', pop:'👥', iron:'⚙️', oil:'🛢️', silicon:'💡', uranium:'☢️', wood:'🪵', copper:'🔧', surplus_food:'🌽', diamond:'💎', rare_earth:'🔮', ice_core:'🧊' };
+const RES_NAMES  = { gold:'Gold', food:'Food', energy:'Energy', pop:'Pop', iron:'Iron', oil:'Oil', silicon:'Silicon', uranium:'Uranium', wood:'Wood', copper:'Copper', surplus_food:'Surplus', diamond:'Diamond', rare_earth:'R.Earth', ice_core:'IceCore' };
+
+// =====================================================================
+// STATE
+// =====================================================================
+
+const state = {
+  res: { gold:300, food:150, energy:80, pop:60, iron:0, oil:0, silicon:0, uranium:0, wood:0, copper:0, surplus_food:0, diamond:0, rare_earth:0, ice_core:0 },
+  resCap: { gold:5000, food:2000, energy:1000, pop:500, iron:800, oil:800, silicon:500, uranium:300, wood:800, copper:600, surplus_food:500, diamond:200, rare_earth:300, ice_core:200 },
+  regions: {},
+  mil: { militia:10, infantry:0, sniper:0, apc:0, artillery:0, tank:0, missile_battery:0, war_robot:0, nuclear_land:0, titan:0,
+         boat:0, corvette:0, frigate:0, landing_ship:0, destroyer:0, submarine:0, carrier:0, nuclear_sub:0, ocean_titan:0,
+         drone:0, fighter:0, bomber:0, helicopter:0, stealth:0, ew_plane:0, hypersonic:0, strato_bomber:0, orbital_bomb:0,
+         recon_sat:0, defense_sat:0, space_fighter:0, laser_platform:0, star_destroyer:0, asteroid_launcher:0, nuclear_torpedo:0, quantum_weapon:0 },
+  research: new Set(),
+  buildings: {},
+  phase: 1,
+  totalTime: 0,
+  startedAt: Date.now(),
+  selectedRegion: null,
+  combat: null,
+  events: [],
+  lastRates: {},
+  activeBoosts: [],
+  stats: { clicks:0, conquered:0, unitsLost:0, researchDone:0, combatsWon:0 },
+  firstCombatShown: false,
+};
+
+// Sea-only crossing pairs — attacking across these requires naval research.
+// Each entry is [regionA, regionB]; order doesn't matter.
+const SEA_ROUTES = new Set([
+  // British Isles
+  'british_isles|western_europe',
+  'british_isles|northern_europe',
+  // Greenland
+  'greenland|scandinavia',
+  'greenland|north_america_east',
+  // Arctic crossings
+  'arctic|greenland',
+  'arctic|scandinavia',
+  'arctic|north_america_west',
+  'arctic|north_america_east',
+  // Pacific / Oceania
+  'japan_korea|pacific_islands',
+  'pacific_islands|southeast_asia',
+  'pacific_islands|australia',
+  'pacific_islands|new_zealand',
+  'australia|southeast_asia',
+  'australia|new_zealand',
+  // Americas
+  'caribbean|central_america',
+  'caribbean|south_america_north',
+  // Bering Strait
+  'russia|north_america_west',
+  'siberia_far_east|north_america_west',
+  // Mediterranean / Africa
+  'north_africa|western_europe',
+  'north_africa|iberia',
+  // Red Sea
+  'arabian_peninsula|east_africa',
+]);
+
+function isSeaRoute(aId, bId) {
+  return SEA_ROUTES.has(`${aId}|${bId}`) || SEA_ROUTES.has(`${bId}|${aId}`);
+}
+
+// Returns true if every player-owned region bordering targetId connects via a sea route.
+function requiresNavalToAttack(targetId) {
+  const targetDef = REGIONS.find(r => r.id === targetId);
+  if (!targetDef) return false;
+  const playerBorderingRegions = targetDef.neighbors.filter(nid => {
+    const rs = state.regions[nid];
+    return rs && rs.owner === 'player';
+  });
+  if (playerBorderingRegions.length === 0) return false;
+  return playerBorderingRegions.every(nid => isSeaRoute(nid, targetId));
+}
+
+// UI state
+let leftTab = 'economy';
+let rightTab = 'region';
+let enemyTickTimer = 0;
+let eventTimer = 0;
+let autoSaveTimer = 0;
+let combatRoundTimer = null;
+const _capNotifCooldown = {}; // per-resource cap notification throttle
+let pendingAttackRegion = null;
+let pendingDefenseAttack = null;
+
+// =====================================================================
+// INIT
+// =====================================================================
+
+function initRegions() {
+  REGIONS.forEach(r => {
+    const neutralPower = Math.round(r.baseDefense * (0.2 + Math.random() * 0.3));
+    state.regions[r.id] = { owner:'neutral', troops: neutralPower, neutralDefense: neutralPower, buildings:[], clickPower:1 };
+  });
+}
+
+function assignEnemies() {
+  const assignments = [
+    ['militia',    ['west_africa','amazon','central_africa']],
+    ['warlord',    ['arabian_peninsula','mongolia','caucasus']],
+    ['federation', ['north_america_east','north_america_west','central_america']],
+    ['empire',     ['china','southeast_asia','mongolia']],
+    ['superpower', ['russia','eastern_europe']],
+    ['sea_empire', ['japan_korea','pacific_islands','new_zealand']],
+    ['tech_nation',['india','south_america_north','east_africa']],
+  ];
+  assignments.forEach(([fid, rids]) => {
+    const faction = ENEMY_FACTIONS.find(f => f.id === fid);
+    rids.forEach(rid => {
+      if (state.regions[rid]) {
+        state.regions[rid].owner = fid;
+        const rd = REGIONS.find(r => r.id === rid);
+        state.regions[rid].troops = rd ? Math.round(rd.baseDefense * faction.power_mult / 5) : 20;
+        faction.regions.push(rid);
+      }
+    });
+  });
+}
+
+function initGame() {
+  initRegions();
+  assignEnemies();
+  // Player starts with home region
+  state.regions['western_europe'].owner = 'player';
+  state.regions['western_europe'].troops = 20;
+  state.selectedRegion = 'western_europe';
+  loadGame();
+  buildMap();
+  renderAll();
+  startLoop();
+  // Show tutorial on first visit (no save file)
+  if (!localStorage.getItem('worldconquest_v1')) {
+    setTimeout(() => showTutorial(), 600);
+  }
+}
+
+// =====================================================================
+// GAME LOOP
+// =====================================================================
+
+function startLoop() {
+  setInterval(gameTick, 1000);
+  setInterval(autoSaveTimer_tick, 30000);
+}
+
+function autoSaveTimer_tick() { saveGame(true); }
+
+function gameTick() {
+  state.totalTime++;
+  enemyTickTimer++;
+  eventTimer++;
+
+  const rates = computeRates();
+  state.lastRates = rates;
+
+  // Apply production
+  const now_ms = Date.now();
+  Object.keys(rates).forEach(k => {
+    if (state.res[k] !== undefined) {
+      const prev = state.res[k];
+      state.res[k] = Math.min(state.resCap[k], Math.max(0, state.res[k] + rates[k]));
+      // Notify when a resource hits cap (throttle: once per 60s per resource)
+      if (rates[k] > 0 && state.res[k] >= state.resCap[k] && prev < state.resCap[k]) {
+        if (!_capNotifCooldown[k] || now_ms - _capNotifCooldown[k] > 60000) {
+          _capNotifCooldown[k] = now_ms;
+          const icon = RES_ICONS[k] || k;
+          showNotif(`⚠️ ${icon} ${RES_NAMES[k]||k} cap reached (${fmtRes(state.resCap[k])}) — spend or upgrade storage!`, true);
+        }
+      }
+    }
+  });
+
+  // Update all storage caps dynamically
+  computeStorageCaps();
+
+  // Upkeep
+  applyUpkeep();
+
+  // Boost expiry
+  const now = Date.now();
+  state.activeBoosts = state.activeBoosts.filter(b => b.endsAt > now);
+
+  // Enemy tick every 45s
+  if (enemyTickTimer >= 45) {
+    enemyTickTimer = 0;
+    enemyTick();
+  }
+
+  // Random event every 90s, 30% chance
+  if (eventTimer >= 90) {
+    eventTimer = 0;
+    if (Math.random() < 0.3) triggerRandomEvent();
+  }
+
+  // Phase check
+  checkPhase();
+  checkWinCondition();
+
+  updateHeader();
+  renderMapColors();
+  updateOwnedCount();
+  renderBoostBar();
+
+  // Refresh right panel passively
+  if (rightTab === 'military') renderRightPanel();
+}
+
+function computeRates() {
+  const rates = { gold:0, food:0, energy:0, pop:0, iron:0, oil:0, silicon:0, uranium:0, wood:0, copper:0, surplus_food:0, diamond:0, rare_earth:0, ice_core:0 };
+
+  // Research multipliers
+  const has = id => state.research.has(id);
+  let ironMult   = 1 + (has('basic_industry') ? 0.3:0) + (has('steel_production') ? 0.5:0) + (has('mining_guilds') ? 0.25:0) + (has('automation') ? 0.25:0);
+  let oilMult    = 1 + (has('oil_drilling') ? 0.5:0) + (has('oil_refining') ? 0.75:0) + (has('automation') ? 0.25:0);
+  let silMult    = 1 + (has('electronics') ? 0.3:0) + (has('automation') ? 0.25:0);
+  let goldMult   = 1 + (has('trade_routes') ? 0.3:0) + (has('banking') ? 0.5:0) + (has('automation') ? 0.25:0);
+  let energyMult = 1 + (has('nuclear_energy') ? 1.0:0) + (has('fusion_reactor') ? 2.0:0);
+  let woodMult   = 1 + (has('carpentry') ? 0.3:0) + (has('timber_industry') ? 0.5:0);
+  let allProd    = 1 + (has('automation') ? 0.25:0) + (has('nano_mining') ? 0.5:0) + (has('fusion_reactor') ? 0.3:0) + (has('ai') ? 0.2:0) + (has('quantum') ? 0.5:0) + (has('chemistry') ? 0.2:0);
+
+  // Boost multipliers
+  let boostGold = 1, boostAll = 1, boostUranium = 1;
+  state.activeBoosts.forEach(b => {
+    if (b.type === 'gold_mult') boostGold *= b.mult;
+    if (b.type === 'all_prod')  boostAll  *= b.mult;
+    if (b.type === 'uranium_mult') boostUranium *= b.mult;
+  });
+
+  const ownedRegions = REGIONS.filter(r => state.regions[r.id].owner === 'player');
+  ownedRegions.forEach(r => {
+    rates.gold += 2 * goldMult * boostGold * boostAll;
+    rates.food += 0.5 * boostAll;
+    rates.energy += 1 * energyMult * boostAll;
+    if (state.res.pop < state.resCap.pop) rates.pop += 0.1 * boostAll;
+
+    if (r.terrain === 'plains' && has('agriculture')) rates.food += 1.0 * boostAll;
+    if (has('irrigation')) rates.food += 0.5 * boostAll;
+    if (has('industrial_farming') && r.terrain === 'plains') rates.food += 2.0 * boostAll;
+
+    r.specialRes.forEach(res => {
+      let amt = 1.5;
+      if (res === 'iron')         amt *= ironMult;
+      if (res === 'oil')          amt *= oilMult;
+      if (res === 'silicon')      amt *= silMult;
+      if (res === 'uranium')      amt *= boostUranium;
+      if (res === 'wood')         amt *= woodMult;
+      if (res === 'copper')       amt *= (1 + (has('copper_smelting') ? 0.3:0) + (has('steel_production') ? 0.2:0));
+      if (res === 'surplus_food') amt *= (1 + (has('agriculture') ? 0.3:0));
+      if (rates[res] !== undefined) rates[res] = (rates[res] || 0) + amt * boostAll;
+    });
+
+    // Building bonuses
+    const blds = state.buildings[r.id] || [];
+    blds.forEach(b => {
+      if (b === 'village')      { rates.pop  += 0.5 * boostAll; }
+      if (b === 'city')         { rates.pop  += 2   * boostAll; rates.gold += 5 * goldMult * boostGold * boostAll; }
+      if (b === 'solar_farm')   { rates.energy += 3 * energyMult * boostAll; }
+      if (b === 'oil_refinery') { rates.oil  += 2   * oilMult  * boostAll; }
+      if (b === 'granary')      { rates.food += 0.3 * boostAll; }
+      if (b === 'lumber_camp')  { rates.wood += 1.5 * boostAll; }
+      if (b === 'smithy')       { rates.iron += 0.8 * ironMult * boostAll; }
+      if (b === 'farm_complex') { rates.food += 3   * boostAll; rates.surplus_food += 1 * boostAll; }
+      if (b === 'deep_mine')    { rates.iron += 1.5 * ironMult * boostAll; rates.copper += 0.5 * boostAll; }
+    });
+  });
+
+  return rates;
+}
+
+function computeStorageCaps() {
+  const owned = REGIONS.filter(r => state.regions[r.id] && state.regions[r.id].owner === 'player');
+  const landCount = owned.length;
+
+  // Base caps scale with territory
+  const base = {
+    gold:         1000 + landCount * 300,
+    food:          500 + landCount * 150,
+    energy:        400 + landCount * 100,
+    iron:          300 + landCount * 80,
+    oil:           300 + landCount * 80,
+    silicon:       200 + landCount * 50,
+    uranium:       100 + landCount * 30,
+    wood:          300 + landCount * 80,
+    copper:        250 + landCount * 60,
+    surplus_food:  200 + landCount * 40,
+    diamond:        80 + landCount * 20,
+    rare_earth:    120 + landCount * 30,
+    ice_core:       80 + landCount * 20,
+  };
+
+  // Terrain bonuses
+  owned.forEach(r => {
+    if (r.terrain === 'mountains') { base.iron += 50; base.copper += 30; }
+    if (r.terrain === 'desert')    { base.oil  += 60; }
+    if (r.terrain === 'forest')    { base.wood += 60; }
+    if (r.terrain === 'polar')     { base.rare_earth += 40; base.ice_core += 40; }
+  });
+
+  // Building bonuses
+  owned.forEach(r => {
+    const blds = state.buildings[r.id] || [];
+    blds.forEach(b => {
+      if (b === 'warehouse')   { Object.keys(base).forEach(k => base[k] += 500); }
+      if (b === 'granary')     { base.food += 500; base.surplus_food += 200; }
+      if (b === 'city')        { base.gold += 500; base.food += 200; }
+      if (b === 'oil_refinery'){ base.oil  += 300; }
+      if (b === 'deep_mine')   { base.iron += 300; base.copper += 200; }
+    });
+  });
+
+  // Research bonuses
+  if (state.research.has('banking'))     { base.gold += 2000; }
+  if (state.research.has('nano_mining')) { base.uranium += 200; base.rare_earth += 200; base.diamond += 100; }
+  if (state.research.has('fusion_reactor')) { base.energy += 1000; base.uranium += 200; }
+  if (state.research.has('quantum'))     { Object.keys(base).forEach(k => base[k] = Math.round(base[k] * 1.3)); }
+
+  // Apply (never shrink below current value to avoid sudden losses)
+  Object.keys(base).forEach(k => {
+    state.resCap[k] = Math.max(state.resCap[k] || 0, base[k]);
+    // Gradually shrink if territory lost (don't instantly cap)
+    if (base[k] < state.resCap[k]) state.resCap[k] = Math.max(base[k], state.resCap[k] - 10);
+  });
+
+  state.resCap.pop = computePopCap();
+}
+
+function applyUpkeep() {
+  let totalFood = 0, totalOil = 0, totalEnergy = 0, totalUranium = 0, totalPop = 0;
+  UNIT_DEFS.forEach(ud => {
+    const cnt = state.mil[ud.id] || 0;
+    if (cnt <= 0) return;
+    if (ud.upkeep.food)    totalFood    += ud.upkeep.food    * cnt;
+    if (ud.upkeep.oil)     totalOil     += ud.upkeep.oil     * cnt;
+    if (ud.upkeep.energy)  totalEnergy  += ud.upkeep.energy  * cnt;
+    if (ud.upkeep.uranium) totalUranium += ud.upkeep.uranium * cnt;
+    // Pop upkeep per category
+    const popCost = ud.category === 'land' ? 0.05 : ud.category === 'sea' ? 0.08 : ud.category === 'air' ? 0.06 : 0.12;
+    totalPop += popCost * cnt;
+  });
+
+  state.res.food    -= totalFood;
+  state.res.oil     -= totalOil;
+  state.res.energy  -= totalEnergy;
+  state.res.uranium -= totalUranium;
+  state.res.pop      = Math.max(0, state.res.pop - totalPop);
+
+  if (state.res.food < 0)    { state.res.food = 0;    desertion('food'); }
+  if (state.res.oil < 0)     { state.res.oil = 0;     desertion('oil'); }
+  if (state.res.energy < 0)  { state.res.energy = 0;  desertion('energy'); }
+  if (state.res.uranium < 0) { state.res.uranium = 0; desertion('uranium'); }
+  if (state.res.pop <= 0 && totalPop > 0) { desertion('pop'); }
+}
+
+function computePopCap() {
+  let cap = 200;
+  const ownedRegions = REGIONS.filter(r => state.regions[r.id] && state.regions[r.id].owner === 'player');
+  cap += ownedRegions.length * 30;
+  ownedRegions.forEach(r => {
+    const blds = state.buildings[r.id] || [];
+    if (blds.includes('village')) cap += 50;
+    if (blds.includes('city'))    cap += 150;
+  });
+  if (state.research.has('population_growth')) cap += 200;
+  if (state.research.has('urbanization'))      cap += 500;
+  if (state.research.has('genetics'))          cap += 500;
+  if (state.research.has('bioengineering'))    cap += 1000;
+  return cap;
+}
+
+function desertion(resType) {
+  if (resType === 'pop') {
+    loseUnits(1);
+    showNotif('⚠️ Population too low — units deserting!', true);
+    return;
+  }
+  const relevant = UNIT_DEFS.filter(ud => ud.upkeep[resType] && state.mil[ud.id] > 0);
+  if (relevant.length === 0) return;
+  const ud = relevant[Math.floor(Math.random() * relevant.length)];
+  if (state.mil[ud.id] > 0) {
+    state.mil[ud.id]--;
+    state.stats.unitsLost++;
+    const resName = RES_NAMES[resType] || resType;
+    showNotif(`⚠️ No ${resName}! ${ud.icon} ${ud.name} deserted!`, true);
+  }
+}
+
+function enemyTick() {
+  if (state.phase >= 5) {
+    alienAttackTimer = (alienAttackTimer || 0) + 1;
+    const waveInterval = Math.max(2, 6 - Math.floor(state.totalTime / 300));
+    if (alienAttackTimer >= waveInterval) {
+      alienAttackTimer = 0;
+      triggerAlienAttack();
+    }
+    return;
+  }
+
+  ENEMY_FACTIONS.forEach(faction => {
+    if (faction.regions.length === 0) return;
+    if (Math.random() > 0.35) return;
+
+    const srcId = faction.regions[Math.floor(Math.random() * faction.regions.length)];
+    const srcReg = REGIONS.find(r => r.id === srcId);
+    if (!srcReg) return;
+
+    // Expand into neutral first
+    const neutralNeighbors = srcReg.neighbors.filter(nid => state.regions[nid] && state.regions[nid].owner === 'neutral');
+    if (neutralNeighbors.length > 0 && Math.random() > 0.35) {
+      const target = neutralNeighbors[Math.floor(Math.random() * neutralNeighbors.length)];
+      state.regions[target].owner = faction.id;
+      const td = REGIONS.find(r => r.id === target);
+      state.regions[target].troops = Math.round((td ? td.baseDefense : 50) * faction.power_mult / 5);
+      faction.regions.push(target);
+      renderMapColors();
+      return;
+    }
+
+    // Aggressive/militarist/expansionist factions attack player regions
+    if (faction.attitude === 'aggressive' || faction.attitude === 'militarist' || faction.attitude === 'expansionist') {
+      const playerNeighbors = srcReg.neighbors.filter(nid => state.regions[nid] && state.regions[nid].owner === 'player');
+      if (playerNeighbors.length > 0 && Math.random() < 0.25) {
+        // Don't stack attacks while a defense is already pending
+        if (pendingDefenseAttack) return;
+        const targetId = playerNeighbors[Math.floor(Math.random() * playerNeighbors.length)];
+        const srcRd = REGIONS.find(r => r.id === srcId);
+        const factionPow = Math.round((srcRd ? srcRd.baseDefense : 100) * faction.power_mult);
+        openDefenseModal(targetId, faction.id, factionPow);
+      }
+    }
+  });
+
+  if (state.phase >= 4 && Math.random() < 0.05) {
+    const playerCount = Object.values(state.regions).filter(r => r.owner === 'player').length;
+    if (playerCount / REGIONS.length > 0.6) {
+      showEventBanner({ title:'⚠️ Great Coalition!', icon:'⚠️', desc:'Enemies unite against you. Brace for coordinated attacks!', effect:'' });
+    }
+  }
+}
+
+let alienAttackTimer = 0;
+let alienWave = 1;
+
+const ALIEN_UNITS = [
+  { name:'Alien Scout',      power: 300,  wave:1 },
+  { name:'Plasma Warrior',   power: 1200, wave:2 },
+  { name:'Combat Drone',     power: 600,  wave:2 },
+  { name:'Alien Mothership', power: 6000, wave:3 },
+  { name:'Star Crusher',     power: 25000,wave:4 },
+];
+
+function triggerAlienAttack() {
+  const playerRegions = Object.keys(state.regions).filter(id => state.regions[id].owner === 'player');
+  if (playerRegions.length === 0) return;
+
+  const targetId = playerRegions[Math.floor(Math.random() * playerRegions.length)];
+  const targetRd = REGIONS.find(r => r.id === targetId);
+  alienWave = Math.min(4, Math.floor(state.totalTime / 600) + 1);
+
+  const eligibleUnits = ALIEN_UNITS.filter(u => u.wave <= alienWave);
+  const alien = eligibleUnits[Math.floor(Math.random() * eligibleUnits.length)];
+
+  const playerPow = calcPlayerPower(targetId);
+  const alienPow = alien.power * alienWave;
+
+  if (playerPow >= alienPow * 0.5) {
+    // Player repels attack (if they have enough force)
+    showEventBanner({
+      title:`👾 Alien Attack Repelled!`,
+      desc:`${alien.name} attacked ${targetRd ? targetRd.name : targetId} — Your forces held! Power: ${Math.round(playerPow)} vs ${Math.round(alienPow)}`,
+      effect:''
+    });
+    // Small troop loss
+    const lossCount = Math.floor(alienPow / 500);
+    if (lossCount > 0) loseUnits(lossCount);
+  } else {
+    // Alien takes the region temporarily
+    state.regions[targetId].owner = 'rebel'; // mark as contested
+    showEventBanner({
+      title:`👾 ALIEN INVASION!`,
+      desc:`${alien.name} has seized ${targetRd ? targetRd.name : targetId}! Reclaim it quickly!`,
+      effect:''
+    });
+    renderMapColors();
+    // Auto-recover after 60s if still rebel
+    setTimeout(() => {
+      if (state.regions[targetId] && state.regions[targetId].owner === 'rebel') {
+        state.regions[targetId].owner = 'player';
+        renderMapColors();
+      }
+    }, 60000);
+  }
+}
+
+function triggerRandomEvent() {
+  const ev = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+  applyEvent(ev);
+  showEventBanner(ev);
+}
+
+function applyEvent(ev) {
+  const [type, ...args] = ev.effect.split(':');
+  if (type === 'res') {
+    const [key, valStr] = args;
+    const val = parseFloat(valStr);
+    state.res[key] = Math.min(state.resCap[key] || 9999, Math.max(0, (state.res[key] || 0) + val));
+  } else if (type === 'boost') {
+    const [btype, mult, dur] = args;
+    state.activeBoosts.push({ name:ev.title, type:btype, mult:parseFloat(mult), endsAt:Date.now() + parseInt(dur)*1000 });
+  } else if (type === 'units') {
+    const [uid, cnt] = args;
+    const ud = UNIT_DEFS.find(u => u.id === uid);
+    if (ud) {
+      state.mil[uid] = Math.min(ud.limit, (state.mil[uid] || 0) + parseInt(cnt));
+    }
+  } else if (type === 'rebel_region') {
+    const owned = Object.keys(state.regions).filter(id => state.regions[id].owner === 'player');
+    if (owned.length > 1) {
+      const target = owned[Math.floor(Math.random() * owned.length)];
+      state.regions[target].owner = 'rebel';
+      const fac = ENEMY_FACTIONS.find(f => f.id === 'militia');
+      if (fac && !fac.regions.includes(target)) fac.regions.push(target);
+      renderMapColors();
+    }
+  } else if (type === 'damage_region') {
+    const allR = Object.keys(state.regions).filter(id => state.regions[id].owner !== 'player');
+    if (allR.length > 0) {
+      // Just a visual effect for now
+    }
+  } else if (type === 'ceasefire') {
+    state.activeBoosts.push({ name:'Ceasefire', type:'ceasefire', mult:1, endsAt:Date.now() + parseInt(args[0])*1000 });
+  } else if (type === 'debuff') {
+    const [btype, mult, dur] = args;
+    state.activeBoosts.push({ name:ev.title + ' (Debuff)', type:btype, mult:parseFloat(mult), endsAt:Date.now() + parseInt(dur)*1000 });
+  }
+}
+
+function checkPhase() {
+  const total = REGIONS.length;
+  const owned = Object.values(state.regions).filter(r => r.owner === 'player').length;
+  const ratio = owned / total;
+  let newPhase = 1;
+  if (ratio >= 1.0) newPhase = 5;
+  else if (ratio >= 0.60) newPhase = 4;
+  else if (ratio >= 0.30) newPhase = 3;
+  else if (ratio >= 0.12) newPhase = 2;
+  if (newPhase > state.phase) {
+    state.phase = newPhase;
+    showPhaseBanner(newPhase);
+    document.getElementById('phase-badge').textContent = `Phase ${newPhase}: ${PHASES[newPhase].name}`;
+  }
+}
+
+// =====================================================================
+// COMBAT
+// =====================================================================
+
+function calcPlayerPower(regionId) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const terrain = rd ? rd.terrain : 'plains';
+  const tm = TERRAIN_MOD[terrain] || TERRAIN_MOD.plains;
+
+  let landPow = 0, seaPow = 0, airPow = 0, spacePow = 0;
+  UNIT_DEFS.forEach(ud => {
+    const cnt = state.mil[ud.id] || 0;
+    if (cnt <= 0) return;
+    const base = ud.power * cnt;
+    if (ud.category === 'land')  landPow  += base;
+    if (ud.category === 'sea')   seaPow   += base;
+    if (ud.category === 'air')   airPow   += base;
+    if (ud.category === 'space') spacePow += base;
+  });
+
+  // Research bonuses
+  const rhas = id => state.research.has(id);
+  let landMult = 1, seaMult = 1, airMult = 1, spaceMult = 1;
+  if (rhas('mechanized'))      landMult  += 0.5;
+  if (rhas('armor_doctrine'))  landMult  += 0.6;
+  if (rhas('land_doctrine2'))  landMult  += 0.8;
+  if (rhas('guerrilla'))       landMult  += 0.3; // bonus in forests handled in terrain
+  if (rhas('siege_warfare'))   landMult  += 0.4;
+  if (rhas('ai'))              landMult  += 0.3;
+  if (rhas('naval_doctrine'))  seaMult   += 0.5;
+  if (rhas('naval_domination'))seaMult   += 0.8;
+  if (rhas('carrier_ops'))     seaMult   += 0.5;
+  if (rhas('air_superiority')) airMult   += 0.5;
+  if (rhas('stealth_tech'))    airMult   += 0.4;
+  if (rhas('air_doctrine2'))   airMult   += 1.0;
+  if (rhas('satellite'))       airMult   += 0.2;
+  if (rhas('space_doctrine'))  spaceMult += 1.0;
+  if (rhas('galactic_war'))    spaceMult += 2.0;
+
+  // Helicopter synergy
+  let helicBonus = 1;
+  if (state.mil.helicopter > 0 && landPow > 0) helicBonus = 1.35;
+
+  // Terrain
+  landPow  *= tm.land  * landMult * helicBonus;
+  seaPow   *= (tm.sea || 1) * seaMult;
+  airPow   *= tm.air  * airMult;
+  spacePow *= tm.space * spaceMult;
+
+  // Intel boost
+  let intelMult = 1;
+  state.activeBoosts.forEach(b => { if (b.type === 'combat_intel') intelMult *= b.mult; });
+
+  return Math.max(1, (landPow + seaPow + airPow + spacePow) * intelMult);
+}
+
+function getRegionDefense(regionId) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const rs = state.regions[regionId];
+  if (!rd || !rs) return 50;
+  // Neutral/empty regions use their stored neutralDefense (set at init)
+  if (rs.owner === 'neutral') {
+    return (rs.neutralDefense || Math.round(rd.baseDefense * 0.3));
+  }
+  let base = rd.baseDefense;
+  const faction = ENEMY_FACTIONS.find(f => f.id === rs.owner);
+  const mult = faction ? faction.power_mult : 0.5;
+  const blds = state.buildings[regionId] || [];
+  let defBonus = 0;
+  if (blds.includes('defense_wall')) defBonus += 200;
+  return base * mult + defBonus + (rs.troops || 0) * 3;
+}
+
+function openCombat(regionId) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const rs = state.regions[regionId];
+  if (!rd || !rs) return;
+  if (rs.owner === 'player') return;
+
+  const totalPow = calcTotalMilPower();
+  if (totalPow < 1) { showFloat(400, 300, 'No military power!', '#e63946'); return; }
+
+  if (requiresNavalToAttack(regionId) && !state.research.has('copper_smelting')) {
+    showFloat(400, 300, '⚓ Requires Naval Force! Research Copper Smelting first.', '#e63946');
+    return;
+  }
+
+  pendingAttackRegion = regionId;
+  const availUnits = UNIT_DEFS.filter(ud => (state.mil[ud.id] || 0) > 0);
+  if (availUnits.length === 0) { showFloat(400, 300, 'No units available!', '#e63946'); return; }
+
+  const body = document.getElementById('troop-select-body');
+  body.innerHTML = availUnits.map(ud => {
+    const cnt = state.mil[ud.id] || 0;
+    return `<div class="ts-row">
+      <div class="ts-icon">${ud.icon}</div>
+      <div class="ts-name">${ud.name}</div>
+      <div class="ts-avail">(${cnt} avail)</div>
+      <input type="number" id="ts-${ud.id}" min="0" max="${cnt}" value="${cnt}" oninput="updateTroopSelectPower()">
+    </div>`;
+  }).join('');
+
+  // Savaş öncesi analiz paneli: terrain + faction
+  const rd2 = REGIONS.find(r => r.id === regionId);
+  const rs2 = state.regions[regionId];
+  const previewEl = document.getElementById('terrain-preview');
+  if (previewEl && rd2) {
+    const terrain = rd2.terrain;
+    const tm = TERRAIN_MOD[terrain] || TERRAIN_MOD.plains;
+    const TERRAIN_EMOJI = { plains:'🌾', mountains:'⛰️', coast:'🌊', desert:'🏜️', forest:'🌲', tech:'🏙️', polar:'❄️' };
+    const hasUnit = cat => UNIT_DEFS.some(u => u.category === cat && (state.mil[u.id]||0) > 0);
+    const modRow = (cat, icon, mod, active) => {
+      let cls, label;
+      if (mod === 0) { cls='blocked'; label='Blocked'; }
+      else if (mod > 1) { cls='bonus'; label=`+${Math.round((mod-1)*100)}%`; }
+      else if (mod < 1) { cls='penalty'; label=`-${Math.round((1-mod)*100)}%`; }
+      else { cls='neutral'; label='No effect'; }
+      return `<div class="tp-row" style="${active?'':'opacity:0.35'}"><span>${icon} ${cat}</span><span class="tp-mod ${cls}">${label}</span></div>`;
+    };
+
+    const faction = ENEMY_FACTIONS.find(f => f.id === rs2?.owner);
+    const enemyDef = Math.round(getRegionDefense(regionId));
+    const attitudeBadge = faction ? {
+      aggressive:'🔴 Aggressive', militarist:'🔴 Militarist', expansionist:'🟡 Expansionist',
+      defensive:'🟢 Defensive', neutral:'⚪ Neutral', isolationist:'🟢 Isolationist'
+    }[faction.attitude] || faction.attitude : rs2?.owner === 'neutral' ? '⚪ Undefended' : '🟡 Rebels';
+
+    previewEl.style.display = '';
+    previewEl.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <div style="flex:1;background:rgba(61,156,212,0.08);border:1px solid var(--border);border-radius:7px;padding:7px 10px">
+          <div class="tp-title" style="margin-bottom:4px">${TERRAIN_EMOJI[terrain]||'🗺️'} <b>${terrain.charAt(0).toUpperCase()+terrain.slice(1)}</b></div>
+          ${modRow('Land',  '🪖', tm.land,  hasUnit('land'))}
+          ${modRow('Sea',   '🚢', tm.sea||0, hasUnit('sea'))}
+          ${modRow('Air',   '✈️', tm.air,   hasUnit('air'))}
+          ${modRow('Space', '🛸', tm.space, hasUnit('space'))}
+        </div>
+        <div style="flex:1;background:rgba(230,57,70,0.07);border:1px solid var(--border);border-radius:7px;padding:7px 10px">
+          <div class="tp-title" style="margin-bottom:4px">⚔️ <b>Enemy</b></div>
+          <div class="tp-row"><span>Faction</span><span style="color:var(--gold);font-size:10px">${faction ? faction.name : (rs2?.owner === 'neutral' ? 'Neutral' : 'Rebels')}</span></div>
+          <div class="tp-row"><span>Attitude</span><span style="font-size:10px">${attitudeBadge}</span></div>
+          <div class="tp-row"><span>Defense</span><span style="color:var(--red);font-weight:700">${enemyDef.toLocaleString()}</span></div>
+          ${rd2.specialRes?.length ? `<div class="tp-row"><span>Resource</span><span style="color:var(--green);font-size:10px">${rd2.specialRes.join(', ')}</span></div>` : ''}
+        </div>
+      </div>`;
+  }
+  const titleEl = document.getElementById('troop-select-title');
+  if (titleEl && rd2) titleEl.textContent = `🪖 Attack ${rd2.name}`;
+
+  updateTroopSelectPower();
+  document.getElementById('troop-select-modal').classList.remove('hidden');
+}
+
+function updateTroopSelectPower() {
+  const availUnits = UNIT_DEFS.filter(ud => (state.mil[ud.id] || 0) > 0);
+  let pow = 0;
+  availUnits.forEach(ud => {
+    const el = document.getElementById('ts-' + ud.id);
+    if (el) pow += (parseInt(el.value) || 0) * ud.power;
+  });
+  const el = document.getElementById('troop-select-power');
+  if (el) el.textContent = `Total Power: ${Math.round(pow).toLocaleString()}`;
+}
+
+function closeTroopSelect() {
+  document.getElementById('troop-select-modal').classList.add('hidden');
+  pendingAttackRegion = null;
+}
+
+function confirmTroopSelect() {
+  if (!pendingAttackRegion) return;
+  const availUnits = UNIT_DEFS.filter(ud => (state.mil[ud.id] || 0) > 0);
+  const force = {};
+  availUnits.forEach(ud => {
+    const el = document.getElementById('ts-' + ud.id);
+    if (el) {
+      const val = Math.min(parseInt(el.value) || 0, state.mil[ud.id] || 0);
+      if (val > 0) force[ud.id] = val;
+    }
+  });
+  if (Object.keys(force).length === 0) { showFloat(400, 300, 'Select at least 1 unit!', '#e63946'); return; }
+  document.getElementById('troop-select-modal').classList.add('hidden');
+  startCombatWithForce(pendingAttackRegion, force);
+  pendingAttackRegion = null;
+}
+
+function startCombatWithForce(regionId, force) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const rs = state.regions[regionId];
+  if (!rd || !rs) return;
+
+  const terrain = rd.terrain;
+  const tm = TERRAIN_MOD[terrain] || TERRAIN_MOD.plains;
+  let playerPow = 0;
+  UNIT_DEFS.forEach(ud => {
+    const cnt = force[ud.id] || 0;
+    if (cnt <= 0) return;
+    const mod = ud.category === 'land' ? tm.land : ud.category === 'sea' ? (tm.sea||1) : ud.category === 'air' ? tm.air : tm.space;
+    playerPow += ud.power * cnt * mod;
+  });
+  playerPow = Math.max(1, Math.round(playerPow));
+
+  const enemyPow = getRegionDefense(regionId);
+  const faction = ENEMY_FACTIONS.find(f => f.id === rs.owner);
+
+  state.combat = {
+    regionId, force,
+    playerHP: playerPow, playerMaxHP: playerPow,
+    enemyHP: Math.round(enemyPow), enemyMaxHP: Math.round(enemyPow),
+    playerPow, enemyPow,
+    factionName: faction ? faction.name : 'Rebels',
+    done: false, won: false, log: [],
+  };
+
+  // Snapshot unit counts before battle to track casualties
+  const preForce = {};
+  Object.keys(force).forEach(uid => { preForce[uid] = state.mil[uid] || 0; });
+  state.combat.preForce = preForce;
+
+  document.getElementById('combat-title').textContent = `⚔️ Battle: ${rd.name} (${faction ? faction.name : 'Rebels'})`;
+  document.getElementById('combat-summary').style.display = 'none';
+  const howto = document.getElementById('combat-howto');
+  if (!state.firstCombatShown) {
+    howto.style.display = 'block';
+    state.firstCombatShown = true;
+  } else {
+    howto.style.display = 'none';
+  }
+  document.getElementById('retreat-btn').textContent = '🏃 Retreat';
+  document.getElementById('strike-btn').disabled = false;
+  updateCombatUI();
+  document.getElementById('combat-modal').classList.remove('hidden');
+  addCombatLog(`⚔️ Battle begins! Your power: ${playerPow.toLocaleString()} vs Enemy: ${Math.round(enemyPow).toLocaleString()}`, 'sys');
+
+  // Her round 5 saniyede otomatik ateşlenir
+  if (combatRoundTimer) clearInterval(combatRoundTimer);
+  state.combat.round = 0;
+  state.combat.clickDmgAccum = 0;
+  combatRoundTimer = setInterval(() => {
+    if (!state.combat || state.combat.done) { clearInterval(combatRoundTimer); combatRoundTimer = null; return; }
+    autoCombatRound();
+  }, 5000);
+}
+
+function autoCombatRound() {
+  if (!state.combat || state.combat.done) return;
+  const c = state.combat;
+  c.round = (c.round || 0) + 1;
+
+  // Her round ~10% maxHP hasar, ±4% rastgelelik — ~10 round sürer
+  const basePlayerDmg = Math.round(c.enemyMaxHP  * 0.10 + Math.random() * c.enemyMaxHP  * 0.04);
+  const baseEnemyDmg  = Math.round(c.playerMaxHP * 0.10 + Math.random() * c.playerMaxHP * 0.04);
+
+  // Birikmiş click bonusu bu round'a eklenir (0.2x / click)
+  const clickBonus = Math.round(c.clickDmgAccum || 0);
+  c.clickDmgAccum = 0;
+
+  const totalPlayerDmg = basePlayerDmg + clickBonus;
+  c.enemyHP  = Math.max(0, c.enemyHP  - totalPlayerDmg);
+  c.playerHP = Math.max(0, c.playerHP - baseEnemyDmg);
+
+  const unitsLost = Math.floor(baseEnemyDmg / Math.max(1, c.playerMaxHP * 0.08));
+  if (unitsLost > 0) {
+    loseUnits(unitsLost);
+    state.stats.unitsLost += unitsLost;
+  }
+
+  const clickNote = clickBonus > 0 ? ` (+${clickBonus} click)` : '';
+  addCombatLog(`Round ${c.round}: ⚔️ ${totalPlayerDmg}${clickNote} dmg dealt ▸ 💥 ${baseEnemyDmg} received${unitsLost > 0 ? ` — lost ${unitsLost} unit${unitsLost>1?'s':''}` : ''}`, 'sys');
+
+  if (c.enemyHP <= 0) { combatVictory(); return; }
+  if (c.playerHP <= 0) { combatDefeat(); return; }
+  updateCombatUI();
+}
+
+// Her click: round başına düşen hasarın 0.2x'i kadar birikir, round sonunda uygulanır
+function strikeEnemy() {
+  if (!state.combat || state.combat.done) return;
+  const c = state.combat;
+  const clickDmg = 0.03;
+  c.clickDmgAccum = (c.clickDmgAccum || 0) + clickDmg;
+  state.stats.clicks++;
+
+  // HP bar shake
+  const enemyFill = document.getElementById('enemy-hp-fill');
+  enemyFill.style.transition = 'none';
+  setTimeout(() => { enemyFill.style.transition = ''; }, 100);
+
+  // Strike button pulse
+  const strikeBtn = document.getElementById('strike-btn');
+  strikeBtn.classList.remove('striking');
+  void strikeBtn.offsetWidth; // reflow to restart animation
+  strikeBtn.classList.add('striking');
+  setTimeout(() => strikeBtn.classList.remove('striking'), 220);
+
+  // Modal flash
+  const modalBox = document.querySelector('#combat-modal .modal-box');
+  if (modalBox) {
+    modalBox.classList.remove('combat-hit-flash');
+    void modalBox.offsetWidth;
+    modalBox.classList.add('combat-hit-flash');
+    setTimeout(() => modalBox.classList.remove('combat-hit-flash'), 280);
+  }
+
+  // Floating damage number near enemy HP bar
+  const enemyHpWrap = document.getElementById('enemy-hp-fill');
+  if (enemyHpWrap) {
+    const rect = enemyHpWrap.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'strike-float';
+    const labels = ['⚔️ HIT!', '💥 STRIKE!', '⚡ BLOW!'];
+    const isSpecial = (state.stats.clicks % 5 === 0);
+    el.textContent = isSpecial ? '🔥 CRITICAL!' : labels[Math.floor(Math.random() * labels.length)];
+    if (isSpecial) { el.style.fontSize = '18px'; el.style.color = '#ffd700'; el.style.textShadow = '0 0 12px rgba(255,200,0,0.9)'; }
+    el.style.left = (rect.left + rect.width / 2 + (Math.random() * 40 - 20)) + 'px';
+    el.style.top = (rect.bottom + 28) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+}
+
+function loseUnits(count) {
+  for (let i = 0; i < count; i++) {
+    const available = UNIT_DEFS.filter(ud => state.mil[ud.id] > 0).sort((a,b) => a.power - b.power);
+    if (available.length === 0) break;
+    state.mil[available[0].id]--;
+  }
+}
+
+function showCombatSummary(won) {
+  const c = state.combat;
+  const casualties = {};
+  if (c.preForce) {
+    Object.keys(c.preForce).forEach(uid => {
+      const lost = c.preForce[uid] - (state.mil[uid] || 0);
+      if (lost > 0) casualties[uid] = lost;
+    });
+  }
+  const casLines = Object.keys(casualties).map(uid => {
+    const ud = UNIT_DEFS.find(u => u.id === uid);
+    return `${ud ? ud.icon : ''} ${ud ? ud.name : uid}: <b style="color:var(--red)">-${casualties[uid]}</b>`;
+  });
+
+  const summaryEl = document.getElementById('combat-summary');
+  if (won) {
+    const rebelled = state.regions[c.regionId]?.owner === 'rebel';
+    summaryEl.style.background = 'rgba(67,170,139,0.12)';
+    summaryEl.style.border = '1px solid var(--green)';
+    summaryEl.innerHTML = `<b style="color:var(--green);font-size:13px">🏆 VICTORY!</b><br>
+      ${rebelled ? '<span style="color:var(--gold)">⚠️ Rebels spawned — region unstable!</span><br>' : `<span style="color:var(--green)">✅ Region captured!</span><br>`}
+      ${casLines.length > 0 ? `<span style="color:var(--muted)">Casualties: ${casLines.join(' · ')}</span>` : '<span style="color:var(--muted)">No casualties!</span>'}`;
+  } else {
+    summaryEl.style.background = 'rgba(230,57,70,0.12)';
+    summaryEl.style.border = '1px solid var(--red)';
+    summaryEl.innerHTML = `<b style="color:var(--red);font-size:13px">💀 DEFEAT!</b><br>
+      <span style="color:var(--muted)">Your forces were overwhelmed and retreated.</span><br>
+      ${casLines.length > 0 ? `<span style="color:var(--muted)">Casualties: ${casLines.join(' · ')}</span>` : ''}`;
+  }
+  summaryEl.style.display = 'block';
+  document.getElementById('retreat-btn').textContent = '✕ Close';
+}
+
+function combatVictory() {
+  if (combatRoundTimer) { clearInterval(combatRoundTimer); combatRoundTimer = null; }
+  const c = state.combat;
+  c.done = true;
+  c.won = true;
+  addCombatLog('VICTORY! Region conquered!', 'player');
+
+  const rd = REGIONS.find(r => r.id === c.regionId);
+  const rs = state.regions[c.regionId];
+
+  // Remove from faction list
+  ENEMY_FACTIONS.forEach(f => {
+    const idx = f.regions.indexOf(c.regionId);
+    if (idx !== -1) f.regions.splice(idx, 1);
+  });
+
+  // Neutral regions never spawn rebels; enemy regions have 15% chance
+  const wasNeutral = rs.owner === 'neutral';
+  const rebelChance = wasNeutral ? 0 : 0.15;
+  if (!wasNeutral && Math.random() < rebelChance) {
+    rs.owner = 'rebel';
+    rs.troops = Math.round((rs.troops || 10) * 0.3);
+    const reb = ENEMY_FACTIONS.find(f => f.id === 'militia');
+    if (reb) reb.regions.push(c.regionId);
+    addCombatLog('Rebel force spawned in region!', 'sys');
+  } else {
+    rs.owner = 'player';
+    rs.troops = 10;
+    rs.neutralDefense = 0;
+    state.stats.conquered++;
+    if (rd && rd.specialRes) {
+      rd.specialRes.forEach(res => {
+        state.res[res] = Math.min(state.resCap[res] || 500, (state.res[res] || 0) + 20);
+      });
+    }
+    addCombatLog(`${rd ? rd.name : 'Region'} is now yours!`, 'player');
+  }
+
+  document.getElementById('strike-btn').disabled = true;
+  state.stats.combatsWon++;
+  showCombatSummary(true);
+  renderMapColors();
+  renderAll();
+}
+
+function combatDefeat() {
+  if (combatRoundTimer) { clearInterval(combatRoundTimer); combatRoundTimer = null; }
+  const c = state.combat;
+  c.done = true;
+  c.won = false;
+  addCombatLog('DEFEAT! Your forces have retreated.', 'enemy');
+  document.getElementById('strike-btn').disabled = true;
+  showCombatSummary(false);
+  // Store region ID before combat state is cleared, so counter-attack can still fire
+  const defeatedRegionId = c.regionId;
+  setTimeout(() => enemyCounterAttack(defeatedRegionId), 90000);
+}
+
+function retreatOrClose() {
+  if (state.combat && state.combat.done) {
+    closeCombatModal();
+  } else {
+    retreatCombat();
+  }
+}
+
+function retreatCombat() {
+  if (combatRoundTimer) { clearInterval(combatRoundTimer); combatRoundTimer = null; }
+  // Retreat bedeli: savaşa gönderilen kuvvetin %20'si kayıp
+  const c = state.combat;
+  if (c && !c.done && c.round > 0) {
+    const hpLostRatio = 1 - (c.playerHP / c.playerMaxHP);
+    const penaltyPct = 0.10 + hpLostRatio * 0.10; // %10 + hasar oranına göre ekstra %10 (max %20)
+    const unitsBefore = UNIT_DEFS.reduce((s, ud) => s + (state.mil[ud.id] || 0), 0);
+    const penalty = Math.max(1, Math.round(unitsBefore * penaltyPct));
+    loseUnits(penalty);
+    state.stats.unitsLost += penalty;
+    addCombatLog(`🏃 Retreated — ${penalty} unit${penalty>1?'s':''} lost in the withdrawal.`, 'enemy');
+    showNotif(`🏃 Retreat: lost ${penalty} units`, true);
+  } else {
+    addCombatLog('Retreated before battle began.', 'sys');
+  }
+  closeCombatModal();
+}
+
+function closeCombatModal() {
+  if (combatRoundTimer) { clearInterval(combatRoundTimer); combatRoundTimer = null; }
+  const modal = document.getElementById('combat-modal');
+  if (modal) modal.classList.add('hidden');
+  state.combat = null;
+  // Re-sync right panel — selected region may have changed owner during combat
+  renderRightPanel();
+  renderMapColors();
+}
+
+function enemyCounterAttack(rid) {
+  // Enemy attacks a random adjacent player region after player defeat
+  const rd = REGIONS.find(r => r.id === rid);
+  if (!rd) return;
+  const playerNeighbors = rd.neighbors.filter(nid => state.regions[nid] && state.regions[nid].owner === 'player');
+  if (playerNeighbors.length === 0) return;
+  const target = playerNeighbors[Math.floor(Math.random() * playerNeighbors.length)];
+  // Weaken player region
+  state.regions[target].troops = Math.max(0, (state.regions[target].troops || 0) - 5);
+  showEventBanner({ title:'Counter-Attack!', icon:'⚔️', desc:`Enemy attacks ${REGIONS.find(r=>r.id===target)?.name || target}!` });
+}
+
+function openDefenseModal(regionId, factionId, attackPow) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const faction = ENEMY_FACTIONS.find(f => f.id === factionId);
+  pendingDefenseAttack = { regionId, factionId, attackPow };
+
+  document.getElementById('defense-modal-title').textContent =
+    `🛡️ ${faction ? faction.name : factionId} Attacks ${rd ? rd.name : regionId}!`;
+
+  const availUnits = UNIT_DEFS.filter(ud => (state.mil[ud.id] || 0) > 0);
+  const body = document.getElementById('defense-modal-body');
+  body.innerHTML = `<div style="margin-bottom:8px;font-size:12px">Enemy power: <b style="color:var(--red)">${Math.round(attackPow)}</b> — Select defending troops or retreat.</div>` +
+    (availUnits.length > 0 ? availUnits.map(ud => {
+      const cnt = state.mil[ud.id] || 0;
+      return `<div class="ts-row">
+        <div class="ts-icon">${ud.icon}</div>
+        <div class="ts-name">${ud.name}</div>
+        <div class="ts-avail">(${cnt} avail)</div>
+        <input type="number" id="ds-${ud.id}" min="0" max="${cnt}" value="${cnt}">
+      </div>`;
+    }).join('') : '<div class="empty-msg">No units available — retreat or lose territory!</div>');
+
+  document.getElementById('defense-modal').classList.remove('hidden');
+}
+
+function confirmDefense() {
+  if (!pendingDefenseAttack) return;
+  const { regionId, factionId, attackPow } = pendingDefenseAttack;
+  const availUnits = UNIT_DEFS.filter(ud => (state.mil[ud.id] || 0) > 0);
+  let defPow = 0;
+  availUnits.forEach(ud => {
+    const el = document.getElementById('ds-' + ud.id);
+    if (el) defPow += (parseInt(el.value) || 0) * ud.power;
+  });
+  document.getElementById('defense-modal').classList.add('hidden');
+
+  const rd = REGIONS.find(r => r.id === regionId);
+  const faction = ENEMY_FACTIONS.find(f => f.id === factionId);
+  const regionName = rd ? rd.name : regionId;
+  const facName = faction ? faction.name : factionId;
+
+  if (defPow >= attackPow * 0.6) {
+    showEventBanner({ title:`🛡️ ${regionName} Defended!`, icon:'✅', desc:`${facName} repelled! You held the line.`, effect:'' });
+    loseUnits(Math.ceil(attackPow / 500));
+  } else {
+    state.regions[regionId].owner = factionId;
+    if (faction && !faction.regions.includes(regionId)) faction.regions.push(regionId);
+    showEventBanner({ title:`😱 ${regionName} Lost!`, icon:'🔴', desc:`${facName} conquered your territory! Reclaim it.`, effect:'' });
+    const defLoss = Math.ceil(attackPow / 300);
+    loseUnits(defLoss);
+    showNotif(`🔴 ${regionName} captured by ${facName}! Lost ${defLoss} units defending.`, true);
+    renderMapColors();
+  }
+  pendingDefenseAttack = null;
+  renderAll();
+}
+
+function retreatDefense() {
+  if (!pendingDefenseAttack) return;
+  const { regionId, factionId } = pendingDefenseAttack;
+  const rd = REGIONS.find(r => r.id === regionId);
+  const faction = ENEMY_FACTIONS.find(f => f.id === factionId);
+
+  state.regions[regionId].owner = factionId;
+  if (faction && !faction.regions.includes(regionId)) faction.regions.push(regionId);
+  showEventBanner({
+    title:`🏃 Retreated from ${rd ? rd.name : regionId}`,
+    icon:'🏃',
+    desc:'No unit losses — but territory abandoned.',
+    effect:''
+  });
+  document.getElementById('defense-modal').classList.add('hidden');
+  pendingDefenseAttack = null;
+  renderMapColors();
+  renderAll();
+}
+
+function addCombatLog(msg, type) {
+  if (!state.combat) return;
+  const log = document.getElementById('combat-log');
+  if (!log) return;
+  const p = document.createElement('p');
+  p.className = type === 'player' ? 'log-player' : type === 'enemy' ? 'log-enemy' : 'log-sys';
+  p.textContent = msg;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
+function updateCombatUI() {
+  if (!state.combat) return;
+  const c = state.combat;
+  const total = c.playerMaxHP + c.enemyMaxHP;
+  // Each side's share of the track = its current HP / total starting HP
+  const php = total > 0 ? Math.max(0, (c.playerHP / total) * 100) : 0;
+  const ehp = total > 0 ? Math.max(0, (c.enemyHP  / total) * 100) : 0;
+  document.getElementById('player-hp-fill').style.width = php + '%';
+  document.getElementById('enemy-hp-fill').style.width = ehp + '%';
+  document.getElementById('player-hp-val').textContent = `🟢 ${c.playerHP}/${c.playerMaxHP}`;
+  document.getElementById('enemy-hp-val').textContent = `${c.enemyHP}/${c.enemyMaxHP} 🔴`;
+}
+
+// =====================================================================
+// RESEARCH
+// =====================================================================
+
+function canResearch(tech) {
+  if (state.research.has(tech.id)) return false;
+  if (tech.req.some(r => !state.research.has(r))) return false;
+  return canAfford(tech.cost);
+}
+
+function researchTech(techId) {
+  const tech = TECH_DEFS.find(t => t.id === techId);
+  if (!tech || !canResearch(tech)) return;
+  const discount = getTechDiscount();
+  const cost = {};
+  Object.keys(tech.cost).forEach(k => { cost[k] = Math.round(tech.cost[k] * (1 - discount)); });
+  if (!spendRes(cost)) return;
+  state.research.add(techId);
+  state.stats.researchDone++;
+  showFloat(400, 200, `Researched: ${tech.name}!`, '#f9c74f');
+  renderAll();
+}
+
+function getTechDiscount() {
+  let disc = 0;
+  if (state.research.has('writing'))   disc += 0.10;
+  if (state.research.has('computing')) disc += 0.10;
+  if (state.research.has('quantum'))   disc += 0.15;
+  Object.values(state.buildings).forEach(blds => {
+    if (blds.includes('research_lab')) disc += 0.20;
+  });
+  return Math.min(disc, 0.60); // cap at 60% discount
+}
+
+// =====================================================================
+// UNITS
+// =====================================================================
+
+function recruitUnit(unitId, qty = 1) {
+  const ud = UNIT_DEFS.find(u => u.id === unitId);
+  if (!ud) return;
+  if (ud.requires.some(r => !state.research.has(r))) { showFloat(400, 250, 'Research required!', '#e63946'); return; }
+  const current = state.mil[unitId] || 0;
+  const canBuy = Math.min(qty, ud.limit - current);
+  if (canBuy <= 0) { showFloat(400, 250, 'Unit cap reached!', '#e63946'); return; }
+  // Build scaled cost for canBuy units
+  const totalCost = {};
+  Object.keys(ud.cost).forEach(k => { totalCost[k] = ud.cost[k] * canBuy; });
+  // If can't afford all, buy as many as possible
+  let bought = canBuy;
+  while (bought > 0 && !canAfford(Object.fromEntries(Object.keys(ud.cost).map(k => [k, ud.cost[k] * bought])))) bought--;
+  if (bought <= 0) { showFloat(400, 250, 'Not enough resources!', '#e63946'); return; }
+  const finalCost = Object.fromEntries(Object.keys(ud.cost).map(k => [k, ud.cost[k] * bought]));
+  if (!spendRes(finalCost)) { showFloat(400, 250, 'Not enough resources!', '#e63946'); return; }
+  state.mil[unitId] = current + bought;
+  const newCount = state.mil[unitId];
+  showNotif(`${ud.icon} ${bought > 1 ? `${bought}x ` : ''}${ud.name} recruited! (${newCount}/${ud.limit})`);
+  rightTab = 'military';
+  document.querySelectorAll('.ptab[data-rtab]').forEach(el => el.classList.toggle('active', el.dataset.rtab === 'military'));
+  renderRightPanel();
+  updateHeader();
+}
+
+// =====================================================================
+// BUILDINGS
+// =====================================================================
+
+function buildBuilding(regionId, buildingId) {
+  const bd = BUILDING_DEFS.find(b => b.id === buildingId);
+  const rd = REGIONS.find(r => r.id === regionId);
+  const rs = state.regions[regionId];
+  if (!bd || !rd || !rs) return;
+  if (rs.owner !== 'player') return;
+  if (!state.buildings[regionId]) state.buildings[regionId] = [];
+  if (state.buildings[regionId].includes(buildingId)) { showFloat(400, 250, 'Already built!', '#e63946'); return; }
+  // Terrain check
+  if (bd.terrains && bd.terrains.length > 0 && !bd.terrains.includes(rd.terrain)) {
+    showFloat(400, 250, 'Wrong terrain!', '#e63946'); return;
+  }
+  // Research check
+  if (bd.req_research && bd.req_research.some(r => !state.research.has(r))) {
+    showFloat(400, 250, 'Research needed!', '#e63946'); return;
+  }
+  // Prerequisite building
+  if (bd.req_building && !state.buildings[regionId].includes(bd.req_building)) {
+    showFloat(400, 250, `Need ${bd.req_building} first!`, '#e63946'); return;
+  }
+  if (!spendRes(bd.cost)) { showFloat(400, 250, 'Not enough resources!', '#e63946'); return; }
+  state.buildings[regionId].push(buildingId);
+  showFloat(400, 250, `Built ${bd.name}!`, '#43aa8b');
+  showNotif(`🏗️ ${bd.icon||'🏛️'} ${bd.name} built in ${rd.name}!`);
+  renderRightPanel();
+}
+
+// =====================================================================
+// RESOURCE UTILITIES
+// =====================================================================
+
+function canAfford(cost) {
+  return Object.keys(cost).every(k => (state.res[k] || 0) >= cost[k]);
+}
+
+function spendRes(cost) {
+  if (!canAfford(cost)) return false;
+  Object.keys(cost).forEach(k => { state.res[k] -= cost[k]; });
+  return true;
+}
+
+function fmtRes(val) {
+  if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+  if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
+  return Math.floor(val).toString();
+}
+
+function fmtRate(rate) {
+  if (Math.abs(rate) < 0.01) return '';
+  const sign = rate > 0 ? '+' : '';
+  return `${sign}${rate.toFixed(1)}/s`;
+}
+
+// =====================================================================
+// MAP BUILD
+// =====================================================================
+
+const CONTINENT_CLASS = {
+  british_isles:'europe', scandinavia:'europe', northern_europe:'europe',
+  western_europe:'europe', iberia:'europe', eastern_europe:'europe', balkans:'europe',
+  russia:'russia',
+  caucasus:'middleeast', middle_east:'middleeast', arabian_peninsula:'middleeast',
+  central_asia:'asia', mongolia:'asia', china:'asia', japan_korea:'asia',
+  india:'asia', southeast_asia:'asia',
+  north_africa:'africa', west_africa:'africa', central_africa:'africa',
+  east_africa:'africa', south_africa:'africa',
+  north_america_west:'americas', north_america_east:'americas', central_america:'americas',
+  caribbean:'americas', south_america_north:'americas', amazon:'americas',
+  south_america_east:'americas', south_america_west:'americas',
+  australia:'oceania', new_zealand:'oceania', pacific_islands:'oceania',
+  arctic:'polar', greenland:'polar',
+};
+
+/* Graph-coloring: no two neighboring regions share the same color.
+   Colors avoid green/red/orange/gold (reserved for owned/enemy/selected). */
+const REGION_PATHS = {
+  arctic: {d:`M0,0L1100,0L1100,80L1050,95L1000,100L900,90L800,85L700,88L600,92L550,95L500,92L400,88L300,85L200,88L150,93L100,98L50,95L0,80L0,0Z`,cx:550,cy:50},
+  greenland: {d:`M407.1,109.5L417.4,107.1L428.1,107.3L432.0,105.8L442.8,105.4L467.2,105.9L486.3,109.1L480.7,110.6L469.0,110.8L452.5,111.2L454.1,111.9L464.9,111.5L474.1,112.9L480.0,111.6L482.6,113.1L479.2,115.4L487.0,113.9L501.8,112.4L511.0,113.1L512.7,114.8L500.2,117.7L498.5,118.6L488.7,119.3L495.8,119.5L492.2,122.4L489.8,125.0L489.9,129.4L493.6,132.1L488.8,132.2L483.8,133.5L489.4,135.6L490.1,139.0L486.8,139.4L490.8,142.8L484.0,143.1L487.6,144.7L486.6,146.1L482.3,146.8L478.0,146.8L481.8,149.5L481.9,151.3L475.8,149.6L474.2,150.7L478.4,151.7L482.4,154.1L483.5,157.3L478.1,158.1L475.7,156.6L472.0,154.3L473.0,157.0L469.4,159.1L477.5,159.3L481.7,159.5L473.5,163.0L465.2,166.1L456.3,167.5L452.9,167.5L449.7,169.1L445.5,173.3L438.9,176.1L436.8,176.2L432.7,177.2L428.4,178.2L425.7,180.6L425.7,183.4L424.1,186.1L419.2,189.3L420.4,192.4L419.0,195.7L417.5,199.6L413.1,199.9L408.6,196.6L402.5,196.6L399.6,194.4L397.5,190.5L392.2,185.5L390.7,182.9L390.3,179.3L386.0,175.6L387.1,172.7L385.1,171.2L388.1,166.6L392.7,165.1L393.9,163.4L394.6,160.3L391.1,161.7L389.4,162.3L386.7,162.9L382.9,161.6L382.7,158.8L383.9,156.7L386.7,156.7L393.0,157.7L387.7,155.2L385.0,153.8L381.9,154.4L379.4,153.4L382.8,149.7L380.9,148.2L378.5,145.4L374.8,141.2L371.0,139.6L371.0,137.9L362.8,135.6L356.3,135.3L348.1,135.5L340.7,135.8L337.1,134.5L331.8,132.0L339.8,130.7L346.0,130.5L332.9,129.5L326.0,127.8L326.5,126.3L338.0,124.3L349.2,122.4L350.4,121.0L342.2,119.5L344.8,117.9L355.4,115.1L359.8,114.7L358.6,112.9L365.8,111.9L375.2,111.2L384.6,111.2L387.9,112.4L396.0,110.2L403.3,111.7L407.6,112.1L414.0,113.4L406.7,111.2L407.1,109.5Z`,cx:425,cy:143},
+  british_isles: {d:`M531.1,224.5L528.8,223.7L526.9,223.8L527.5,221.6L526.9,219.5L529.4,219.3L532.7,221.8L531.1,224.5Z M540.5,226.4L540.6,226.4L541.0,224.1L539.0,221.6L538.9,221.5L535.2,220.8L534.5,219.8L535.6,218.0L534.6,216.9L532.9,218.8L532.8,214.9L531.2,212.9L532.3,208.7L534.7,205.5L537.1,205.8L540.8,205.5L537.6,209.8L540.7,209.2L544.0,209.3L543.2,212.5L540.5,216.1L543.6,216.4L543.9,216.8L546.6,221.5L548.7,222.1L550.6,226.7L551.4,228.3L555.1,229.0L554.8,231.6L553.2,232.8L554.4,234.8L551.7,236.9L547.6,236.9L542.4,238.0L541.0,237.2L538.9,239.1L536.1,238.6L534.0,240.2L532.3,239.4L536.8,235.2L539.6,234.3L539.5,234.3L534.8,233.6L533.9,232.0L537.1,230.8L535.4,228.6L536.0,226.0L540.5,226.4Z M531.1,224.5L531.6,227.4L529.3,231.0L523.8,233.3L519.5,232.7L522.0,228.5L520.4,224.5L524.6,221.3L526.9,219.5L527.5,221.6L526.9,223.8L528.8,223.7L531.1,224.5Z`,cx:534,cy:225},
+  scandinavia: {d:`M596.3,121.3L597.4,119.9L601.9,119.8L605.8,121.2L615.8,124.2L608.1,125.7L606.4,128.7L603.8,129.4L602.3,132.8L598.6,132.9L592.1,130.5L594.8,129.1L590.2,127.9L584.3,124.5L581.9,121.4L590.2,120.0L591.9,121.4L596.3,121.3Z M645.0,161.8L639.8,163.4L637.4,163.7L638.7,160.9L634.7,159.3L630.0,160.7L628.5,163.6L625.6,165.4L622.3,164.4L618.3,164.6L614.9,162.5L613.1,163.6L611.2,163.7L610.7,166.4L605.0,165.7L604.2,168.0L601.2,167.9L599.2,170.8L596.2,175.2L591.4,180.9L592.5,182.2L591.5,183.8L588.4,183.7L586.5,187.5L586.6,192.8L588.6,194.8L587.6,199.5L585.0,202.3L583.7,204.6L581.6,202.1L575.6,206.7L571.5,207.7L567.3,205.6L566.2,201.3L565.3,192.1L568.1,189.5L576.1,186.2L582.2,182.1L587.8,176.5L595.1,168.8L600.2,165.7L608.6,160.7L615.3,159.0L620.4,159.2L625.0,155.9L630.6,156.1L636.1,155.3L645.6,158.2L641.7,159.3L645.0,161.8Z M633.7,119.8L629.2,121.9L620.4,122.4L611.3,121.7L610.8,120.6L606.4,120.6L603.1,118.7L612.5,117.6L616.9,118.6L620.0,117.4L627.8,118.4L633.7,119.8Z M625.5,128.6L618.7,130.2L613.3,129.3L615.4,128.3L613.6,127.0L619.9,126.2L621.1,127.7L625.5,128.6Z M583.7,204.6L585.0,202.3L587.6,199.5L588.6,194.8L586.6,192.8L586.5,187.5L588.4,183.7L591.5,183.8L592.5,182.2L591.4,180.9L596.2,175.2L599.2,170.8L601.2,167.9L604.2,168.0L605.0,165.7L610.7,166.4L611.2,163.7L613.1,163.6L617.2,165.5L621.9,168.3L622.0,174.4L623.0,176.0L617.8,177.1L614.8,179.9L615.3,182.3L610.4,185.6L604.5,189.0L602.3,194.6L604.5,197.5L607.4,199.7L604.6,204.2L601.4,205.1L600.3,211.8L598.5,215.6L594.8,215.2L593.1,218.4L589.5,218.6L588.6,214.8L586.0,210.2L583.7,204.6Z M637.4,163.7L636.9,166.5L641.6,169.2L638.8,172.2L642.3,176.8L640.3,180.2L643.0,183.2L641.8,185.8L646.3,188.5L645.1,190.6L642.3,192.9L635.8,198.0L635.8,198.0L635.8,198.0L630.2,198.3L624.9,199.8L619.9,200.6L618.1,198.4L615.2,197.1L615.8,193.2L614.3,189.6L615.8,187.2L618.6,184.7L625.6,180.4L627.6,179.6L627.3,177.9L623.0,176.0L622.0,174.4L621.9,168.3L617.2,165.5L613.1,163.6L614.9,162.5L618.3,164.6L622.3,164.4L625.6,165.4L628.5,163.6L630.0,160.7L634.7,159.3L638.7,160.9L637.4,163.7Z M580.3,220.1L578.4,220.7L576.1,220.1L574.8,217.9L574.7,213.8L575.2,212.8L576.1,211.6L578.8,211.3L579.9,210.2L582.3,209.1L582.2,211.1L581.3,212.4L581.7,213.6L583.3,214.2L582.6,215.7L581.7,215.2L579.5,218.1L580.3,220.1Z M587.8,215.6L588.8,217.6L586.9,220.8L583.7,218.5L583.3,216.9L587.8,215.6Z M505.7,174.2L505.0,176.8L508.4,179.5L504.4,182.5L495.6,185.3L493.0,186.0L489.0,185.4L480.4,184.2L483.5,182.4L476.8,180.4L482.2,179.7L482.1,178.5L475.7,177.6L477.7,174.9L482.4,174.4L487.1,177.1L491.8,174.9L495.6,176.0L500.6,173.9L505.7,174.2Z`,cx:581,cy:187},
+  northern_europe: {d:`M635.5,202.1L635.5,202.1L636.0,202.8L633.8,205.1L634.7,208.8L633.4,210.1L630.9,210.1L628.2,208.6L626.9,208.1L624.3,208.8L624.6,206.5L623.5,207.0L621.6,205.5L621.3,203.3L625.2,202.1L629.0,201.6L632.3,202.2L635.5,202.1L635.5,202.1Z M633.4,210.1L634.9,211.0L635.1,213.0L636.1,215.3L632.8,216.9L631.0,217.5L628.0,215.6L626.4,215.3L626.0,214.5L623.0,214.9L617.8,214.6L614.3,215.9L614.4,212.9L615.9,210.4L618.8,209.0L621.3,212.0L623.7,211.9L624.3,208.8L626.9,208.1L628.2,208.6L630.9,210.1L633.4,210.1Z M631.0,217.5L631.2,219.3L628.7,220.6L628.0,222.9L624.7,224.4L621.8,224.4L621.0,223.1L619.5,222.7L619.2,221.7L619.5,220.6L618.2,219.9L615.0,219.2L614.3,215.9L617.8,214.6L623.0,214.9L626.0,214.5L626.4,215.3L628.0,215.6L631.0,217.5Z M621.8,224.4L621.9,226.1L622.7,227.6L622.7,229.2L620.9,230.1L621.8,231.9L621.9,233.7L623.4,237.2L623.1,238.3L621.6,238.8L618.8,242.1L619.6,243.9L618.9,243.7L616.0,242.1L613.8,242.7L612.4,242.3L610.6,243.1L609.0,241.7L607.8,242.3L607.6,242.0L606.2,240.0L603.9,239.8L603.6,238.6L601.5,238.1L601.1,239.1L599.4,238.3L599.6,237.2L597.3,236.9L595.9,235.6L594.6,233.0L594.9,231.6L594.1,229.5L593.0,228.1L593.9,227.0L593.1,225.0L595.2,223.8L600.0,221.9L603.8,220.6L606.9,221.3L607.1,222.2L610.1,222.3L613.8,222.7L619.5,222.7L621.0,223.1L621.8,224.4Z M593.1,225.0L593.9,227.0L593.0,228.1L594.1,229.5L594.9,231.6L594.6,233.0L595.9,235.6L594.5,236.0L593.7,235.5L592.9,236.3L590.8,237.1L589.6,238.1L587.4,238.9L587.9,240.1L588.3,241.8L589.8,242.8L591.5,244.5L590.5,246.3L589.4,246.8L589.8,249.4L589.5,250.1L588.6,249.3L587.1,249.2L584.9,249.9L582.2,249.7L581.8,250.8L580.2,249.7L579.3,249.9L576.0,248.7L575.4,249.5L572.8,249.5L573.2,246.7L574.7,243.9L570.3,243.2L568.9,242.1L569.1,240.4L568.5,239.5L568.8,236.8L568.3,232.6L570.1,232.6L570.9,231.1L571.7,227.4L571.1,226.1L571.7,225.2L574.2,225.0L574.8,225.9L576.9,223.9L576.2,222.4L576.1,220.1L578.4,220.7L580.3,220.1L580.4,221.6L583.5,222.5L583.4,224.0L586.5,223.2L588.3,222.1L591.7,223.7L593.1,225.0Z M571.1,226.1L571.7,227.4L570.9,231.1L570.1,232.6L568.3,232.6L568.8,236.8L567.1,235.9L565.2,234.1L562.4,234.9L560.1,234.6L560.1,234.6L561.7,233.5L564.4,227.6L568.6,226.0L571.1,226.1Z M568.8,236.8L568.5,239.5L567.7,239.6L567.3,241.9L564.7,240.1L563.1,240.4L561.0,238.5L559.5,236.9L558.1,236.8L557.7,235.4L560.1,234.6L560.1,234.6L560.1,234.6L562.4,234.9L565.2,234.1L567.1,235.9L568.8,236.8Z M568.5,239.5L569.1,240.4L568.9,242.1L568.0,242.2L567.3,241.9L567.7,239.6L568.5,239.5Z M595.9,235.6L597.3,236.9L599.6,237.2L599.4,238.3L601.1,239.1L601.5,238.1L603.6,238.6L603.9,239.8L606.2,240.0L607.6,242.0L606.7,242.0L606.2,242.7L605.5,242.9L605.3,243.8L604.7,244.0L604.7,244.4L603.6,244.8L602.3,244.7L601.8,245.6L600.4,244.9L599.0,245.1L596.6,243.8L595.5,244.1L593.8,245.8L591.5,244.5L589.8,242.8L588.3,241.8L587.9,240.1L587.4,238.9L589.6,238.1L590.8,237.1L592.9,236.3L593.7,235.5L594.5,236.0L595.9,235.6Z M618.9,243.7L618.1,244.7L617.5,246.3L616.8,246.7L613.6,245.5L612.6,245.7L611.8,246.7L610.4,247.2L610.1,246.9L608.6,247.6L607.4,247.7L607.1,248.5L604.6,249.0L603.4,248.5L601.9,247.5L601.6,246.1L601.8,245.6L602.3,244.7L603.6,244.8L604.7,244.4L604.7,244.0L605.3,243.8L605.5,242.9L606.2,242.7L606.7,242.0L607.6,242.0L607.8,242.3L609.0,241.7L610.6,243.1L612.4,242.3L613.8,242.7L616.0,242.1L618.9,243.7Z M579.3,249.9L579.4,250.6L579.0,251.6L580.3,252.3L581.9,252.4L581.7,254.1L580.3,254.7L578.1,254.2L577.4,255.9L575.9,256.0L575.4,255.3L573.7,256.7L572.2,256.9L570.9,256.0L569.9,254.3L568.4,254.9L568.4,253.1L570.7,250.8L570.6,249.8L572.0,250.2L572.8,249.5L575.4,249.5L576.0,248.7L579.3,249.9Z M601.9,247.5L601.7,249.1L599.9,249.1L600.5,250.0L599.5,252.6L598.9,253.3L596.3,253.4L594.7,254.3L592.2,254.0L587.8,252.9L587.1,251.5L584.1,252.2L583.8,253.0L581.9,252.4L580.3,252.3L579.0,251.6L579.4,250.6L579.3,249.9L580.2,249.7L581.8,250.8L582.2,249.7L584.9,249.9L587.1,249.2L588.6,249.3L589.5,250.1L589.8,249.4L589.4,246.8L590.5,246.3L591.5,244.5L593.8,245.8L595.5,244.1L596.6,243.8L599.0,245.1L600.4,244.9L601.8,245.6L601.6,246.1L601.9,247.5Z`,cx:595,cy:234},
+  western_europe: {d:`M568.9,242.1L570.3,243.2L574.7,243.9L573.2,246.7L572.8,249.5L572.0,250.2L570.6,249.8L570.7,250.8L568.4,253.1L568.4,254.9L569.9,254.3L570.9,256.0L570.8,257.2L571.7,258.7L570.6,259.9L571.4,263.0L573.1,263.5L572.7,265.2L570.0,267.5L563.9,266.4L559.5,267.7L559.1,270.1L555.6,270.6L552.1,268.8L551.0,269.7L545.4,267.9L544.2,266.3L545.8,263.9L546.4,255.9L543.2,251.7L540.9,249.7L536.3,248.2L536.0,245.3L539.9,244.4L545.1,245.4L544.1,240.9L547.0,242.6L554.1,239.5L555.0,236.2L557.7,235.4L558.1,236.8L559.5,236.9L561.0,238.5L563.1,240.4L564.7,240.1L567.3,241.9L568.0,242.2L568.9,242.1Z M576.7,269.5L578.7,268.0L579.2,271.4L578.2,274.5L576.8,273.7L576.1,271.0L576.7,269.5Z`,cx:560,cy:252},
+  iberia: {d:`M527.2,291.6L527.0,290.3L528.1,288.8L528.5,287.7L527.5,286.5L528.3,283.9L527.1,281.5L528.4,281.2L528.5,279.3L529.0,278.7L529.1,275.6L530.5,274.5L529.6,272.5L527.8,272.3L527.3,272.8L525.5,272.8L524.7,270.9L523.5,271.5L522.4,272.5L522.5,269.6L521.3,267.9L525.6,265.0L529.4,265.7L533.5,265.7L536.7,266.4L539.3,266.2L544.2,266.3L545.4,267.9L551.0,269.7L552.1,268.8L555.6,270.6L559.1,270.1L559.3,272.4L556.4,275.1L552.5,275.9L552.2,277.3L550.3,279.5L549.1,282.8L550.3,285.0L548.6,286.8L547.9,289.4L545.6,290.2L543.4,293.3L539.6,293.4L536.7,293.3L534.7,294.7L533.6,296.2L532.1,295.9L530.9,294.5L530.1,292.2L527.2,291.6Z M522.4,272.5L523.5,271.5L524.7,270.9L525.5,272.8L527.3,272.8L527.8,272.3L529.6,272.5L530.5,274.5L529.1,275.6L529.0,278.7L528.5,279.3L528.4,281.2L527.1,281.5L528.3,283.9L527.5,286.5L528.5,287.7L528.1,288.8L527.0,290.3L527.2,291.6L526.0,292.6L524.4,292.1L522.8,292.5L523.3,289.4L523.0,286.9L521.6,286.6L520.9,285.1L521.1,282.4L522.4,281.0L522.6,279.4L523.2,277.0L523.1,275.3L522.5,273.8L522.4,272.5Z`,cx:531,cy:280},
+  eastern_europe: {d:`M636.1,215.3L639.3,216.3L639.7,217.3L641.3,216.8L644.3,217.8L644.6,219.7L644.0,220.8L645.9,223.4L647.1,224.1L647.0,224.8L649.0,225.5L649.9,226.6L648.7,227.5L646.2,227.3L645.7,227.7L646.4,229.0L647.1,231.6L647.1,231.6L644.5,231.8L643.6,232.7L643.4,234.7L642.1,234.3L639.4,234.5L638.6,233.6L637.4,234.3L636.3,233.7L633.9,233.6L630.5,232.7L627.4,232.4L625.0,232.4L623.3,233.5L621.9,233.7L621.8,231.9L620.9,230.1L622.7,229.2L622.7,227.6L621.9,226.1L621.8,224.4L624.7,224.4L628.0,222.9L628.7,220.6L631.2,219.3L631.0,217.5L632.8,216.9L636.1,215.3Z M647.1,231.6L648.3,231.8L649.0,230.8L650.0,231.0L653.1,230.7L655.1,232.9L654.3,233.7L654.6,235.0L657.0,235.2L658.1,236.9L658.0,237.7L661.9,239.1L664.3,238.5L666.1,240.3L667.9,240.3L672.4,241.6L672.5,242.8L671.2,244.9L671.9,247.1L671.4,248.4L668.5,248.7L666.9,249.8L666.8,251.6L664.4,251.9L662.3,253.2L659.5,253.4L656.8,254.9L657.0,257.0L656.5,256.9L656.1,256.1L655.1,256.0L653.0,255.1L652.2,256.1L651.7,255.7L647.0,254.7L646.8,253.2L644.0,253.7L642.8,255.9L640.5,258.8L639.1,258.1L637.6,258.8L636.3,258.0L637.0,257.6L637.6,256.2L638.4,255.0L638.2,254.2L638.8,253.9L639.1,254.5L640.9,254.6L641.7,254.3L641.2,253.9L641.4,253.3L640.3,252.3L639.9,250.6L638.8,250.0L639.0,248.6L637.6,247.5L636.3,247.4L634.1,246.1L632.1,246.5L631.3,247.1L630.0,247.1L629.3,248.1L627.0,248.4L626.0,249.0L624.6,248.1L622.6,248.1L620.7,247.6L619.4,248.5L619.2,247.4L617.5,246.3L618.1,244.7L618.9,243.7L619.6,243.9L618.8,242.1L621.6,238.8L623.1,238.3L623.4,237.2L621.9,233.7L623.3,233.5L625.0,232.4L627.4,232.4L630.5,232.7L633.9,233.6L636.3,233.7L637.4,234.3L638.6,233.6L639.4,234.5L642.1,234.3L643.4,234.7L643.6,232.7L644.5,231.8L647.1,231.6Z M631.3,247.1L632.1,246.5L634.1,246.1L636.3,247.4L637.6,247.5L639.0,248.6L638.8,250.0L639.9,250.6L640.3,252.3L641.4,253.3L641.2,253.9L641.7,254.3L640.9,254.6L639.1,254.5L638.8,253.9L638.2,254.2L638.4,255.0L637.6,256.2L637.0,257.6L636.3,258.0L635.7,256.2L636.0,254.5L635.9,252.8L634.2,250.4L633.2,248.7L632.3,247.5L631.3,247.1Z`,cx:639,cy:241},
+  balkans: {d:`M636.3,258.0L637.6,258.8L639.1,258.1L640.5,258.8L640.5,259.9L639.0,260.7L638.1,260.3L637.3,265.2L635.5,264.8L633.2,263.3L629.6,264.2L628.1,265.2L623.6,265.0L621.3,264.4L620.1,264.7L619.2,263.1L618.7,262.4L619.4,261.7L618.6,261.2L617.7,262.1L615.9,260.9L615.6,259.3L613.8,258.3L613.4,257.1L611.8,255.5L614.2,254.7L616.1,252.0L617.5,249.3L619.4,248.5L620.7,247.6L622.6,248.1L624.6,248.1L626.0,249.0L627.0,248.4L629.3,248.1L630.0,247.1L631.3,247.1L632.3,247.5L633.2,248.7L634.2,250.4L635.9,252.8L636.0,254.5L635.7,256.2L636.3,258.0Z M619.2,263.1L620.1,264.7L621.3,264.4L623.6,265.0L628.1,265.2L629.6,264.2L633.2,263.3L635.5,264.8L637.3,265.2L635.7,266.8L634.6,269.7L635.5,272.0L632.9,271.4L629.8,272.7L629.8,274.7L627.0,275.1L624.8,273.7L622.4,274.8L620.1,274.6L619.9,272.0L618.4,270.7L618.9,270.2L618.6,269.7L619.1,268.4L620.2,267.2L618.8,265.4L618.5,264.0L619.2,263.1Z M607.5,256.4L607.5,256.4L609.9,255.3L611.8,255.5L613.4,257.1L613.8,258.3L615.6,259.3L615.9,260.9L617.7,262.1L618.6,261.2L619.4,261.7L618.7,262.4L619.2,263.1L618.5,264.0L618.8,265.4L620.2,267.2L619.1,268.4L618.6,269.7L618.9,270.2L618.4,270.7L617.0,270.8L615.9,271.0L615.8,270.7L616.2,270.2L616.5,269.3L616.1,269.3L615.5,268.5L615.0,268.4L614.6,267.7L614.0,267.5L613.6,266.9L613.1,267.1L612.6,268.5L611.9,268.7L612.1,268.4L611.0,267.6L610.0,267.1L609.5,266.6L608.7,265.9L609.4,265.7L609.9,263.8L608.4,262.3L609.2,260.5L608.1,260.6L608.1,260.6L609.2,259.1L608.3,257.9L607.5,256.4Z M600.6,254.0L601.6,254.5L603.9,256.2L606.4,257.0L607.5,256.4L608.3,257.9L609.2,259.1L608.1,260.6L606.7,259.7L604.6,259.7L602.0,259.1L600.5,259.2L599.9,260.0L598.8,259.1L598.1,260.7L599.6,262.6L600.3,263.8L601.7,265.3L602.9,266.2L604.0,267.9L606.7,269.4L606.4,270.1L606.4,270.1L603.5,268.6L601.7,267.2L598.9,266.0L596.4,263.0L597.0,262.7L595.6,261.0L595.5,259.7L593.6,259.1L592.6,260.8L591.7,259.5L591.8,258.1L591.9,258.0L594.0,258.1L594.6,257.5L595.6,258.1L596.8,258.2L596.8,257.1L597.9,256.7L598.2,255.0L600.6,254.0Z M606.7,269.4L604.0,267.9L602.9,266.2L601.7,265.3L600.3,263.8L599.6,262.6L598.1,260.7L598.8,259.1L599.9,260.0L600.5,259.2L602.0,259.1L604.6,259.7L606.7,259.7L608.1,260.6L608.1,260.6L609.2,260.5L608.4,262.3L609.9,263.8L609.4,265.7L608.7,265.9L608.2,266.3L607.2,267.2L606.7,269.4Z M592.2,254.0L594.7,254.3L596.3,253.4L598.9,253.3L599.5,252.6L600.0,252.6L600.6,254.0L598.2,255.0L597.9,256.7L596.8,257.1L596.8,258.2L595.6,258.1L594.6,257.5L594.0,258.1L591.9,258.0L592.6,257.6L591.9,255.9L592.2,254.0Z M618.4,270.7L619.9,272.0L620.1,274.6L619.5,274.8L619.0,275.5L617.4,275.4L616.2,276.3L614.2,276.6L613.0,275.7L612.5,273.9L612.9,272.6L612.9,272.6L613.3,272.6L613.4,271.8L615.2,271.2L615.9,271.0L617.0,270.8L618.4,270.7Z M614.2,276.6L614.2,277.7L613.2,278.3L613.0,279.6L611.6,281.5L611.0,281.2L611.0,280.3L609.3,279.0L609.0,277.1L609.3,274.4L609.7,273.1L609.2,272.5L609.2,272.5L609.0,271.2L610.3,269.2L610.5,270.0L611.3,269.6L612.0,270.7L612.7,271.1L612.9,272.6L612.9,272.6L612.5,273.9L613.0,275.7L614.2,276.6Z M630.3,298.8L629.9,300.0L625.5,300.3L625.6,299.7L621.9,298.9L622.4,297.2L624.1,298.5L626.5,298.3L628.7,298.6L628.7,299.3L630.3,298.8Z M620.1,274.6L622.4,274.8L624.8,273.7L627.0,275.1L629.8,274.7L629.8,272.7L631.3,273.8L630.3,276.3L629.6,276.7L627.8,276.6L626.2,276.2L622.5,277.3L624.6,279.5L623.0,280.2L621.3,280.2L619.7,278.1L619.1,279.0L619.8,281.4L621.3,283.2L620.2,284.1L621.9,286.0L623.4,287.1L623.5,289.4L620.6,288.3L621.5,290.4L619.6,290.8L620.7,294.3L618.7,294.4L616.2,292.6L615.1,289.4L614.5,286.8L613.3,284.9L611.8,282.6L611.6,281.5L613.0,279.6L613.2,278.3L614.2,277.7L614.2,276.6L616.2,276.3L617.4,275.4L619.0,275.5L619.5,274.8L620.1,274.6Z M617.5,246.3L619.2,247.4L619.4,248.5L617.5,249.3L616.1,252.0L614.2,254.7L611.8,255.5L609.9,255.3L607.5,256.4L607.5,256.4L606.4,257.0L603.9,256.2L601.6,254.5L600.6,254.0L600.0,252.6L599.5,252.6L600.5,250.0L599.9,249.1L601.7,249.1L601.9,247.5L603.4,248.5L604.6,249.0L607.1,248.5L607.4,247.7L608.6,247.6L610.1,246.9L610.4,247.2L611.8,246.7L612.6,245.7L613.6,245.5L616.8,246.7L617.5,246.3Z`,cx:612,cy:265},
+  russia: {d:`M1096.1,155.6L1100.0,153.9L1100.0,156.7L1096.6,156.9L1096.1,155.6Z M700.0,254.4L698.6,256.8L695.7,257.4L692.6,261.6L695.4,265.4L695.1,268.1L698.5,272.8L698.5,272.8L696.6,274.4L696.1,275.4L694.8,275.1L692.7,272.7L691.8,272.6L689.9,271.6L688.9,270.0L686.1,269.2L684.2,269.8L683.7,269.0L679.5,267.1L675.0,266.5L672.5,265.8L672.1,266.3L668.2,262.9L664.7,261.4L662.1,259.0L664.3,258.4L666.8,255.0L665.1,253.5L669.6,251.8L669.5,250.9L666.8,251.6L666.9,249.8L668.5,248.7L671.4,248.4L671.9,247.1L671.2,244.9L672.5,242.8L672.4,241.6L667.9,240.3L666.1,240.3L664.3,238.5L661.9,239.1L658.0,237.7L658.1,236.9L657.0,235.2L654.6,235.0L654.3,233.7L655.1,232.9L653.1,230.7L650.0,231.0L649.0,230.8L648.3,231.8L647.1,231.6L647.1,231.6L646.4,229.0L645.7,227.7L646.2,227.3L648.7,227.5L649.9,226.6L649.0,225.5L647.0,224.8L647.1,224.1L645.9,223.4L644.0,220.8L644.6,219.7L644.3,217.8L641.3,216.8L639.7,217.3L639.3,216.3L636.1,215.3L635.1,213.0L634.9,211.0L633.4,210.1L634.7,208.8L633.8,205.1L636.0,202.8L635.5,202.1L635.5,202.1L639.0,199.9L635.8,198.0L635.8,198.0L642.3,192.9L645.1,190.6L646.3,188.5L641.8,185.8L643.0,183.2L640.3,180.2L642.3,176.8L638.8,172.2L641.6,169.2L636.9,166.5L637.4,163.7L639.8,163.4L645.0,161.8L645.0,161.8L648.2,160.4L653.2,162.8L661.6,163.7L673.1,168.3L675.5,170.2L675.7,172.8L672.3,174.9L667.3,176.0L653.6,173.0L651.4,173.5L656.4,176.4L656.6,178.3L656.8,182.3L660.7,183.6L663.1,184.6L663.5,182.7L661.6,180.9L663.6,179.4L671.0,181.9L673.6,180.9L671.5,178.0L678.6,174.1L681.4,174.3L684.3,175.7L686.1,173.0L683.5,170.6L685.0,168.2L682.8,165.7L691.3,167.0L693.1,169.2L689.2,169.7L689.2,172.0L691.6,173.3L696.3,172.5L697.1,169.9L703.5,168.0L714.1,164.6L716.4,164.8L713.4,167.2L717.2,167.6L719.4,166.2L725.1,166.1L729.7,164.5L733.2,166.9L736.6,164.2L733.4,161.9L735.0,160.6L744.0,161.8L748.3,163.1L759.3,167.6L761.4,165.5L758.3,163.4L758.2,162.6L754.5,162.2L755.5,160.3L753.9,157.2L753.8,155.9L759.4,152.3L761.4,148.6L763.7,147.8L771.8,148.9L772.4,151.1L769.5,154.4L771.4,155.6L772.4,158.4L771.7,163.9L775.1,166.4L773.8,169.0L767.8,174.7L771.3,175.3L772.5,173.9L775.9,172.8L776.7,170.9L779.3,169.0L777.5,166.7L779.0,164.0L775.6,163.7L774.9,161.5L777.3,157.5L773.4,154.2L778.8,151.5L778.1,148.7L779.6,148.6L781.3,150.8L780.0,154.7L783.3,155.4L781.9,152.5L787.0,150.9L793.4,150.7L799.0,153.0L796.3,149.7L796.0,145.4L801.3,144.6L808.7,144.8L815.3,144.3L812.8,142.2L816.3,139.5L819.9,139.4L825.8,137.4L833.9,136.9L834.9,135.8L842.9,135.4L845.4,136.3L852.3,134.2L857.9,134.3L858.7,132.6L861.6,130.8L868.9,129.2L874.1,130.5L869.9,131.5L876.9,132.1L877.7,134.1L880.5,133.1L889.4,133.2L896.3,135.1L898.7,136.6L898.0,138.7L894.6,139.9L886.6,142.1L884.3,143.3L888.1,143.8L892.6,144.8L895.3,144.1L896.9,146.7L898.2,145.6L903.1,145.0L912.9,145.6L913.7,147.5L926.4,148.1L926.6,145.1L933.1,145.8L938.0,145.7L942.9,147.8L944.3,150.4L942.5,152.1L946.4,155.2L951.2,156.9L954.1,152.7L959.0,154.5L964.2,153.4L970.1,154.6L972.4,153.5L977.4,154.0L975.2,150.3L979.2,148.6L1006.8,151.2L1009.4,153.6L1017.4,156.6L1029.7,155.9L1035.8,156.5L1038.4,158.2L1038.0,161.1L1041.8,162.3L1045.9,161.4L1051.3,161.3L1057.0,162.1L1062.8,161.7L1068.2,165.2L1071.9,163.9L1069.5,161.4L1070.8,159.6L1080.6,160.7L1086.9,160.5L1095.7,162.4L1100.0,164.1L1100.0,180.1L1100.0,180.1L1096.0,181.9L1092.1,181.6L1094.8,183.7L1096.7,187.0L1098.1,188.1L1098.4,189.7L1097.6,190.8L1091.9,189.9L1083.4,192.9L1080.7,193.4L1076.0,196.2L1071.6,198.7L1070.5,200.5L1066.1,197.7L1058.1,200.8L1056.7,199.4L1053.8,201.1L1049.7,200.5L1048.7,203.2L1045.1,207.0L1045.2,208.6L1048.6,209.5L1048.2,215.4L1045.4,215.5L1044.1,218.9L1045.4,220.6L1040.0,222.6L1039.0,227.2L1034.4,228.2L1033.5,232.2L1029.1,236.0L1027.9,233.2L1026.6,227.4L1024.9,218.5L1026.4,212.9L1029.0,210.5L1029.1,208.7L1033.9,207.8L1039.3,202.7L1044.6,198.6L1050.1,195.4L1052.6,189.8L1048.8,190.1L1047.0,193.4L1039.3,197.8L1036.8,192.9L1028.9,194.3L1021.2,201.0L1023.7,203.4L1016.9,204.5L1012.2,204.9L1012.4,202.0L1007.7,201.4L1003.9,203.3L994.5,202.7L984.5,203.8L974.6,211.6L962.9,221.1L967.7,221.6L969.2,224.1L972.2,225.0L974.1,223.0L977.5,223.2L981.9,227.6L982.0,231.0L979.6,235.0L979.3,239.8L978.0,246.2L973.4,252.0L972.3,254.8L968.2,259.4L964.1,264.0L962.1,266.4L958.0,268.8L956.1,268.8L954.2,266.9L950.1,269.8L949.6,271.1L949.6,271.1L949.6,271.1L949.6,271.1L949.2,270.4L949.2,270.4L949.2,268.4L950.7,268.3L951.2,263.6L950.4,260.1L953.0,258.7L956.7,259.4L958.7,255.5L959.8,251.2L961.0,249.7L962.6,246.1L957.5,247.3L954.9,248.8L950.2,248.8L949.0,245.1L945.4,242.2L940.1,241.0L938.9,237.0L937.9,234.6L936.7,232.9L934.8,228.8L932.2,227.4L927.6,226.2L923.5,226.3L919.7,227.0L917.2,229.0L918.9,229.9L918.9,232.1L917.2,233.4L914.5,237.7L914.5,239.4L910.2,242.0L906.5,240.4L902.9,240.8L901.3,239.4L899.4,239.0L895.0,241.8L890.9,242.5L888.1,243.5L884.3,242.8L881.5,242.9L879.6,240.8L876.6,238.9L873.5,238.4L869.7,238.9L866.8,239.6L862.4,238.0L861.9,235.0L858.3,233.9L855.5,233.5L852.1,231.8L848.9,236.0L850.2,238.3L847.2,241.1L842.8,240.1L839.7,239.9L837.7,238.1L834.5,238.0L831.8,236.8L827.2,238.7L821.4,242.1L818.1,242.8L816.9,243.1L815.3,240.7L811.4,241.2L810.1,239.5L807.9,238.8L806.5,236.4L804.8,235.7L800.4,236.8L796.2,234.4L794.6,236.5L787.7,226.4L783.8,223.3L784.9,222.0L777.3,225.8L774.4,226.0L774.6,223.9L770.7,222.5L767.5,223.5L766.5,219.3L761.0,218.5L758.3,220.1L750.6,221.6L749.2,222.6L737.7,224.0L736.3,225.3L738.5,228.1L735.6,229.1L736.2,230.2L733.2,232.2L738.2,234.9L737.4,236.8L733.1,236.6L732.2,237.8L728.3,235.7L723.5,235.8L720.2,237.5L716.6,235.9L709.9,233.1L705.1,233.2L698.8,237.6L698.4,240.5L695.3,238.2L692.9,242.6L693.7,243.4L692.0,246.4L694.6,249.1L696.8,249.0L698.8,251.7L698.5,253.8L700.0,254.4Z M836.5,115.9L843.2,115.0L849.1,117.0L856.1,120.9L855.4,124.5L848.7,125.0L840.2,123.8L835.1,122.3L832.8,119.4L828.6,118.6L836.5,115.9Z M864.2,122.9L872.0,125.1L871.1,126.8L853.8,128.3L859.4,123.1L861.9,122.6L864.2,122.9Z M974.2,135.5L982.3,135.6L993.3,137.7L990.9,140.7L979.7,140.6L974.6,141.6L968.5,139.0L970.2,136.2L974.2,135.5Z M1002.9,138.6L1010.6,139.7L1007.0,141.2L1002.2,140.9L996.5,139.3L997.2,138.0L1002.9,138.6Z M977.4,146.5L980.3,144.9L984.1,144.6L988.4,146.1L988.8,147.2L984.2,147.2L977.9,146.7L977.4,146.5Z M687.0,117.6L693.0,116.9L697.6,116.9L698.3,117.9L700.0,117.0L702.9,116.3L707.4,117.2L706.2,117.8L702.1,118.3L699.4,118.6L699.0,119.3L695.4,120.0L692.1,119.0L693.8,117.8L687.0,117.6Z M713.5,145.0L720.8,141.5L720.0,139.7L726.8,137.6L736.9,135.0L747.1,134.2L752.3,132.8L758.3,132.2L760.4,133.8L758.3,135.1L747.5,137.0L738.2,139.0L728.7,142.8L724.1,146.7L719.3,150.5L720.0,153.8L725.8,157.1L724.0,157.5L714.0,156.9L713.2,155.2L707.7,154.1L707.2,151.9L710.4,151.1L710.2,148.9L716.3,145.5L713.5,145.0Z M986.7,225.2L987.7,229.0L987.7,233.0L988.9,237.0L992.0,244.1L987.5,242.8L985.6,248.6L988.6,252.7L988.5,255.4L986.2,253.0L984.2,256.1L983.6,252.8L983.9,248.9L983.6,244.6L984.3,241.5L984.4,236.2L982.6,232.3L982.9,226.8L985.7,225.0L984.5,223.1L985.9,222.5L986.7,225.2Z M652.2,256.1L653.0,255.1L655.1,256.0L656.1,256.1L656.5,256.9L657.0,257.0L657.0,257.4L658.5,258.4L661.6,258.1L661.0,259.5L657.7,260.2L653.5,262.6L651.8,261.7L652.5,259.9L649.2,258.7L649.7,257.9L652.6,256.6L652.2,256.1Z M15.5,171.2L15.2,173.7L17.3,174.7L16.6,171.8L24.9,172.3L30.9,176.1L27.8,177.8L22.8,178.2L22.7,182.2L21.5,183.0L18.7,182.9L16.3,181.5L12.3,180.3L11.6,178.6L8.5,177.9L5.0,178.4L3.4,177.0L4.0,175.6L0.4,176.5L1.7,178.4L0,180.1L0,164.1L7.5,167.2L15.5,171.2Z M4.0,156.4L0,156.7L0,153.9L0.4,153.8L3.0,153.8L7.4,154.9L7.1,155.5L4.0,156.4Z`,cx:828,cy:204},
+  caucasus: {d:`M672.1,266.3L672.5,265.8L675.0,266.5L679.5,267.1L683.7,269.0L684.2,269.8L686.1,269.2L688.9,270.0L689.9,271.6L691.8,272.6L691.0,273.1L692.5,275.3L692.1,275.7L690.4,275.5L688.2,274.4L687.4,275.0L683.2,275.6L680.2,273.7L677.0,273.9L677.4,272.1L676.7,269.4L674.9,267.9L673.2,267.5L672.1,266.3Z M692.1,284.9L691.0,285.0L689.7,282.7L689.8,282.1L688.4,282.1L687.5,281.0L686.9,281.1L685.7,280.0L683.4,279.0L683.7,277.0L683.2,275.6L687.4,275.0L688.0,276.1L689.2,276.8L688.6,277.8L690.2,279.1L689.4,280.4L690.7,281.5L692.0,282.1L692.1,284.9Z M691.8,272.6L692.7,272.7L694.8,275.1L696.1,275.4L696.6,274.4L698.5,272.8L700.1,274.9L701.6,277.7L703.0,277.9L704.0,279.0L701.5,279.3L700.9,282.4L700.4,283.8L699.3,284.7L699.4,286.7L698.6,286.9L696.7,284.8L697.8,282.8L696.9,281.7L695.7,282.0L692.1,284.9L692.0,282.1L690.7,281.5L689.4,280.4L690.2,279.1L688.6,277.8L689.2,276.8L688.0,276.1L687.4,275.0L688.2,274.4L690.4,275.5L692.1,275.7L692.5,275.3L691.0,273.1L691.8,272.6Z M691.0,285.0L688.9,284.5L687.4,282.7L686.9,281.1L687.5,281.0L688.4,282.1L689.8,282.1L689.7,282.7L691.0,285.0Z`,cx:689,cy:277},
+  middle_east: {d:`M686.8,291.3L685.3,292.0L684.3,291.0L680.7,290.5L679.4,291.1L675.9,291.7L674.3,291.6L670.8,293.1L668.2,293.1L666.6,292.4L663.3,293.5L662.3,292.7L662.1,295.0L661.3,295.8L660.5,296.7L659.3,294.9L660.5,293.4L658.6,293.7L656.1,292.8L654.0,295.1L649.3,295.6L646.9,293.4L643.6,293.3L642.9,294.9L640.7,295.4L637.8,293.3L634.5,293.4L632.6,289.4L630.4,287.2L631.9,284.1L630.0,282.1L633.4,278.3L638.1,278.2L639.3,275.1L645.2,275.6L648.8,273.1L652.4,271.9L657.5,271.8L662.8,274.7L667.2,276.2L670.7,275.6L673.4,275.9L677.0,273.9L680.2,273.7L683.2,275.6L683.7,277.0L683.4,279.0L685.7,280.0L686.9,281.1L684.8,282.3L685.7,286.9L685.1,288.1L686.8,291.3L686.8,291.3Z M629.8,272.7L632.9,271.4L635.5,272.0L635.9,273.5L638.6,274.8L638.0,275.8L634.4,276.0L633.1,277.2L630.5,279.4L629.6,277.5L629.6,276.7L630.3,276.3L631.3,273.8L629.8,272.7Z M659.1,309.2L659.1,309.1L659.5,308.5L659.5,306.9L660.2,304.7L661.9,303.2L661.4,301.6L660.0,301.4L659.7,298.4L660.5,296.7L661.3,295.8L662.1,295.0L662.3,292.7L663.3,293.5L666.6,292.4L668.2,293.1L670.8,293.1L674.3,291.6L675.9,291.7L679.4,291.1L677.8,293.6L676.2,294.6L676.5,297.5L675.3,302.3L668.5,306.5L662.5,310.7L659.1,309.2Z M659.5,306.9L658.6,306.9L658.4,307.6L657.3,307.6L658.4,304.4L659.9,301.6L660.0,301.4L661.4,301.6L661.9,303.2L660.2,304.7L659.5,306.9Z M659.1,309.2L658.6,310.4L657.5,309.9L656.9,312.5L657.6,313.0L656.9,313.5L656.7,314.6L658.2,314.0L658.2,315.6L656.7,322.0L656.4,321.0L654.7,315.1L654.7,315.1L654.7,315.1L655.6,313.8L655.4,313.6L656.2,311.7L656.8,308.7L657.2,307.7L657.3,307.6L658.4,307.6L658.6,306.9L659.5,306.9L659.5,308.5L659.1,309.1L659.1,309.2Z M658.6,310.4L659.1,309.2L662.5,310.7L668.5,306.5L669.8,311.4L669.2,312.0L663.1,314.0L666.1,318.0L665.1,318.6L664.6,320.0L662.3,320.5L661.5,322.0L660.2,323.2L656.8,322.6L656.7,322.0L658.2,315.6L658.2,314.0L658.6,312.9L658.6,310.4Z M669.8,311.4L668.5,306.5L675.3,302.3L676.5,297.5L676.2,294.6L677.8,293.6L679.4,291.1L680.7,290.5L684.3,291.0L685.3,292.0L686.8,291.3L688.8,296.1L690.8,297.3L691.0,299.6L689.5,301.0L688.8,304.1L690.9,307.9L694.6,310.1L696.2,313.2L695.7,316.1L696.7,316.1L696.7,318.2L698.4,320.3L696.6,320.1L694.5,319.8L692.3,323.6L686.6,323.3L678.0,315.2L673.4,312.4L669.8,311.4Z M698.4,320.3L696.7,318.2L696.7,316.1L695.7,316.1L696.2,313.2L694.6,310.1L690.9,307.9L688.8,304.1L689.5,301.0L691.0,299.6L690.8,297.3L688.8,296.1L686.8,291.3L686.8,291.3L685.1,288.1L685.7,286.9L684.8,282.3L686.9,281.1L687.4,282.7L688.9,284.5L691.0,285.0L692.1,284.9L695.7,282.0L696.9,281.7L697.8,282.8L696.7,284.8L698.6,286.9L699.4,286.7L700.3,289.7L703.2,290.5L705.4,292.5L709.7,293.2L714.5,292.1L714.8,291.2L717.4,290.4L719.6,288.1L721.7,288.3L723.0,287.5L725.2,287.9L728.6,289.9L731.0,290.3L734.5,293.9L736.8,294.0L737.0,297.4L735.8,302.4L734.9,305.3L736.3,305.9L735.0,308.1L736.0,311.3L736.2,313.8L738.5,314.5L738.8,317.1L736.0,320.7L737.5,322.8L738.7,325.2L741.7,327.0L741.8,330.5L743.2,331.1L743.5,333.0L739.1,335.0L737.9,339.7L732.2,338.5L728.8,337.6L725.4,337.0L724.1,332.1L722.6,331.4L720.3,332.1L717.2,334.1L713.5,332.8L710.4,329.7L707.4,328.5L705.4,324.7L703.1,319.4L701.5,320.1L699.5,318.7L698.4,320.3Z`,cx:672,cy:304},
+  arabian_peninsula: {d:`M656.8,322.6L660.2,323.2L661.5,322.0L662.3,320.5L664.6,320.0L665.1,318.6L666.1,318.0L663.1,314.0L669.2,312.0L669.8,311.4L673.4,312.4L678.0,315.2L686.6,323.3L692.3,323.6L695.0,324.0L695.8,325.9L697.9,325.8L699.1,329.2L700.6,330.2L701.2,331.6L703.2,333.2L703.4,334.9L703.1,336.2L703.5,337.6L704.4,338.7L704.8,340.0L705.3,341.0L706.2,341.8L707.0,341.5L707.6,343.0L707.7,343.9L708.9,348.0L718.1,350.0L718.7,349.2L720.1,352.0L718.1,360.0L708.9,364.0L700.1,365.5L697.2,367.3L695.0,371.5L693.6,372.2L692.8,370.9L691.7,371.1L688.7,370.7L688.2,370.3L684.6,370.4L683.8,370.7L682.6,369.7L681.7,371.6L682.1,373.3L680.7,374.6L680.3,372.9L679.4,371.7L679.2,370.1L677.6,368.7L676.0,365.3L675.1,362.1L673.0,359.3L671.6,358.6L669.6,354.8L669.2,352.1L669.4,349.7L667.6,345.2L666.2,343.7L664.5,342.9L663.5,340.6L663.7,339.7L662.8,337.6L662.0,336.7L660.8,333.7L658.9,330.5L657.3,327.7L655.8,327.8L656.3,325.6L656.4,324.2L656.8,322.6Z M708.9,364.0L711.3,370.6L712.3,373.4L710.1,374.5L709.5,376.2L709.4,377.6L706.4,379.3L701.5,381.2L698.7,384.0L697.4,384.2L696.5,384.0L694.7,385.6L692.7,386.4L690.2,386.6L689.4,386.8L688.7,387.9L687.9,388.2L687.5,389.2L686.0,389.1L685.0,389.7L682.9,389.5L682.1,387.1L682.2,384.9L681.7,383.7L681.1,380.8L680.2,379.1L680.8,379.0L680.5,377.1L680.9,376.4L680.7,374.6L682.1,373.3L681.7,371.6L682.6,369.7L683.8,370.7L684.6,370.4L688.2,370.3L688.7,370.7L691.7,371.1L692.8,370.9L693.6,372.2L695.0,371.5L697.2,367.3L700.1,365.5L708.9,364.0Z M718.7,349.2L718.8,347.6L719.7,345.9L719.7,344.3L721.1,343.5L720.5,342.9L720.8,340.3L722.3,340.3L723.7,343.0L725.4,344.5L727.6,345.0L729.5,345.7L730.8,348.0L731.7,349.4L732.7,349.9L732.7,350.8L731.6,353.1L731.1,354.3L729.9,355.5L728.7,358.3L727.3,358.1L726.7,359.0L726.2,361.1L726.6,363.7L726.3,364.2L724.9,364.2L723.0,365.7L722.7,367.7L722.0,368.5L720.1,368.5L718.9,369.5L718.9,371.1L717.4,372.2L715.7,371.8L713.7,373.2L712.3,373.4L711.3,370.6L708.9,364.0L718.1,360.0L720.1,352.0L718.7,349.2Z M721.9,337.1L721.3,335.8L722.2,334.4L722.6,334.8L722.3,336.4L721.9,337.1Z M707.6,343.0L708.1,342.8L708.3,343.9L710.7,343.3L713.2,343.4L715.0,343.5L717.1,340.8L719.4,338.2L721.3,335.8L721.9,337.1L722.3,340.3L720.8,340.3L720.5,342.9L721.1,343.5L719.7,344.3L719.7,345.9L718.8,347.6L718.7,349.2L718.1,350.0L708.9,348.0L707.7,343.9L707.6,343.0Z M705.3,341.0L705.1,338.1L705.9,336.0L706.7,335.5L707.6,336.8L707.7,339.1L707.0,341.5L706.2,341.8L705.3,341.0Z M696.6,320.1L697.2,321.9L697.0,322.8L697.9,325.8L695.8,325.9L695.0,324.0L692.3,323.6L694.5,319.8L696.6,320.1Z`,cx:703,cy:347},
+  central_asia: {d:`M816.9,243.1L814.6,245.8L812.1,246.2L811.9,250.2L810.2,252.0L804.2,250.7L802.0,257.8L800.4,258.7L794.3,260.3L797.1,267.3L795.0,268.3L795.2,270.6L793.4,270.0L791.8,268.6L787.3,268.2L782.2,268.0L781.1,268.5L776.8,266.8L775.0,267.6L774.6,270.0L769.5,268.6L767.5,269.2L766.8,270.9L765.1,271.7L761.0,274.5L759.7,277.3L758.6,277.4L757.7,275.5L753.8,275.3L753.2,272.0L751.7,272.0L752.0,268.0L748.3,265.1L743.1,265.4L739.5,266.0L736.6,262.4L734.1,260.9L729.3,258.0L728.8,257.7L720.9,260.0L721.0,274.8L719.4,275.0L717.3,271.8L715.2,270.7L711.8,271.5L710.4,272.9L710.3,271.9L711.0,270.2L710.4,268.8L706.9,267.5L705.5,263.9L703.8,262.9L703.7,261.6L706.7,261.9L706.8,259.0L709.4,258.4L712.1,259.0L712.6,255.1L712.1,252.6L709.0,252.8L706.4,251.8L702.9,253.6L700.0,254.4L698.5,253.8L698.8,251.7L696.8,249.0L694.6,249.1L692.0,246.4L693.7,243.4L692.9,242.6L695.3,238.2L698.4,240.5L698.8,237.6L705.1,233.2L709.9,233.1L716.6,235.9L720.2,237.5L723.5,235.8L728.3,235.7L732.2,237.8L733.1,236.6L737.4,236.8L738.2,234.9L733.2,232.2L736.2,230.2L735.6,229.1L738.5,228.1L736.3,225.3L737.7,224.0L749.2,222.6L750.6,221.6L758.3,220.1L761.0,218.5L766.5,219.3L767.5,223.5L770.7,222.5L774.6,223.9L774.4,226.0L777.3,225.8L784.9,222.0L783.8,223.3L787.7,226.4L794.6,236.5L796.2,234.4L800.4,236.8L804.8,235.7L806.5,236.4L807.9,238.8L810.1,239.5L811.4,241.2L815.3,240.7L816.9,243.1Z M721.0,274.8L720.9,260.0L728.8,257.7L729.3,258.0L734.1,260.9L736.6,262.4L739.5,266.0L743.1,265.4L748.3,265.1L752.0,268.0L751.7,272.0L753.2,272.0L753.8,275.3L757.7,275.5L758.6,277.4L759.7,277.3L761.0,274.5L765.1,271.7L766.8,270.9L767.7,271.3L765.2,273.9L767.4,275.4L769.6,274.4L773.2,276.5L769.3,279.4L767.0,279.0L765.7,279.1L765.3,278.0L765.9,276.2L761.8,277.1L760.9,279.7L759.4,281.9L756.9,281.7L756.1,283.4L758.3,284.4L759.0,287.4L757.3,291.4L755.0,290.6L753.3,290.5L753.3,288.1L749.3,286.4L746.1,284.4L744.1,282.5L740.6,279.8L739.1,275.7L738.1,274.9L734.8,275.1L733.6,274.3L733.3,271.1L729.1,269.0L726.6,271.3L724.0,272.7L724.5,274.7L721.0,274.8Z M710.4,272.9L711.8,271.5L715.2,270.7L717.3,271.8L719.4,275.0L721.0,274.8L724.5,274.7L724.0,272.7L726.6,271.3L729.1,269.0L733.3,271.1L733.6,274.3L734.8,275.1L738.1,274.9L739.1,275.7L740.6,279.8L744.1,282.5L746.1,284.4L749.3,286.4L753.3,288.1L753.3,290.5L752.3,290.4L750.9,289.4L750.4,290.8L747.8,291.6L747.2,294.8L745.5,296.0L743.1,296.6L742.5,298.4L740.1,298.9L737.0,297.4L736.8,294.0L734.5,293.9L731.0,290.3L728.6,289.9L725.2,287.9L723.0,287.5L721.7,288.3L719.6,288.1L717.4,290.4L714.8,291.2L714.2,288.4L714.6,284.2L712.3,282.8L713.0,280.1L711.0,279.9L711.7,276.5L714.6,277.5L717.3,276.2L715.0,273.8L714.1,271.5L711.7,272.5L711.4,275.5L710.4,272.9Z M757.3,291.4L759.0,287.4L758.3,284.4L756.1,283.4L756.9,281.7L759.4,281.9L760.9,279.7L761.8,277.1L765.9,276.2L765.3,278.0L765.7,279.1L767.0,279.0L765.9,280.3L762.5,279.6L762.3,281.9L765.6,281.6L769.3,282.9L775.1,282.3L775.9,286.0L776.9,285.6L778.8,286.5L778.6,288.0L779.1,290.3L776.0,290.3L773.9,290.0L771.9,291.8L770.6,292.2L769.5,293.0L768.3,291.7L768.6,288.4L767.7,288.2L768.0,287.0L766.4,286.1L765.0,287.4L764.7,289.1L764.2,289.6L762.4,289.6L761.4,291.4L760.4,290.6L758.2,291.9L757.3,291.4Z M766.8,270.9L767.5,269.2L769.5,268.6L774.6,270.0L775.0,267.6L776.8,266.8L781.1,268.5L782.2,268.0L787.3,268.2L791.8,268.6L793.4,270.0L795.2,270.6L794.8,271.5L790.0,273.7L788.9,275.3L785.0,275.7L783.8,278.3L780.6,277.8L778.5,278.5L775.6,280.4L776.0,281.4L775.1,282.3L769.3,282.9L765.6,281.6L762.3,281.9L762.5,279.6L765.9,280.3L767.0,279.0L769.3,279.4L773.2,276.5L769.6,274.4L767.4,275.4L765.2,273.9L767.7,271.3L766.8,270.9Z M753.3,290.5L755.0,290.6L757.3,291.4L758.2,291.9L760.4,290.6L761.4,291.4L762.4,289.6L764.2,289.6L764.7,289.1L765.0,287.4L766.4,286.1L768.0,287.0L767.7,288.2L768.6,288.4L768.3,291.7L769.5,293.0L770.6,292.2L771.9,291.8L773.9,290.0L776.0,290.3L779.1,290.3L779.6,291.5L777.9,291.9L776.3,292.7L772.8,293.1L769.5,294.0L767.7,295.7L768.5,297.4L768.8,299.4L767.3,301.1L767.4,302.6L766.6,304.0L763.7,303.9L764.9,306.6L762.9,307.6L761.6,310.0L761.8,312.4L760.6,313.5L759.5,313.1L757.1,313.7L756.8,314.8L754.5,314.8L752.8,317.0L752.7,320.4L748.8,322.1L746.6,321.8L746.0,322.6L744.2,322.1L741.1,322.7L736.0,320.7L738.8,317.1L738.5,314.5L736.2,313.8L736.0,311.3L735.0,308.1L736.3,305.9L734.9,305.3L735.8,302.4L737.0,297.4L740.1,298.9L742.5,298.4L743.1,296.6L745.5,296.0L747.2,294.8L747.8,291.6L750.4,290.8L750.9,289.4L752.3,290.4L753.3,290.5Z`,cx:754,cy:278},
+  mongolia: {d:`M818.1,242.8L821.4,242.1L827.2,238.7L831.8,236.8L834.5,238.0L837.7,238.1L839.7,239.9L842.8,240.1L847.2,241.1L850.2,238.3L848.9,236.0L852.1,231.8L855.5,233.5L858.3,233.9L861.9,235.0L862.4,238.0L866.8,239.6L869.7,238.9L873.5,238.4L876.6,238.9L879.6,240.8L881.5,242.9L884.3,242.8L888.1,243.5L890.9,242.5L895.0,241.8L899.4,239.0L901.3,239.4L902.9,240.8L906.5,240.4L905.0,243.5L902.9,247.5L903.7,249.1L905.4,248.6L908.4,249.2L910.8,247.7L913.2,249.0L916.0,251.8L915.6,253.2L913.2,252.8L908.8,253.3L906.6,254.4L904.4,257.1L899.7,258.6L896.7,260.8L893.6,260.0L891.8,259.6L890.2,262.2L891.2,263.7L891.7,265.0L889.6,266.4L887.4,268.5L883.8,269.9L879.2,270.1L874.3,271.5L870.7,273.6L869.4,272.4L865.7,272.4L861.2,269.9L858.1,269.3L854.1,269.9L847.8,269.0L844.4,269.1L842.6,266.7L841.2,263.0L839.3,262.6L835.6,260.1L831.5,259.5L827.9,258.9L826.8,257.1L828.0,252.4L825.9,249.2L821.5,247.7L818.9,245.6L818.1,242.8Z`,cx:870,cy:251},
+  china: {d:`M884.5,367.2L882.0,366.0L881.9,362.5L883.4,360.7L886.8,359.6L888.5,359.7L889.2,361.2L887.9,363.0L887.1,365.3L884.5,367.2Z M795.2,270.6L795.0,268.3L797.1,267.3L794.3,260.3L800.4,258.7L802.0,257.8L804.2,250.7L810.2,252.0L811.9,250.2L812.1,246.2L814.6,245.8L816.9,243.1L818.1,242.8L818.9,245.6L821.5,247.7L825.9,249.2L828.0,252.4L826.8,257.1L827.9,258.9L831.5,259.5L835.6,260.1L839.3,262.6L841.2,263.0L842.6,266.7L844.4,269.1L847.8,269.0L854.1,269.9L858.1,269.3L861.2,269.9L865.7,272.4L869.4,272.4L870.7,273.6L874.3,271.5L879.2,270.1L883.8,269.9L887.4,268.5L889.6,266.4L891.7,265.0L891.2,263.7L890.2,262.2L891.8,259.6L893.6,260.0L896.7,260.8L899.7,258.6L904.4,257.1L906.6,254.4L908.8,253.3L913.2,252.8L915.6,253.2L916.0,251.8L913.2,249.0L910.8,247.7L908.4,249.2L905.4,248.6L903.7,249.1L902.9,247.5L905.0,243.5L906.5,240.4L910.2,242.0L914.5,239.4L914.5,237.7L917.2,233.4L918.9,232.1L918.9,229.9L917.2,229.0L919.7,227.0L923.5,226.3L927.6,226.2L932.2,227.4L934.8,228.8L936.7,232.9L937.9,234.6L938.9,237.0L940.1,241.0L945.4,242.2L949.0,245.1L950.2,248.8L954.9,248.8L957.5,247.3L962.6,246.1L961.0,249.7L959.8,251.2L958.7,255.5L956.7,259.4L953.0,258.7L950.4,260.1L951.2,263.6L950.7,268.3L949.2,268.4L949.2,270.4L947.2,268.1L946.0,270.3L941.3,272.0L941.7,274.1L939.1,274.0L937.7,272.7L935.6,275.6L932.2,277.7L929.7,280.3L925.4,281.4L923.2,283.3L919.9,284.4L921.5,282.6L920.9,281.0L923.3,278.3L921.7,276.2L919.0,277.6L915.6,280.4L913.7,283.0L910.7,283.2L909.1,285.0L910.7,287.8L913.2,288.4L913.3,290.2L915.8,291.4L919.2,288.5L921.9,290.1L923.9,290.2L924.4,292.3L920.0,293.4L918.6,295.6L915.6,297.6L914.1,300.4L917.4,302.6L918.6,306.5L920.4,310.2L922.5,313.2L922.4,316.2L920.5,317.3L921.3,319.4L923.1,320.7L922.6,323.9L921.8,327.1L920.1,327.5L917.9,331.8L915.4,337.0L912.6,341.8L908.4,345.5L904.1,348.9L900.7,349.3L898.8,351.1L897.7,349.8L896.0,351.8L891.7,353.8L888.5,354.4L887.5,358.6L885.8,358.9L885.0,356.0L885.7,354.4L881.6,353.1L880.2,353.8L877.1,352.8L875.6,351.1L876.1,348.8L873.3,348.1L871.8,346.6L869.2,348.7L866.3,349.2L863.8,349.2L862.2,350.1L860.6,350.7L861.1,355.3L859.4,355.2L859.2,354.3L859.1,352.6L856.8,353.8L855.5,353.0L853.2,351.5L854.1,348.2L852.2,347.4L851.5,343.7L848.2,344.4L848.6,339.7L851.5,336.3L851.6,333.0L851.5,330.0L850.2,329.0L849.2,326.7L847.4,327.0L844.1,326.4L845.1,324.7L843.7,322.2L841.5,323.9L839.0,322.9L835.4,325.4L832.6,328.4L830.2,328.9L828.8,327.8L827.2,327.7L825.0,326.8L823.4,327.8L821.4,330.8L821.1,327.7L819.3,328.5L815.7,328.1L812.2,327.2L809.8,325.4L807.4,324.6L806.4,322.7L804.6,322.1L801.6,319.5L799.1,318.3L797.8,319.3L793.6,316.5L790.6,313.9L789.7,309.5L791.9,310.1L792.0,308.0L790.8,306.0L791.1,302.7L787.8,298.0L782.8,296.4L781.9,293.3L779.6,291.5L779.1,290.3L778.6,288.0L778.8,286.5L776.9,285.6L775.9,286.0L775.1,282.3L776.0,281.4L775.6,280.4L778.5,278.5L780.6,277.8L783.8,278.3L785.0,275.7L788.9,275.3L790.0,273.7L794.8,271.5L795.2,270.6Z`,cx:873,cy:291},
+  japan_korea: {d:`M983.5,283.3L980.7,287.3L980.8,291.4L979.6,294.6L980.1,296.6L978.6,299.4L974.6,301.3L969.3,301.6L964.9,306.1L962.9,304.6L962.7,301.6L957.4,302.5L953.8,304.4L950.2,304.5L953.3,307.4L951.3,314.2L949.3,315.9L947.8,314.3L948.6,310.7L946.7,309.6L945.4,306.8L948.3,305.6L949.9,303.1L953.0,301.0L955.2,298.3L961.3,297.1L964.6,297.9L967.8,290.8L969.8,292.7L974.3,288.7L976.0,287.1L977.9,282.2L977.4,277.7L978.7,275.2L982.0,274.5L983.6,280.0L983.5,283.3Z M991.9,264.2L994.0,262.5L994.7,267.0L990.2,268.0L987.5,272.0L982.7,269.3L981.0,273.7L977.6,273.7L977.2,269.7L978.7,266.7L982.0,266.4L982.9,260.9L983.8,257.8L987.4,262.0L989.7,263.3L991.9,264.2Z M954.5,306.1L956.2,303.8L957.9,304.2L959.2,302.5L961.4,303.4L961.8,304.8L960.1,307.2L958.8,305.9L957.2,306.8L956.4,309.2L954.4,308.0L954.5,306.1Z M935.5,289.0L935.7,288.6L937.1,288.8L938.3,287.0L940.4,286.8L941.7,286.5L942.2,285.6L944.8,290.3L945.6,292.9L945.6,297.5L944.4,299.7L941.7,300.4L939.2,302.1L936.5,302.4L936.1,300.3L936.7,297.3L935.4,293.1L937.6,292.4L935.5,289.0Z M949.6,271.1L949.6,271.1L949.6,271.1L949.6,271.1Z M949.2,270.4L949.2,270.4L949.6,271.1L948.4,270.9L947.1,272.2L946.2,273.6L946.3,276.5L944.7,277.4L944.2,278.1L943.0,279.2L941.0,279.9L939.7,281.0L939.6,282.7L939.2,283.1L940.4,283.8L942.2,285.6L941.7,286.5L940.4,286.8L938.3,287.0L937.1,288.8L935.7,288.6L935.5,289.0L934.1,288.2L933.7,289.0L932.8,289.3L932.7,288.6L931.9,288.2L931.1,287.6L931.9,285.8L932.6,285.3L932.4,284.6L933.1,282.4L932.9,281.8L931.1,281.4L929.7,280.3L932.2,277.7L935.6,275.6L937.7,272.7L939.1,274.0L941.7,274.1L941.3,272.0L946.0,270.3L947.2,268.1L949.2,270.4Z`,cx:948,cy:290},
+  india: {d:`M847.4,327.0L847.6,328.5L846.5,329.2L846.8,331.7L844.6,330.9L840.7,333.7L840.8,336.0L839.1,339.4L838.9,341.3L837.5,344.6L835.2,343.7L835.0,347.8L834.4,349.2L834.7,350.9L833.2,351.8L831.6,345.5L830.7,345.5L830.2,348.1L828.5,346.0L829.5,343.7L830.9,343.5L832.3,340.1L830.5,339.4L827.7,339.5L824.8,338.9L824.5,336.1L823.0,335.9L820.6,334.2L819.5,336.9L821.7,339.0L819.8,340.5L819.1,342.0L821.0,343.1L820.5,345.5L821.6,348.5L822.0,351.8L821.6,353.2L819.5,353.2L815.8,354.0L815.9,357.0L814.3,359.4L809.9,362.1L806.5,366.8L804.2,369.3L801.1,371.9L801.1,373.8L799.6,374.8L796.9,376.2L795.4,376.4L794.5,379.5L795.2,384.7L795.3,388.0L794.0,391.8L794.0,398.6L792.4,398.8L791.0,401.8L792.0,403.1L789.2,404.3L788.2,407.0L786.9,408.1L784.0,404.4L782.6,398.8L781.4,394.8L780.4,392.9L778.8,389.0L778.0,384.0L777.5,381.5L774.7,376.0L773.4,368.3L772.5,363.2L772.5,358.3L771.9,354.6L767.5,357.0L765.3,356.5L761.3,351.6L762.8,350.2L761.9,348.6L758.3,345.2L760.4,342.6L767.1,342.6L766.5,339.1L764.8,337.1L764.4,334.0L762.4,332.2L765.8,328.0L769.3,328.3L772.5,324.2L774.4,320.1L777.4,316.1L777.4,313.2L780.0,310.9L777.5,308.9L776.4,306.2L775.3,302.7L776.8,301.0L781.5,302.0L784.9,301.4L787.8,298.0L791.1,302.7L790.8,306.0L792.0,308.0L791.9,310.1L789.7,309.5L790.6,313.9L793.6,316.5L797.8,319.3L795.9,321.1L794.7,324.8L797.7,326.3L800.6,328.3L804.5,330.5L808.7,331.1L810.5,333.1L812.9,333.5L816.5,334.4L819.1,334.3L819.4,332.8L819.0,330.2L819.3,328.5L821.1,327.7L821.4,330.8L821.4,331.6L824.2,333.1L826.1,332.5L828.7,332.8L831.2,332.6L831.4,330.2L830.2,328.9L832.6,328.4L835.4,325.4L839.0,322.9L841.5,323.9L843.7,322.2L845.1,324.7L844.1,326.4L847.4,327.0Z M787.8,298.0L784.9,301.4L781.5,302.0L776.8,301.0L775.3,302.7L776.4,306.2L777.5,308.9L780.0,310.9L777.4,313.2L777.4,316.1L774.4,320.1L772.5,324.2L769.3,328.3L765.8,328.0L762.4,332.2L764.4,334.0L764.8,337.1L766.5,339.1L767.1,342.6L760.4,342.6L758.3,345.2L756.1,344.2L755.2,341.3L752.8,338.3L747.2,339.1L742.2,339.1L737.9,339.7L739.1,335.0L743.5,333.0L743.2,331.1L741.8,330.5L741.7,327.0L738.7,325.2L737.5,322.8L736.0,320.7L741.1,322.7L744.2,322.1L746.0,322.6L746.6,321.8L748.8,322.1L752.7,320.4L752.8,317.0L754.5,314.8L756.8,314.8L757.1,313.7L759.5,313.1L760.6,313.5L761.8,312.4L761.6,310.0L762.9,307.6L764.9,306.6L763.7,303.9L766.6,304.0L767.4,302.6L767.3,301.1L768.8,299.4L768.5,297.4L767.7,295.7L769.5,294.0L772.8,293.1L776.3,292.7L777.9,291.9L779.6,291.5L781.9,293.3L782.8,296.4L787.8,298.0Z M833.2,351.8L833.1,354.7L832.0,354.1L832.2,357.3L831.4,355.2L831.2,353.2L830.6,351.3L829.3,348.9L826.5,348.8L826.8,350.4L825.8,352.7L824.5,351.8L824.1,352.6L823.2,352.1L822.0,351.8L821.6,348.5L820.5,345.5L821.0,343.1L819.1,342.0L819.8,340.5L821.7,339.0L819.5,336.9L820.6,334.2L823.0,335.9L824.5,336.1L824.8,338.9L827.7,339.5L830.5,339.4L832.3,340.1L830.9,343.5L829.5,343.7L828.5,346.0L830.2,348.1L830.7,345.5L831.6,345.5L833.2,351.8Z M799.9,409.9L799.4,414.1L798.2,415.2L795.5,416.1L794.1,412.9L793.5,407.2L794.9,400.7L797.0,402.9L798.4,405.7L799.9,409.9Z M819.3,328.5L819.0,330.2L819.4,332.8L819.1,334.3L816.5,334.4L812.9,333.5L810.5,333.1L808.7,331.1L804.5,330.5L800.6,328.3L797.7,326.3L794.7,324.8L795.9,321.1L797.8,319.3L799.1,318.3L801.6,319.5L804.6,322.1L806.4,322.7L807.4,324.6L809.8,325.4L812.2,327.2L815.7,328.1L819.3,328.5Z M830.2,328.9L831.4,330.2L831.2,332.6L828.7,332.8L826.1,332.5L824.2,333.1L821.4,331.6L821.4,330.8L823.4,327.8L825.0,326.8L827.2,327.7L828.8,327.8L830.2,328.9Z`,cx:804,cy:346},
+  southeast_asia: {d:`M868.8,398.1L871.4,396.4L874.7,396.2L873.3,393.7L878.4,390.7L878.8,385.9L878.1,383.2L878.7,379.2L877.9,376.4L875.6,373.6L873.7,370.1L871.1,365.3L867.5,362.9L868.3,361.5L870.3,360.5L869.1,357.0L865.3,356.9L864.0,353.3L862.2,350.1L863.8,349.2L866.3,349.2L869.2,348.7L871.8,346.6L873.3,348.1L876.1,348.8L875.6,351.1L877.1,352.8L880.2,353.8L876.1,357.2L873.5,361.0L872.9,363.8L875.2,368.0L878.1,373.2L880.8,375.7L882.7,378.9L884.1,386.3L883.7,393.3L881.1,396.0L877.6,398.5L875.1,401.9L871.3,405.6L870.2,403.0L871.1,400.3L868.8,398.1Z M871.5,382.9L868.6,382.3L864.7,383.1L862.7,386.4L863.5,391.3L860.7,389.4L858.1,389.5L858.5,386.3L855.9,386.4L855.6,390.8L854.0,396.6L853.0,400.1L853.2,403.0L855.2,403.2L856.4,406.8L857.0,410.3L858.7,412.6L860.5,413.0L862.1,415.1L861.1,416.8L859.1,417.2L858.8,415.2L856.3,413.4L855.8,414.1L854.6,412.6L854.1,410.6L852.5,408.4L851.0,406.5L850.5,408.8L849.9,406.6L850.2,404.1L851.1,400.3L852.6,396.2L854.3,392.4L853.1,388.8L853.1,386.9L852.8,384.7L850.8,381.5L850.0,379.5L851.1,378.8L852.2,375.3L851.0,372.6L849.0,369.7L847.5,366.2L848.8,365.5L850.2,361.2L852.4,361.0L854.2,359.3L855.9,358.3L857.2,359.6L857.4,362.0L859.5,362.1L858.7,366.4L858.8,370.0L862.0,367.6L862.9,368.3L864.7,368.2L865.3,366.8L867.6,367.0L870.0,370.3L870.2,374.2L872.6,377.7L872.5,381.1L871.5,382.9Z M855.8,414.1L856.3,413.4L858.8,415.2L859.1,417.2L861.1,416.8L862.1,415.1L862.8,415.5L864.6,417.9L865.9,420.6L866.1,423.3L865.7,425.1L866.0,426.5L866.3,428.8L867.3,429.9L868.5,433.5L868.5,434.8L866.3,435.1L863.4,432.1L859.8,429.0L859.4,426.9L857.7,424.2L857.3,420.9L856.2,418.8L856.5,415.8L855.8,414.1Z M910.2,423.4L907.5,422.8L904.0,422.8L903.0,427.3L901.8,428.7L900.2,434.3L897.7,435.1L894.8,434.0L893.4,434.4L891.6,436.4L889.7,436.1L887.7,436.9L885.6,434.6L885.1,432.0L887.3,433.3L889.7,432.6L890.3,429.2L891.6,428.5L895.3,427.6L897.5,424.4L899.0,421.9L900.3,424.0L901.0,422.6L902.5,422.7L902.6,420.2L902.8,418.2L905.1,415.4L906.7,412.3L907.9,412.3L909.5,414.3L909.6,416.1L911.6,417.2L914.2,418.4L913.9,419.9L911.9,420.1L912.4,422.1L910.2,423.4Z M980.8,450.4L980.9,463.4L980.9,476.5L978.2,473.2L975.1,472.4L974.4,473.5L970.5,473.6L971.8,470.4L973.7,469.3L972.9,464.9L971.4,461.6L965.5,458.2L963.0,457.9L958.4,454.2L957.5,456.1L956.3,456.5L955.6,455.0L955.6,453.2L953.3,451.3L956.6,449.8L958.8,449.9L958.5,448.9L954.0,448.9L952.8,446.5L950.1,445.7L948.8,443.8L952.9,442.8L954.5,441.5L959.4,443.1L959.9,444.6L960.7,451.1L963.9,453.5L966.5,449.2L970.0,446.8L972.7,446.8L975.3,448.2L977.6,449.6L980.8,450.4Z M931.8,475.6L932.2,476.4L932.2,477.6L930.2,480.6L927.6,481.4L927.2,481.0L927.5,479.6L928.8,477.2L931.8,475.6Z M960.1,467.6L959.8,464.6L960.3,463.1L961.0,461.8L961.7,463.0L961.7,464.9L960.1,467.6Z M910.2,423.4L908.5,427.1L910.7,430.8L910.2,432.7L913.6,436.4L910.0,436.9L909.0,439.6L909.1,443.2L906.2,446.0L906.1,449.9L904.9,456.1L904.4,454.6L901.0,456.4L899.8,454.0L897.6,453.8L896.1,452.5L892.4,453.9L891.3,452.0L889.3,452.2L886.8,451.7L886.3,446.4L884.8,445.3L883.3,441.8L882.9,438.3L883.3,434.6L885.1,432.0L885.6,434.6L887.7,436.9L889.7,436.1L891.6,436.4L893.4,434.4L894.8,434.0L897.7,435.1L900.2,434.3L901.8,428.7L903.0,427.3L904.0,422.8L907.5,422.8L910.2,423.4Z M945.3,451.2L948.7,452.4L949.8,455.4L947.2,453.8L944.6,453.5L942.9,453.7L940.8,453.6L941.5,451.4L945.3,451.2Z M937.7,455.2L935.6,454.4L935.0,452.7L938.1,452.5L938.8,453.8L937.7,455.2Z M940.9,431.3L941.1,433.5L942.9,433.8L943.2,435.5L943.1,439.0L941.5,438.6L941.0,441.0L942.3,443.1L941.4,443.6L940.2,441.1L939.3,436.0L939.9,432.8L940.9,431.3Z M925.6,436.5L929.1,436.3L932.1,433.4L932.7,434.3L930.2,438.3L927.9,439.1L925.0,438.3L919.9,438.5L917.2,439.1L916.8,442.1L919.5,445.6L921.2,443.8L926.9,442.5L926.6,444.3L925.3,443.7L924.0,446.1L921.3,447.6L924.2,452.7L923.6,454.1L926.4,458.7L926.3,461.4L924.7,462.5L923.5,461.1L925.0,457.9L922.0,459.4L921.2,458.3L921.6,456.8L919.4,454.4L919.6,450.5L917.6,451.7L917.9,456.4L918.0,462.1L916.0,462.7L914.7,461.5L915.6,457.8L915.1,454.0L913.9,453.9L912.9,451.2L914.2,448.6L914.6,445.4L916.1,439.4L916.8,437.7L919.4,434.8L921.8,435.9L925.6,436.5Z M917.6,481.0L913.5,478.2L916.4,477.4L918.0,478.7L919.0,479.9L918.9,481.0L917.6,481.0Z M920.8,474.1L922.8,473.8L925.5,472.4L925.1,474.6L920.5,475.7L916.4,475.2L916.4,473.8L918.9,472.9L920.8,474.1Z M911.4,473.4L913.2,473.1L914.0,474.8L910.5,475.6L908.3,476.2L906.7,476.1L907.8,473.8L909.4,473.8L910.3,472.4L911.4,473.4Z M881.5,465.7L881.9,467.1L887.8,467.5L888.4,465.9L894.1,467.8L895.2,470.4L899.8,471.1L903.5,473.5L900.1,475.0L896.7,473.4L893.9,473.5L890.8,473.2L887.9,472.5L884.4,471.0L882.1,470.6L880.8,471.1L875.3,469.4L874.7,467.7L872.0,467.4L874.0,463.6L877.8,463.8L880.2,465.4L881.5,465.7Z M868.9,444.3L869.4,447.1L870.5,449.4L872.7,449.7L874.2,452.2L873.5,457.2L873.3,463.4L869.9,463.5L867.4,460.1L863.5,456.9L862.1,454.5L859.8,451.2L858.3,448.2L856.0,442.6L853.3,439.3L852.4,435.8L851.3,432.7L848.5,430.2L846.9,426.8L844.6,424.5L841.4,420.1L841.2,418.1L843.1,418.2L847.9,419.0L850.6,422.9L852.9,425.6L854.6,427.3L857.5,431.6L860.6,431.7L863.2,434.4L865.0,437.8L867.3,439.6L866.1,442.8L867.8,444.2L868.9,444.3Z M919.2,389.2L917.7,386.1L920.3,386.3L921.3,387.7L920.5,391.2L919.2,389.2Z M924.6,400.1L925.3,399.0L925.7,396.5L927.4,396.2L926.9,398.9L929.1,395.1L928.8,398.9L927.7,400.2L926.8,402.7L925.8,403.9L923.9,401.1L924.6,400.1Z M936.2,406.3L936.5,409.0L936.6,411.2L935.6,414.9L934.5,410.8L933.1,412.9L934.0,415.8L933.2,417.7L929.6,415.4L928.7,412.5L929.6,410.6L927.7,408.7L926.7,410.3L925.3,410.2L923.0,412.4L922.5,411.2L923.7,407.9L925.7,406.7L927.3,405.2L928.4,407.0L930.7,405.9L931.2,404.2L933.4,404.1L933.2,401.0L935.7,402.9L935.9,404.9L936.2,406.3Z M912.1,402.7L908.0,406.5L909.5,403.7L911.7,401.3L913.6,398.5L915.2,394.5L915.7,397.8L913.7,400.0L912.1,402.7Z M923.8,367.1L923.3,368.8L924.4,371.6L923.5,375.0L921.7,376.3L921.3,379.5L921.9,382.7L923.6,383.1L924.9,382.7L928.7,384.9L928.4,387.0L929.4,388.0L929.1,389.9L926.7,387.9L925.6,385.8L924.8,387.3L922.9,384.9L920.1,385.5L918.6,384.6L918.7,382.9L919.7,381.9L918.8,381.0L918.4,382.4L916.9,380.1L916.4,378.4L916.3,374.5L917.5,375.9L917.9,369.6L918.9,366.0L920.7,366.0L922.6,367.1L923.5,366.1L923.8,367.1Z M922.9,394.3L922.4,392.4L924.3,393.7L926.2,393.7L926.1,395.3L924.7,397.0L922.8,398.2L922.7,396.4L922.9,394.3Z M933.5,391.3L934.3,395.8L932.0,394.8L932.0,396.1L932.8,398.6L931.3,399.5L931.2,396.6L930.3,396.4L929.8,394.0L931.6,394.3L931.6,392.8L929.7,389.8L932.6,389.9L933.5,391.3Z M855.9,358.3L854.2,359.3L852.4,361.0L850.2,361.2L848.8,365.5L847.5,366.2L849.0,369.7L851.0,372.6L852.2,375.3L851.1,378.8L850.0,379.5L850.8,381.5L852.8,384.7L853.1,386.9L853.1,388.8L854.3,392.4L852.6,396.2L851.1,400.3L850.8,397.3L851.8,394.2L850.8,391.9L851.0,387.5L849.8,385.4L848.8,380.7L848.2,375.6L846.9,372.3L844.9,374.3L841.4,377.1L839.7,376.8L837.8,375.8L838.9,370.9L838.2,367.1L835.8,362.5L836.2,361.1L834.4,360.6L832.2,357.3L832.0,354.1L833.1,354.7L833.2,351.8L834.7,350.9L834.4,349.2L835.0,347.8L835.2,343.7L837.5,344.6L838.9,341.3L839.1,339.4L840.8,336.0L840.7,333.7L844.6,330.9L846.8,331.7L846.5,329.2L847.6,328.5L847.4,327.0L849.2,326.7L850.2,329.0L851.5,330.0L851.6,333.0L851.5,336.3L848.6,339.7L848.2,344.4L851.5,343.7L852.2,347.4L854.1,348.2L853.2,351.5L855.5,353.0L856.8,353.8L859.1,352.6L859.2,354.3L856.6,356.9L855.9,358.3Z M863.5,391.3L862.7,386.4L864.7,383.1L868.6,382.3L871.5,382.9L874.0,384.5L875.4,381.7L878.1,383.2L878.8,385.9L878.4,390.7L873.3,393.7L874.7,396.2L871.4,396.4L868.8,398.1L866.2,397.5L865.0,395.4L863.5,391.3Z M878.1,383.2L875.4,381.7L874.0,384.5L871.5,382.9L872.5,381.1L872.6,377.7L870.2,374.2L870.0,370.3L867.6,367.0L865.3,366.8L864.7,368.2L862.9,368.3L862.0,367.6L858.8,370.0L858.7,366.4L859.5,362.1L857.4,362.0L857.2,359.6L855.9,358.3L856.6,356.9L859.2,354.3L859.4,355.2L861.1,355.3L860.6,350.7L862.2,350.1L864.0,353.3L865.3,356.9L869.1,357.0L870.3,360.5L868.3,361.5L867.5,362.9L871.1,365.3L873.7,370.1L875.6,373.6L877.9,376.4L878.7,379.2L878.1,383.2Z M902.8,418.2L902.6,420.2L902.5,422.7L901.0,422.6L900.3,424.0L899.0,421.9L900.2,420.4L902.8,418.2Z M980.8,450.4L986.1,453.2L991.8,455.4L993.9,457.5L995.6,459.5L996.1,461.9L1001.1,464.3L1001.9,466.5L999.1,466.9L999.8,469.6L1002.5,472.2L1004.5,476.4L1006.2,476.3L1006.1,478.1L1008.5,478.7L1007.5,479.5L1010.8,481.2L1010.4,482.3L1008.4,482.6L1007.7,481.6L1005.0,481.1L1002.0,480.5L999.6,478.0L997.8,475.8L996.3,472.3L992.3,470.5L989.7,471.7L987.8,473.0L988.2,475.9L985.8,477.3L984.1,476.6L980.9,476.5L980.9,463.4L980.8,450.4Z M1016.4,454.6L1017.6,455.9L1017.9,458.0L1017.0,459.1L1016.4,456.7L1015.7,455.2L1014.3,453.8L1012.6,452.1L1010.4,451.0L1011.2,450.0L1012.9,451.1L1013.9,452.0L1015.2,453.0L1016.4,454.6Z M1012.3,463.4L1010.6,464.3L1009.1,465.3L1007.4,465.3L1004.9,464.1L1003.2,463.0L1003.5,461.8L1006.2,462.3L1007.9,462.0L1008.3,460.1L1008.8,460.0L1009.1,462.1L1010.8,461.8L1011.7,460.5L1013.4,459.0L1013.0,456.7L1014.9,456.6L1015.5,457.3L1015.4,459.5L1014.4,461.9L1012.8,462.2L1012.3,463.4Z M1022.9,461.4L1023.8,462.3L1025.3,464.8L1026.7,466.2L1026.3,467.3L1025.4,467.7L1024.1,466.1L1022.8,463.6L1022.1,460.6L1022.5,460.2L1022.9,461.4Z M931.8,475.6L932.2,474.6L934.8,473.7L937.0,473.6L937.9,473.1L939.1,473.6L938.0,474.7L934.8,476.4L932.2,477.6L932.2,476.4L931.8,475.6Z`,cx:899,cy:409},
+  north_africa: {d:`M543.4,299.3L544.5,301.9L544.7,304.3L545.8,308.5L546.6,309.4L546.0,310.9L542.0,311.6L540.6,313.1L538.9,313.5L538.7,316.4L535.2,318.0L534.0,320.0L531.5,321.1L528.4,321.7L526.6,305.2L528.9,303.6L530.9,299.4L531.9,297.0L534.1,297.0L536.0,298.7L538.9,298.4L542.0,299.3L543.4,299.3Z M523.5,330.4L523.5,329.6L523.5,329.4L523.5,324.6L528.4,321.7L531.5,321.1L534.0,320.0L535.2,318.0L538.7,316.4L538.9,313.5L540.6,313.1L542.0,311.6L546.0,310.9L546.6,309.4L545.8,308.5L544.7,304.3L544.5,301.9L543.4,299.3L546.3,297.1L549.6,296.4L551.5,294.8L554.5,293.6L559.7,292.9L564.7,292.5L566.3,293.1L569.1,291.6L572.4,291.5L573.6,292.5L575.7,292.2L575.1,294.3L575.6,298.1L574.9,301.4L573.0,303.6L573.3,306.6L575.8,309.0L575.8,310.0L577.7,311.6L579.0,318.8L580.0,322.3L580.1,324.2L579.6,327.4L579.8,329.2L579.4,331.4L579.7,334.0L578.5,335.6L580.3,338.5L580.4,340.3L581.5,342.5L582.9,341.7L585.3,343.6L586.7,346.1L576.2,353.7L567.3,361.6L563.0,363.4L559.6,363.8L559.6,361.2L558.2,360.6L556.3,359.4L555.6,357.6L545.3,348.8L535.0,340.1L523.5,330.4Z M579.0,318.8L577.7,311.6L575.8,310.0L575.8,309.0L573.3,306.6L573.0,303.6L574.9,301.4L575.6,298.1L575.1,294.3L575.7,292.2L579.1,290.6L581.2,291.1L581.1,293.1L583.7,291.6L583.9,292.4L582.4,294.4L582.4,296.2L583.4,297.2L583.0,300.7L581.0,302.7L581.6,304.9L583.2,304.9L583.9,306.8L585.1,307.5L584.9,310.5L583.4,311.7L582.5,313.0L580.4,314.5L580.7,316.2L580.5,317.8L579.0,318.8Z M626.4,352.0L626.4,360.0L622.9,360.0L622.8,361.7L610.7,354.0L598.5,346.4L595.4,348.5L593.2,350.0L591.5,347.8L586.7,346.1L585.3,343.6L582.9,341.7L581.5,342.5L580.4,340.3L580.3,338.5L578.5,335.6L579.7,334.0L579.4,331.4L579.8,329.2L579.6,327.4L580.1,324.2L580.0,322.3L579.0,318.8L580.5,317.8L580.7,316.2L580.4,314.5L582.5,313.0L583.4,311.7L584.9,310.5L585.1,307.5L588.7,308.8L590.0,308.5L592.5,309.2L596.6,310.9L598.0,314.5L600.8,315.3L605.1,316.9L608.3,318.9L609.8,317.9L611.3,316.1L610.6,313.0L611.5,311.0L613.7,309.2L615.8,308.6L620.0,309.4L621.0,311.2L622.1,311.3L623.1,311.9L626.1,312.4L626.9,313.7L625.8,315.6L626.3,317.4L625.5,319.8L626.4,323.0L626.4,337.3L626.4,352.0Z M662.6,352.0L650.5,352.0L638.7,352.0L626.4,352.0L626.4,337.3L626.4,323.0L625.5,319.8L626.3,317.4L625.8,315.6L626.9,313.7L631.0,313.7L633.9,314.7L636.9,315.9L638.3,316.5L640.7,315.3L642.0,314.1L644.7,313.8L646.8,314.3L647.7,316.3L648.4,315.0L650.8,315.9L653.2,316.1L654.7,315.1L654.7,315.1L656.4,321.0L656.7,322.0L655.8,323.6L655.2,326.6L654.4,328.7L653.6,329.4L652.6,328.1L651.3,326.3L649.1,320.6L648.8,321.0L650.0,325.2L651.9,329.2L654.2,335.4L655.3,337.6L656.3,339.9L659.1,344.3L658.5,345.0L658.6,347.6L662.1,351.2L662.6,352.0Z`,cx:582,cy:321},
+  west_africa: {d:`M497.9,356.0L498.5,354.7L510.5,354.7L509.9,348.9L510.7,346.9L513.5,346.5L513.4,336.3L523.5,336.5L523.5,330.4L535.0,340.1L530.3,340.2L531.8,357.4L533.2,374.7L533.8,375.2L533.1,378.0L520.8,378.1L520.4,378.9L519.2,378.7L517.5,379.5L515.3,378.4L514.4,378.4L513.8,380.8L512.8,381.5L510.8,378.8L508.9,375.8L506.9,374.8L505.5,373.6L503.8,373.7L502.3,374.5L500.7,374.2L499.7,375.5L499.4,373.3L500.3,371.3L500.7,367.6L500.3,363.6L500.0,361.6L500.3,359.6L499.5,357.7L497.9,356.0Z M514.8,390.2L515.0,389.0L514.7,387.4L513.6,386.3L513.0,384.0L512.8,381.5L513.8,380.8L514.4,378.4L515.3,378.4L517.5,379.5L519.2,378.7L520.4,378.9L520.8,378.1L533.1,378.0L533.8,375.2L533.2,374.7L531.8,357.4L530.3,340.2L535.0,340.1L545.3,348.8L555.6,357.6L556.3,359.4L558.2,360.6L559.6,361.2L559.6,363.8L563.0,363.4L563.0,372.6L561.4,375.3L561.1,377.7L558.4,378.4L554.2,378.7L553.1,380.1L551.1,380.3L549.2,380.3L548.4,379.5L546.7,380.1L543.9,381.8L543.3,383.0L540.9,384.8L540.5,385.8L539.2,386.6L537.8,386.1L536.9,387.1L536.5,389.8L534.0,393.1L534.1,394.5L533.3,396.2L533.5,398.5L532.2,399.1L531.5,399.6L531.0,397.9L530.2,398.4L529.6,398.3L529.1,399.4L526.7,399.4L525.9,398.8L525.5,399.2L524.5,398.0L524.7,396.8L524.3,396.4L523.7,396.8L523.8,395.5L524.4,394.4L523.2,392.7L522.8,391.6L522.1,390.8L521.5,390.7L520.8,391.2L519.8,391.8L518.9,392.6L517.6,392.3L516.8,391.3L516.3,391.2L515.5,391.7L515.0,391.7L514.8,390.2Z M595.4,348.5L596.1,354.8L597.3,355.8L597.3,357.1L598.6,358.4L597.9,360.2L596.8,368.3L596.6,373.5L592.7,377.3L591.4,382.5L592.6,384.0L592.6,386.6L594.6,386.7L594.3,388.6L593.4,388.8L593.3,390.1L592.8,390.2L590.7,385.8L590.0,385.6L587.6,387.9L585.2,386.7L583.6,386.5L582.7,387.0L580.9,386.9L579.1,388.6L577.5,388.7L573.8,386.6L572.4,387.6L570.8,387.5L569.7,386.0L566.6,384.5L563.3,385.0L562.6,385.9L562.1,388.2L561.2,389.8L561.0,393.4L558.7,391.1L557.6,391.1L556.6,392.2L556.7,389.5L553.1,388.6L553.0,386.7L551.3,384.0L550.9,382.2L551.1,380.3L553.1,380.1L554.2,378.7L558.4,378.4L561.1,377.7L561.4,375.3L563.0,372.6L563.0,363.4L567.3,361.6L576.2,353.7L586.7,346.1L591.5,347.8L593.2,350.0L595.4,348.5Z M498.9,385.6L497.7,382.5L496.1,381.1L497.5,380.3L499.0,377.5L499.7,375.5L500.7,374.2L502.3,374.5L503.8,373.7L505.5,373.6L506.9,374.8L508.9,375.8L510.8,378.8L512.8,381.5L513.0,384.0L513.6,386.3L514.7,387.4L515.0,389.0L514.8,390.2L514.4,390.5L512.7,390.1L512.5,390.6L511.8,390.7L509.6,389.7L508.1,389.7L502.5,389.5L501.7,389.9L500.7,389.8L499.0,390.5L498.5,387.4L501.3,387.5L502.1,386.9L502.6,386.9L503.7,386.0L505.0,386.8L506.4,386.9L507.7,386.0L507.1,384.8L506.1,385.5L505.1,385.5L503.9,384.5L502.9,384.6L502.3,385.5L498.9,385.6Z M498.9,385.6L502.3,385.5L502.9,384.6L503.9,384.5L505.1,385.5L506.1,385.5L507.1,384.8L507.7,386.0L506.4,386.9L505.0,386.8L503.7,386.0L502.6,386.9L502.1,386.9L501.3,387.5L498.5,387.4L498.9,385.6Z M499.0,390.5L500.7,389.8L501.7,389.9L502.5,389.5L508.1,389.7L508.1,391.0L507.7,391.4L508.0,392.8L507.5,393.3L506.9,393.3L506.1,394.0L505.1,393.9L503.8,395.8L502.1,394.2L500.9,393.9L500.1,392.8L500.2,392.2L499.2,391.3L499.0,390.5Z M508.1,389.7L509.6,389.7L511.8,390.7L512.5,390.6L512.7,390.1L514.4,390.5L514.8,390.2L515.0,391.7L515.5,391.7L516.3,391.2L516.8,391.3L517.6,392.3L518.9,392.6L519.8,391.8L520.8,391.2L521.5,390.7L522.1,390.8L522.8,391.6L523.2,392.7L524.4,394.4L523.8,395.5L523.7,396.8L524.3,396.4L524.7,396.8L524.5,398.0L525.5,399.2L524.9,399.5L524.6,400.8L525.3,402.5L526.1,405.7L524.9,406.2L524.6,406.7L524.9,407.5L524.7,409.3L524.2,409.3L523.3,409.2L522.7,410.8L521.9,410.7L521.3,409.9L521.5,408.3L520.2,405.8L519.4,406.3L518.7,406.4L517.9,406.6L517.9,405.1L517.4,404.1L517.5,402.9L516.9,401.2L516.0,399.8L513.6,399.8L512.9,400.6L512.0,400.7L511.5,401.5L511.2,402.6L509.5,404.4L508.2,402.0L507.0,400.5L506.2,399.9L505.5,399.1L505.1,397.4L504.7,396.5L503.8,395.8L505.1,393.9L506.1,394.0L506.9,393.3L507.5,393.3L508.0,392.8L507.7,391.4L508.1,391.0L508.1,389.7Z M509.5,404.4L511.2,402.6L511.5,401.5L512.0,400.7L512.9,400.6L513.6,399.8L516.0,399.8L516.9,401.2L517.5,402.9L517.4,404.1L517.9,405.1L517.9,406.6L518.7,406.4L517.3,408.2L515.9,410.4L515.8,411.6L515.0,412.9L514.2,412.6L512.0,410.9L510.4,408.8L509.9,407.3L509.5,404.4Z M524.2,409.3L524.1,410.4L524.4,412.4L523.7,414.1L524.6,415.2L525.6,415.5L526.9,417.2L527.0,418.7L526.7,419.2L526.4,422.5L525.6,422.6L522.5,420.7L519.7,417.6L517.1,415.4L515.0,412.9L515.8,411.6L515.9,410.4L517.3,408.2L518.7,406.4L519.4,406.3L520.2,405.8L521.5,408.3L521.3,409.9L521.9,410.7L522.7,410.8L523.3,409.2L524.2,409.3Z M525.5,399.2L525.9,398.8L526.7,399.4L529.1,399.4L529.6,398.3L530.2,398.4L531.0,397.9L531.5,399.6L532.2,399.1L533.5,398.5L534.9,399.4L535.4,400.7L536.8,401.6L537.8,400.6L539.3,400.4L541.4,401.4L542.2,407.1L540.9,410.5L540.1,415.0L541.4,418.4L541.3,420.0L539.9,420.1L537.8,419.3L535.8,419.3L532.2,420.0L530.1,421.2L527.0,422.6L526.4,422.5L526.7,419.2L527.0,418.7L526.9,417.2L525.6,415.5L524.6,415.2L523.7,414.1L524.4,412.4L524.1,410.4L524.2,409.3L524.7,409.3L524.9,407.5L524.6,406.7L524.9,406.2L526.1,405.7L525.3,402.5L524.6,400.8L524.9,399.5L525.5,399.2Z M533.5,398.5L533.3,396.2L534.1,394.5L534.0,393.1L536.5,389.8L536.9,387.1L537.8,386.1L539.2,386.6L540.5,385.8L540.9,384.8L543.3,383.0L543.9,381.8L546.7,380.1L548.4,379.5L549.2,380.3L551.1,380.3L550.9,382.2L551.3,384.0L553.0,386.7L553.1,388.6L556.7,389.5L556.6,392.2L555.9,393.4L554.4,393.8L553.8,395.6L552.7,396.0L550.1,395.9L548.7,395.6L547.7,396.3L546.3,396.0L541.0,396.1L540.9,398.4L541.4,401.4L539.3,400.4L537.8,400.6L536.8,401.6L535.4,400.7L534.9,399.4L533.5,398.5Z M550.1,395.9L549.8,397.2L551.1,399.2L551.1,402.1L551.4,405.3L552.2,406.8L551.5,410.4L551.7,412.3L552.6,414.9L553.2,416.3L548.4,418.6L546.8,420.0L544.0,421.2L541.3,420.0L541.4,418.4L540.1,415.0L540.9,410.5L542.2,407.1L541.4,401.4L540.9,398.4L541.0,396.1L546.3,396.0L547.7,396.3L548.7,395.6L550.1,395.9Z M552.7,396.0L552.4,398.1L553.3,399.3L554.4,400.7L554.5,402.7L555.1,403.5L554.9,412.7L555.7,415.4L553.2,416.3L552.6,414.9L551.7,412.3L551.5,410.4L552.2,406.8L551.4,405.3L551.1,402.1L551.1,399.2L549.8,397.2L550.1,395.9L552.7,396.0Z M558.2,415.0L555.7,415.4L554.9,412.7L555.1,403.5L554.5,402.7L554.4,400.7L553.3,399.3L552.4,398.1L552.7,396.0L553.8,395.6L554.4,393.8L555.9,393.4L556.6,392.2L557.6,391.1L558.7,391.1L561.0,393.4L560.9,394.7L561.6,397.1L561.0,398.7L561.3,399.7L559.8,402.2L558.9,403.4L558.3,406.0L558.4,408.5L558.2,415.0Z M558.2,415.0L558.4,408.5L558.3,406.0L558.9,403.4L559.8,402.2L561.3,399.7L561.0,398.7L561.6,397.1L560.9,394.7L561.0,393.4L561.2,389.8L562.1,388.2L562.6,385.9L563.3,385.0L566.6,384.5L569.7,386.0L570.8,387.5L572.4,387.6L573.8,386.6L577.5,388.7L579.1,388.6L580.9,386.9L582.7,387.0L583.6,386.5L585.2,386.7L587.6,387.9L590.0,385.6L590.7,385.8L592.8,390.2L593.3,390.1L594.5,391.7L594.2,392.4L594.0,393.7L591.5,396.8L590.7,399.4L590.2,401.4L589.6,402.3L589.0,405.1L587.3,406.8L586.9,408.8L586.2,410.4L585.9,412.1L583.8,413.4L582.1,411.8L580.9,411.8L579.1,414.2L578.2,414.2L576.8,418.1L576.0,420.9L572.8,422.4L571.6,422.1L570.5,423.0L568.0,423.0L566.4,420.4L565.4,417.6L563.2,414.9L560.9,415.0L558.2,415.0Z`,cx:533,cy:395},
+  central_africa: {d:`M594.3,388.6L595.5,391.1L595.7,393.8L595.6,396.4L597.3,400.1L595.6,400.0L594.7,400.3L593.3,399.9L592.6,401.8L594.4,404.1L595.8,404.8L596.2,406.5L597.2,409.2L596.7,410.3L595.2,414.4L594.4,415.1L594.2,418.2L594.5,419.9L594.2,421.1L595.7,423.2L595.9,424.6L597.1,426.7L598.5,427.9L598.6,429.8L598.9,430.9L598.7,433.1L596.3,432.1L593.8,431.1L590.0,430.9L589.6,430.7L587.8,431.2L585.9,430.7L584.5,431.0L579.5,430.9L579.9,427.7L578.7,425.1L577.3,424.4L576.7,422.6L575.9,422.0L576.0,420.9L576.8,418.1L578.2,414.2L579.1,414.2L580.9,411.8L582.1,411.8L583.8,413.4L585.9,412.1L586.2,410.4L586.9,408.8L587.3,406.8L589.0,405.1L589.6,402.3L590.2,401.4L590.7,399.4L591.5,396.8L594.0,393.7L594.2,392.4L594.5,391.7L593.3,390.1L593.4,388.8L594.3,388.6Z M633.6,419.1L632.6,419.5L630.7,419.4L628.4,419.0L627.2,419.3L626.8,420.3L625.8,420.4L624.6,419.6L621.2,421.6L619.8,421.2L619.4,421.5L618.5,423.9L616.2,423.1L613.9,422.7L612.0,421.2L609.5,419.9L607.8,421.2L606.7,423.2L606.4,426.0L604.4,425.8L602.4,425.1L600.5,427.2L598.9,430.9L598.6,429.8L598.5,427.9L597.1,426.7L595.9,424.6L595.7,423.2L594.2,421.1L594.5,419.9L594.2,418.2L594.4,415.1L595.2,414.4L596.7,410.3L599.2,410.0L599.8,409.0L600.3,409.1L601.0,410.0L604.9,408.4L606.2,406.9L607.8,405.5L607.5,404.1L608.3,403.7L611.3,403.9L614.2,402.1L616.4,397.7L617.9,396.1L619.9,395.4L620.2,397.1L622.0,399.6L622.0,401.3L621.5,402.9L621.7,404.2L622.7,405.3L625.1,407.1L626.7,408.7L626.8,410.0L628.8,412.1L630.1,413.8L630.9,416.2L633.2,417.8L633.6,419.1Z M622.8,361.7L623.0,377.6L620.4,377.3L619.0,380.2L618.1,382.7L618.8,383.6L617.8,384.9L618.1,386.5L617.3,388.2L617.0,389.6L618.1,389.4L618.7,391.0L618.8,393.3L619.9,394.5L619.9,395.4L617.9,396.1L616.4,397.7L614.2,402.1L611.3,403.9L608.3,403.7L607.5,404.1L607.8,405.5L606.2,406.9L604.9,408.4L601.0,410.0L600.3,409.1L599.8,409.0L599.2,410.0L596.7,410.3L597.2,409.2L596.2,406.5L595.8,404.8L594.4,404.1L592.6,401.8L593.3,399.9L594.7,400.3L595.6,400.0L597.3,400.1L595.6,396.4L595.7,393.8L595.5,391.1L594.3,388.6L594.6,386.7L592.6,386.6L592.6,384.0L591.4,382.5L592.7,377.3L596.6,373.5L596.8,368.3L597.9,360.2L598.6,358.4L597.3,357.1L597.3,355.8L596.1,354.8L595.4,348.5L598.5,346.4L610.7,354.0L622.8,361.7Z M625.1,407.1L622.7,405.3L621.7,404.2L621.5,402.9L622.0,401.3L622.0,399.6L620.2,397.1L619.9,395.4L619.9,394.5L618.8,393.3L618.7,391.0L618.1,389.4L617.0,389.6L617.3,388.2L618.1,386.5L617.8,384.9L618.8,383.6L618.1,382.7L619.0,380.2L620.4,377.3L623.0,377.6L622.8,361.7L622.9,360.0L626.4,360.0L626.4,352.0L638.7,352.0L650.5,352.0L662.6,352.0L663.6,355.9L663.0,356.7L663.4,360.8L664.5,365.5L665.7,366.5L667.4,368.0L665.8,370.3L663.6,370.9L662.6,372.2L662.3,374.8L661.0,380.7L661.3,382.3L660.8,385.7L659.6,389.7L657.7,391.7L656.4,394.7L656.1,396.4L654.7,397.5L653.8,401.7L653.8,405.3L653.8,402.1L653.4,402.1L653.4,400.1L653.0,398.7L651.5,397.1L651.1,394.2L651.5,391.3L650.0,391.0L649.8,391.9L648.0,392.1L648.7,393.3L649.0,395.7L647.3,397.9L645.8,400.8L644.2,401.2L641.7,398.8L640.5,399.7L640.2,400.8L638.6,401.6L638.5,402.4L635.5,402.4L635.0,401.6L632.8,401.4L631.7,402.1L630.9,401.8L629.3,399.5L628.8,398.4L626.6,398.9L625.8,400.8L625.0,404.3L623.9,405.1L623.0,405.5L625.1,407.1Z M584.5,431.0L585.9,430.7L587.8,431.2L589.6,430.7L590.0,430.9L589.7,432.7L590.6,434.7L592.9,434.4L593.6,435.2L592.3,439.8L593.7,442.2L594.1,445.3L593.7,448.0L592.8,449.9L590.1,449.7L588.4,447.8L588.2,449.6L586.1,450.1L585.1,451.1L586.2,453.7L583.9,455.9L580.8,451.9L578.7,448.6L576.9,444.4L577.0,443.1L577.6,441.8L578.4,438.9L579.0,436.0L580.0,435.7L584.5,435.8L584.5,431.0Z M606.4,426.0L606.2,428.4L605.3,430.5L604.7,433.0L604.3,436.6L604.5,438.8L604.0,440.2L603.9,441.7L603.5,443.0L601.5,444.9L600.1,447.0L598.8,450.8L598.9,454.1L598.1,455.4L596.4,457.4L594.6,459.9L593.4,459.2L593.2,458.0L591.6,458.0L590.5,459.5L589.7,459.1L588.6,457.8L587.6,458.4L586.4,460.2L583.9,455.9L586.2,453.7L585.1,451.1L586.1,450.1L588.2,449.6L588.4,447.8L590.1,449.7L592.8,449.9L593.7,448.0L594.1,445.3L593.7,442.2L592.3,439.8L593.6,435.2L592.9,434.4L590.6,434.7L589.7,432.7L590.0,430.9L593.8,431.1L596.3,432.1L598.7,433.1L598.9,430.9L600.5,427.2L602.4,425.1L604.4,425.8L606.4,426.0Z M639.6,458.0L640.2,461.7L639.9,463.8L640.5,466.1L642.3,468.3L643.9,473.4L643.9,473.4L642.7,473.0L638.6,473.6L637.8,474.1L636.9,476.7L637.6,478.4L637.1,483.2L636.7,487.2L637.5,487.9L639.7,489.4L640.5,488.7L640.7,493.0L638.4,493.0L637.2,490.8L636.0,489.1L633.7,488.5L633.0,486.4L631.1,487.7L628.7,487.1L627.7,485.3L625.7,485.0L624.3,485.1L624.1,483.8L623.1,483.7L621.7,483.5L619.8,484.1L618.5,484.0L617.7,484.3L617.9,479.6L616.8,478.1L616.6,475.6L617.1,473.2L616.4,471.7L616.4,469.2L612.7,469.2L613.0,467.8L611.4,467.8L611.2,468.5L609.3,468.6L608.6,471.0L608.1,472.0L606.4,471.4L605.4,472.0L603.4,472.3L602.2,470.2L601.5,468.9L600.6,466.5L599.9,463.5L590.9,463.5L589.8,463.9L588.9,463.9L587.7,464.4L587.2,463.2L588.0,462.7L588.1,461.0L588.6,460.0L589.7,459.1L590.5,459.5L591.6,458.0L593.2,458.0L593.4,459.2L594.6,459.9L596.4,457.4L598.1,455.4L598.9,454.1L598.8,450.8L600.1,447.0L601.5,444.9L603.5,443.0L603.9,441.7L604.0,440.2L604.5,438.8L604.3,436.6L604.7,433.0L605.3,430.5L606.2,428.4L606.4,426.0L606.7,423.2L607.8,421.2L609.5,419.9L612.0,421.2L613.9,422.7L616.2,423.1L618.5,423.9L619.4,421.5L619.8,421.2L621.2,421.6L624.6,419.6L625.8,420.4L626.8,420.3L627.2,419.3L628.4,419.0L630.7,419.4L632.6,419.5L633.6,419.1L635.5,422.4L636.9,422.9L637.7,422.2L639.1,422.4L640.8,421.6L641.5,423.3L644.2,426.0L644.2,426.0L644.0,430.6L645.3,431.2L644.3,432.6L643.1,433.7L641.9,435.8L641.3,437.6L641.1,440.8L640.4,442.3L640.4,445.4L639.5,446.5L639.4,448.9L639.0,449.2L638.7,451.4L639.5,453.2L639.6,458.0Z`,cx:607,cy:421},
+  east_africa: {d:`M696.0,408.0L687.4,420.0L683.4,420.2L680.7,423.0L678.7,423.1L677.9,424.3L675.8,424.3L674.6,423.0L671.8,424.6L670.9,426.3L668.8,426.0L668.2,425.5L667.4,425.6L666.5,425.6L662.6,422.2L660.5,422.2L659.4,420.9L659.4,418.6L657.9,418.0L656.0,413.6L654.7,412.7L654.1,411.1L652.6,409.1L650.7,408.9L651.7,406.6L653.4,406.5L653.8,405.3L653.8,401.7L654.7,397.5L656.1,396.4L656.4,394.7L657.7,391.7L659.6,389.7L660.8,385.7L661.3,382.3L664.9,383.1L665.8,380.2L667.7,382.0L669.5,381.0L670.2,381.9L672.3,381.9L675.0,383.5L675.8,384.9L677.1,386.2L678.4,388.5L679.4,389.8L678.3,391.6L677.3,393.5L677.5,394.6L677.6,395.8L679.3,395.9L680.0,395.6L680.7,396.3L680.0,397.7L681.2,399.9L682.3,401.8L683.5,403.3L693.5,408.0L696.0,408.0Z M677.1,446.7L675.3,443.4L675.2,428.9L677.9,424.3L678.7,423.1L680.7,423.0L683.4,420.2L687.4,420.0L696.0,408.0L698.2,404.6L699.5,402.2L699.5,400.1L699.5,396.1L699.5,394.4L699.6,394.4L699.6,394.4L700.5,394.3L701.9,393.7L703.6,393.3L705.0,391.9L706.2,391.9L706.2,393.0L706.0,395.3L706.0,397.4L705.3,398.9L704.5,403.2L703.0,407.7L701.1,412.8L698.5,418.6L695.9,423.1L692.3,428.6L689.2,431.8L684.7,435.8L681.8,438.8L678.5,443.7L677.8,445.8L677.1,446.7Z M669.8,458.7L665.4,454.7L665.2,452.4L654.1,444.2L653.6,443.8L653.6,439.6L654.4,437.9L655.9,435.3L657.1,432.4L655.7,427.8L655.4,425.8L653.9,423.0L655.8,420.6L657.9,418.0L659.4,418.6L659.4,420.9L660.5,422.2L662.6,422.2L666.5,425.6L667.4,425.6L668.2,425.5L668.8,426.0L670.9,426.3L671.8,424.6L674.6,423.0L675.8,424.3L677.9,424.3L675.2,428.9L675.3,443.4L677.1,446.7L674.9,448.3L674.2,450.0L673.0,450.3L672.6,453.1L671.6,454.7L671.0,457.4L669.8,458.7Z M653.6,443.8L654.1,444.2L665.2,452.4L665.4,454.7L669.8,458.7L668.4,463.6L668.6,465.9L670.5,467.4L670.6,468.4L669.8,470.8L669.9,472.0L669.7,473.9L670.8,476.4L672.1,480.4L673.2,481.3L673.2,481.3L670.8,483.6L667.4,485.1L665.6,485.1L664.5,486.3L662.4,486.4L661.6,486.9L657.9,485.8L655.6,486.1L654.7,480.6L653.7,478.8L653.1,477.7L650.1,476.9L648.4,475.7L646.4,475.0L645.2,474.4L643.9,473.4L643.9,473.4L642.3,468.3L640.5,466.1L639.9,463.8L640.2,461.7L639.6,458.0L640.9,457.8L642.0,456.4L643.2,454.3L644.0,453.4L643.9,452.1L643.3,451.2L643.1,449.7L643.1,449.7L644.0,449.1L644.2,446.8L642.9,444.5L644.0,444.1L647.4,444.1L653.6,443.8Z M653.6,443.8L647.4,444.1L644.0,444.1L642.9,444.5L641.1,445.8L640.4,445.4L640.4,442.3L641.1,440.8L641.3,437.6L641.9,435.8L643.1,433.7L644.3,432.6L645.3,431.2L644.0,430.6L644.2,426.0L644.2,426.0L645.5,424.9L647.4,425.8L649.9,424.8L652.0,424.8L653.9,423.0L655.4,425.8L655.7,427.8L657.1,432.4L655.9,435.3L654.4,437.9L653.6,439.6L653.6,443.8Z M642.9,444.5L644.2,446.8L644.0,449.1L643.1,449.7L643.1,449.7L641.5,449.4L640.5,451.7L638.7,451.4L639.0,449.2L639.4,448.9L639.5,446.5L640.4,445.4L641.1,445.8L642.9,444.5Z M643.1,449.7L643.3,451.2L643.9,452.1L644.0,453.4L643.2,454.3L642.0,456.4L640.9,457.8L639.6,458.0L639.5,453.2L638.7,451.4L640.5,451.7L641.5,449.4L643.1,449.7Z M679.4,389.8L680.7,390.2L681.6,389.2L682.4,390.4L682.3,392.1L680.5,393.1L681.8,394.2L680.7,396.3L680.0,395.6L679.3,395.9L677.6,395.8L677.5,394.6L677.3,393.5L678.3,391.6L679.4,389.8Z M661.3,382.3L661.0,380.7L662.3,374.8L662.6,372.2L663.6,370.9L665.8,370.3L667.4,368.0L669.1,372.6L670.0,376.3L671.7,378.3L675.8,382.0L677.5,384.3L679.2,386.6L680.1,388.0L681.6,389.2L680.7,390.2L679.4,389.8L678.4,388.5L677.1,386.2L675.8,384.9L675.0,383.5L672.3,381.9L670.2,381.9L669.5,381.0L667.7,382.0L665.8,380.2L664.9,383.1L661.3,382.3Z M644.2,426.0L641.5,423.3L640.8,421.6L639.1,422.4L637.7,422.2L636.9,422.9L635.5,422.4L633.6,419.1L633.2,417.8L630.9,416.2L630.1,413.8L628.8,412.1L626.8,410.0L626.7,408.7L625.1,407.1L623.0,405.5L623.9,405.1L625.0,404.3L625.8,400.8L626.6,398.9L628.8,398.4L629.3,399.5L630.9,401.8L631.7,402.1L632.8,401.4L635.0,401.6L635.5,402.4L638.5,402.4L638.6,401.6L640.2,400.8L640.5,399.7L641.7,398.8L644.2,401.2L645.8,400.8L647.3,397.9L649.0,395.7L648.7,393.3L648.0,392.1L649.8,391.9L650.0,391.0L651.5,391.3L651.1,394.2L651.5,397.1L653.0,398.7L653.4,400.1L653.4,402.1L653.8,402.1L653.8,405.3L653.4,406.5L651.7,406.6L650.7,408.9L652.6,409.1L654.1,411.1L654.7,412.7L656.0,413.6L657.9,418.0L655.8,420.6L653.9,423.0L652.0,424.8L649.9,424.8L647.4,425.8L645.5,424.9L644.2,426.0Z`,cx:661,cy:424},
+  south_africa: {d:`M589.7,459.1L588.6,460.0L588.1,461.0L588.0,462.7L587.2,463.2L586.4,460.2L587.6,458.4L588.6,457.8L589.7,459.1Z M587.7,464.4L588.9,463.9L589.8,463.9L590.9,463.5L599.9,463.5L600.6,466.5L601.5,468.9L602.2,470.2L603.4,472.3L605.4,472.0L606.4,471.4L608.1,472.0L608.6,471.0L609.3,468.6L611.2,468.5L611.4,467.8L613.0,467.8L612.7,469.2L616.4,469.2L616.4,471.7L617.1,473.2L616.6,475.6L616.8,478.1L617.9,479.6L617.7,484.3L618.5,484.0L619.8,484.1L621.7,483.5L623.1,483.7L623.4,484.9L623.0,486.9L623.6,488.8L623.1,490.3L623.4,491.6L617.0,491.6L616.9,504.3L618.9,507.6L620.9,510.1L615.3,511.7L607.9,511.2L605.8,509.2L593.4,509.4L593.0,509.7L591.1,507.9L589.2,507.8L587.3,508.4L585.9,509.2L585.6,506.7L586.0,503.2L587.0,499.5L587.2,497.8L588.2,494.2L588.9,492.6L590.7,489.9L591.7,488.2L592.0,485.2L591.8,482.9L590.9,481.5L590.1,479.1L589.3,476.7L589.5,475.8L590.4,474.3L589.5,470.4L588.9,467.7L587.4,465.2L587.7,464.4Z M643.9,473.4L645.2,474.4L646.4,475.0L648.4,475.7L650.1,476.9L651.5,478.7L652.3,482.1L651.8,483.2L651.2,486.4L651.8,489.7L650.8,491.1L649.9,494.9L651.5,495.9L642.2,499.2L642.5,502.0L640.2,502.6L638.5,504.2L638.1,505.6L637.0,505.9L634.3,509.2L632.6,511.8L631.6,511.8L630.6,511.4L627.2,510.9L626.6,510.6L626.6,510.3L625.4,509.4L623.4,509.2L620.9,510.1L618.9,507.6L616.9,504.3L617.0,491.6L623.4,491.6L623.1,490.3L623.6,488.8L623.0,486.9L623.4,484.9L623.1,483.7L624.1,483.8L624.3,485.1L625.7,485.0L627.7,485.3L628.7,487.1L631.1,487.7L633.0,486.4L633.7,488.5L636.0,489.1L637.2,490.8L638.4,493.0L640.7,493.0L640.5,488.7L639.7,489.4L637.5,487.9L636.7,487.2L637.1,483.2L637.6,478.4L636.9,476.7L637.8,474.1L638.6,473.6L642.7,473.0L643.9,473.4Z M645.3,529.0L643.7,528.6L642.7,529.1L641.2,528.4L639.9,528.4L638.0,526.6L635.6,525.9L634.7,523.4L634.7,522.0L633.4,521.6L629.9,517.2L629.0,514.9L628.4,514.1L627.2,510.9L630.6,511.4L631.6,511.8L632.6,511.8L634.3,509.2L637.0,505.9L638.1,505.6L638.5,504.2L640.2,502.6L642.5,502.0L642.7,503.5L645.3,503.4L646.7,504.3L647.3,505.3L648.8,505.6L650.4,506.9L650.4,511.9L649.8,514.7L649.6,517.7L650.1,518.9L649.8,521.2L649.3,521.6L648.5,524.5L645.3,529.0Z M655.6,486.1L657.9,485.8L661.6,486.9L662.4,486.4L664.5,486.3L665.6,485.1L667.4,485.1L670.8,483.6L673.2,481.3L673.2,481.3L673.2,481.3L673.7,483.1L673.6,487.0L673.9,490.6L674.1,496.8L674.6,498.8L673.7,501.6L672.5,504.4L670.5,506.9L667.8,508.4L664.3,510.3L660.9,514.6L659.7,515.4L657.6,518.2L656.3,519.1L656.0,522.0L657.5,525.0L658.1,527.4L658.1,528.6L658.7,528.4L658.6,532.3L658.1,534.1L658.8,534.8L658.3,536.5L657.1,537.9L654.5,539.3L650.9,541.4L649.5,542.9L649.8,544.6L650.6,544.9L650.3,547.0L648.0,546.9L647.7,545.2L647.3,543.4L647.0,541.9L647.6,537.5L646.8,534.6L645.3,529.0L648.5,524.5L649.3,521.6L649.8,521.2L650.1,518.9L649.6,517.7L649.8,514.7L650.4,511.9L650.4,506.9L648.8,505.6L647.3,505.3L646.7,504.3L645.3,503.4L642.7,503.5L642.5,502.0L642.2,499.2L651.5,495.9L653.2,497.8L654.1,497.4L655.3,498.5L655.5,500.1L654.8,501.9L655.1,504.7L657.0,507.2L658.0,504.4L659.3,503.6L659.0,498.4L657.8,495.6L656.7,494.3L655.6,494.3L654.7,489.1L655.6,486.1Z M610.8,539.1L610.8,553.8L608.1,555.9L606.4,556.2L604.5,555.4L603.1,555.1L602.6,553.4L601.4,552.3L599.9,554.3L597.7,551.3L596.5,548.4L595.8,544.5L595.0,541.6L594.0,535.4L594.0,530.6L593.6,528.4L592.4,526.8L590.8,523.5L589.2,518.7L588.5,516.2L586.0,512.3L585.9,509.2L587.3,508.4L589.2,507.8L591.1,507.9L593.0,509.7L593.4,509.4L605.8,509.2L607.9,511.2L615.3,511.7L620.9,510.1L623.4,509.2L625.4,509.4L626.6,510.3L626.6,510.6L624.9,511.5L624.0,511.6L622.0,513.1L620.9,511.5L616.2,512.9L613.9,513.0L613.8,527.3L610.8,527.4L610.8,539.1Z M639.9,528.4L635.6,531.3L632.9,534.3L631.8,537.0L630.9,538.5L629.3,538.8L628.7,540.7L628.4,541.9L626.5,542.9L624.0,542.7L622.5,541.6L621.2,541.1L619.7,542.0L619.0,543.9L617.5,545.1L616.0,546.9L613.8,547.3L613.1,545.9L613.4,543.5L611.6,539.7L610.8,539.1L610.8,527.4L613.8,527.3L613.9,513.0L616.2,512.9L620.9,511.5L622.0,513.1L624.0,511.6L624.9,511.5L626.6,510.6L627.2,510.9L628.4,514.1L629.0,514.9L629.9,517.2L633.4,521.6L634.7,522.0L634.7,523.4L635.6,525.9L638.0,526.6L639.9,528.4Z M599.9,554.3L601.4,552.3L602.6,553.4L603.1,555.1L604.5,555.4L606.4,556.2L608.1,555.9L610.8,553.8L610.8,539.1L611.6,539.7L613.4,543.5L613.1,545.9L613.8,547.3L616.0,546.9L617.5,545.1L619.0,543.9L619.7,542.0L621.2,541.1L622.5,541.6L624.0,542.7L626.5,542.9L628.4,541.9L628.7,540.7L629.3,538.8L630.9,538.5L631.8,537.0L632.9,534.3L635.6,531.3L639.9,528.4L641.2,528.4L642.7,529.1L643.7,528.6L645.3,529.0L646.8,534.6L647.6,537.5L647.0,541.9L647.3,543.4L645.7,542.6L644.9,542.9L644.6,544.1L643.7,545.6L643.8,547.0L645.6,549.1L647.4,548.7L648.0,546.9L650.3,547.0L649.6,549.9L649.2,553.2L648.4,555.0L646.3,557.0L645.7,557.6L644.4,559.6L643.6,561.7L641.8,564.6L638.4,568.7L636.2,571.1L633.9,572.9L630.7,574.5L629.2,574.7L628.8,575.8L626.9,575.2L625.4,575.9L622.1,575.2L620.2,575.7L619.0,575.5L615.8,577.0L613.2,577.7L611.3,579.2L609.9,579.3L608.6,577.9L607.6,577.8L606.3,576.0L606.2,576.5L605.7,575.5L605.8,573.1L604.8,570.4L605.8,569.7L605.7,566.6L603.7,562.9L602.1,559.5L602.1,559.5L599.9,554.3Z M638.5,555.8L639.6,557.0L638.7,559.0L638.1,560.3L636.4,560.9L635.9,562.2L634.8,562.6L632.5,559.5L634.1,557.0L635.8,555.4L637.2,554.6L638.5,555.8Z M648.0,546.9L647.4,548.7L645.6,549.1L643.8,547.0L643.7,545.6L644.6,544.1L644.9,542.9L645.7,542.6L647.3,543.4L647.7,545.2L648.0,546.9Z M650.1,476.9L653.1,477.7L653.7,478.8L654.7,480.6L655.6,486.1L654.7,489.1L655.6,494.3L656.7,494.3L657.8,495.6L659.0,498.4L659.3,503.6L658.0,504.4L657.0,507.2L655.1,504.7L654.8,501.9L655.5,500.1L655.3,498.5L654.1,497.4L653.2,497.8L651.5,495.9L649.9,494.9L650.8,491.1L651.8,489.7L651.2,486.4L651.8,483.2L652.3,482.1L651.5,478.7L650.1,476.9Z M701.4,489.9L702.2,491.6L703.0,494.2L703.4,499.0L704.2,500.9L703.9,502.8L703.4,504.0L702.4,501.7L701.8,502.8L702.4,505.8L702.1,507.5L701.2,508.4L701.1,511.8L699.8,516.5L698.3,522.0L696.5,529.6L695.3,535.1L693.9,539.8L691.4,540.7L688.8,542.4L687.0,541.4L684.6,540.0L683.7,537.8L683.5,534.3L682.4,531.1L682.2,528.2L682.7,525.3L684.1,524.7L684.1,523.3L685.6,520.3L685.9,517.7L685.2,515.8L684.6,513.3L684.3,509.6L685.4,507.4L685.8,504.9L687.3,504.7L689.0,503.9L690.2,503.2L691.5,503.1L693.3,500.8L695.8,498.4L696.7,496.4L696.3,494.7L697.6,495.1L699.2,492.4L699.3,490.0L700.3,488.2L701.4,489.9Z`,cx:638,cy:520},
+  north_america_west: {d:`M174.7,244.0L183.3,244.0L192.4,244.0L195.4,244.0L204.7,244.0L213.7,244.0L222.9,244.0L232.1,244.0L242.5,244.0L252.9,244.0L259.2,244.0L259.2,242.5L260.3,242.4L260.8,244.6L261.8,245.3L263.9,245.6L267.0,246.2L267.4,321.8L265.1,320.9L263.2,321.1L260.7,322.1L257.9,325.0L254.9,326.8L253.2,328.7L252.5,330.5L252.5,333.2L252.6,335.2L253.2,336.5L252.0,336.6L249.8,335.8L247.4,334.5L246.6,332.6L245.9,329.8L244.1,327.6L243.1,325.2L241.5,322.5L239.4,320.9L236.9,321.0L234.9,324.1L232.4,322.9L230.8,321.7L230.1,319.5L229.1,317.4L227.2,315.7L225.7,314.4L224.6,313.0L219.3,313.0L219.3,314.6L216.8,314.6L210.8,314.7L203.8,311.8L199.2,309.9L199.5,309.1L195.6,309.6L192.1,309.9L191.6,307.8L189.6,305.5L188.2,305.0L187.9,303.9L186.1,303.7L185.0,302.6L182.2,302.2L181.4,301.6L181.1,299.4L178.1,295.4L175.5,289.8L175.7,288.9L174.3,287.5L171.9,284.2L171.5,280.9L169.9,278.7L170.6,275.4L170.5,272.0L169.5,268.9L170.7,265.2L171.0,261.5L171.4,257.9L170.9,252.5L169.9,249.1L169.0,247.3L169.4,246.5L173.8,247.8L175.4,251.6L176.2,250.6L175.7,247.3L174.7,244.0Z M75.2,359.7L75.7,360.0L76.2,360.6L77.0,362.0L76.9,362.2L75.7,363.0L74.7,363.7L74.3,364.3L73.5,363.8L73.6,362.6L73.1,361.2L73.3,360.7L73.8,360.1L73.6,359.3L73.8,358.9L74.0,359.0L75.2,359.7Z M73.3,356.9L73.1,357.4L72.1,357.7L71.5,356.9L71.2,356.5L71.2,356.3L71.5,356.0L72.5,356.3L73.3,356.9Z M71.0,355.3L70.9,355.7L69.3,355.6L69.5,355.1L71.0,355.3Z M67.1,353.1L67.4,353.4L68.3,354.7L68.1,354.9L67.9,354.9L66.8,354.8L66.4,353.8L66.3,353.7L67.1,353.1Z M63.0,351.1L63.1,352.1L62.7,352.5L61.7,351.7L61.9,351.4L62.3,351.1L63.0,351.1Z M41.3,198.5L43.8,198.8L44.1,200.4L42.2,201.0L40.2,200.2L38.3,199.1L41.3,198.5Z M81.8,208.1L83.8,208.4L85.1,209.6L82.5,211.5L79.4,213.1L77.9,212.0L77.4,210.2L80.2,208.7L81.8,208.1Z M119.2,161.2L119.2,161.2L119.2,176.0L119.2,198.8L122.2,198.9L125.2,200.0L127.3,201.8L130.0,204.4L133.0,202.1L136.0,200.8L137.7,202.9L139.7,204.6L142.5,206.4L144.4,209.2L147.6,213.8L152.8,216.3L152.8,218.9L151.1,220.8L151.1,220.8L151.1,220.8L149.5,219.3L146.8,218.0L145.9,214.5L142.0,211.3L140.3,207.5L137.4,207.2L132.5,207.2L128.9,206.0L122.6,201.8L119.7,201.1L114.4,199.7L110.1,200.0L104.1,198.2L100.5,196.5L97.1,197.3L97.7,200.1L96.0,200.3L92.5,201.2L89.8,202.5L86.4,203.4L86.0,201.0L87.4,197.1L90.6,195.9L89.8,194.9L85.9,197.1L83.8,199.8L79.4,202.6L81.6,204.5L78.7,207.4L75.4,209.1L72.4,210.3L71.6,212.1L66.9,214.1L65.9,216.0L62.3,217.7L60.2,217.4L57.4,218.5L54.3,219.9L51.7,221.2L46.5,222.4L46.0,221.7L49.4,219.8L52.3,218.6L55.6,216.4L59.4,216.0L60.9,214.3L65.1,211.9L65.8,211.1L68.1,209.7L68.6,206.7L70.2,204.3L66.6,205.5L65.6,204.8L64.0,206.3L62.0,204.3L61.2,205.7L60.0,203.7L57.0,205.3L55.1,205.3L54.8,202.9L55.4,201.5L53.4,200.0L49.4,200.8L46.9,198.9L44.8,198.0L44.8,195.7L42.4,194.0L43.6,191.7L46.1,189.5L47.2,187.4L49.6,187.1L51.7,187.8L54.2,185.8L56.4,186.2L58.8,184.9L58.2,183.1L56.5,182.4L58.7,180.8L56.9,180.9L53.6,181.8L52.7,182.6L50.3,181.8L46.0,182.2L41.5,181.3L40.2,179.6L36.3,177.3L40.6,175.6L47.4,173.7L50.0,173.7L49.5,175.7L56.0,175.5L53.5,173.1L49.7,171.5L47.6,169.5L44.6,167.8L40.4,166.6L42.2,164.5L47.6,164.3L51.4,162.5L52.2,160.6L55.3,158.7L58.3,158.2L64.0,156.4L66.9,156.7L71.6,154.6L76.2,155.4L78.4,157.2L79.7,156.4L84.9,156.7L84.7,157.6L89.4,158.3L92.5,157.9L99.0,159.1L104.8,159.5L107.2,160.0L111.3,159.4L115.9,160.6L119.2,161.2L119.2,161.2Z M25.3,184.9L27.2,185.6L29.1,185.2L31.5,186.3L34.6,186.8L34.3,187.2L32.0,188.1L29.7,187.2L28.5,186.5L25.8,186.7L25.1,186.4L25.3,184.9Z M174.7,244.0L174.2,244.0L168.3,240.1L166.1,238.3L160.6,236.7L158.9,233.1L159.3,230.7L155.4,229.0L154.9,225.8L151.2,222.8L151.1,220.8L151.1,220.8L152.8,218.9L152.8,216.3L147.6,213.8L144.4,209.2L142.5,206.4L139.7,204.6L137.7,202.9L136.0,200.8L133.0,202.1L130.0,204.4L127.3,201.8L125.2,200.0L122.2,198.9L119.2,198.8L119.2,176.0L119.2,161.2L119.2,161.2L124.9,162.1L129.7,164.0L132.9,164.4L135.6,162.7L139.3,161.5L143.8,162.0L148.4,160.2L153.4,159.2L155.5,160.9L157.8,159.9L158.5,158.1L160.6,158.5L165.7,162.1L169.8,159.4L170.2,162.4L174.0,161.7L175.1,160.6L178.8,160.8L183.5,162.5L190.7,164.0L194.9,164.6L197.9,164.4L202.0,166.4L197.7,168.4L203.2,169.2L211.5,168.8L214.1,168.1L217.3,170.5L220.6,168.5L217.5,166.8L219.5,165.4L223.2,165.2L225.7,164.8L228.1,165.8L231.2,167.9L234.6,167.6L240.0,169.4L244.7,168.8L249.2,168.9L248.8,166.4L251.6,165.7L256.3,167.0L256.3,170.8L258.2,167.6L260.7,167.7L262.1,163.7L258.8,161.3L255.2,159.6L255.5,155.2L259.1,152.3L263.1,153.0L266.2,154.7L270.4,159.2L267.6,161.2L273.3,162.0L273.3,166.1L277.4,163.0L281.1,165.5L280.1,168.5L279.6,183.6L275.3,183.9L272.8,185.6L272.6,188.2L269.1,188.7L265.4,191.9L262.0,196.4L260.9,199.6L260.7,204.2L265.2,204.9L266.6,208.6L268.0,211.7L272.3,210.9L277.9,212.6L281.0,214.1L280.0,246.8L277.2,247.9L276.2,248.0L272.5,246.9L270.0,247.4L267.0,246.2L263.9,245.6L261.8,245.3L260.8,244.6L260.3,242.4L259.2,242.5L259.2,244.0L252.9,244.0L242.5,244.0L232.1,244.0L222.9,244.0L213.7,244.0L204.7,244.0L195.4,244.0L192.4,244.0L183.3,244.0L174.7,244.0Z M264.0,140.1L262.3,141.6L257.9,141.3L254.2,140.3L255.8,138.5L260.2,137.4L262.8,138.8L264.0,140.1Z M263.3,129.9L261.9,130.0L256.1,129.8L255.3,128.7L261.5,128.7L263.6,129.5L263.3,129.9Z M254.4,124.9L258.0,126.3L257.2,127.8L252.7,128.6L250.2,127.7L248.9,126.2L248.6,124.5L252.6,124.7L254.4,124.9Z M280.7,142.4L275.7,141.9L267.6,140.6L266.5,138.5L266.2,136.5L263.1,134.7L256.8,134.2L253.2,133.0L254.4,131.4L260.7,131.6L264.1,132.9L270.1,132.9L272.7,134.2L272.0,135.7L275.5,136.6L277.5,137.6L280.7,142.4Z M210.0,127.4L214.3,128.0L213.3,129.2L207.6,130.4L203.1,129.1L205.6,127.8L210.0,127.4Z M210.9,124.8L214.9,125.6L211.2,126.4L206.1,126.4L206.2,125.8L209.3,124.6L210.9,124.8Z M279.0,158.4L276.5,157.0L279.7,155.1L275.3,155.1L274.4,151.1L276.7,147.5L279.9,145.8Z M261.2,143.5L267.6,143.6L273.4,144.6L268.9,148.1L265.2,148.9L262.0,151.9L258.5,151.8L256.6,148.2L256.6,146.3L258.2,144.6L261.2,143.5Z M174.6,135.5L174.6,135.5L179.8,132.5L186.1,130.0L190.8,130.0L194.9,129.4L194.5,132.5L192.2,133.9L189.3,134.1L183.6,135.8L178.8,136.4L174.6,135.5Z M144.5,223.8L147.4,223.5L146.5,228.1L149.2,231.3L148.0,231.3L146.1,229.4L145.0,227.6L143.4,226.4L142.9,224.6L143.1,223.3L144.5,223.8Z M227.7,122.8L233.7,123.3L241.9,124.8L244.3,126.7L245.4,128.4L240.5,127.9L235.4,126.6L228.6,126.5L231.6,125.3L227.9,124.3L227.7,122.8Z M172.6,246.0L171.1,246.5L166.1,244.7L165.1,243.3L162.4,241.9L161.9,240.7L158.7,240.0L157.5,237.8L157.8,236.9L161.0,237.8L162.9,238.4L165.7,238.8L166.8,240.2L168.3,242.1L171.3,243.8L172.6,246.0Z M178.6,142.2L183.0,143.0L190.8,143.3L193.8,144.4L197.1,146.1L193.2,147.1L185.7,149.9L181.9,152.7L181.9,154.5L173.9,156.4L172.3,154.6L165.2,152.5L166.5,150.8L168.6,147.9L171.3,145.3L168.3,142.8L178.6,142.2Z M220.6,136.6L223.3,135.9L226.5,136.1L227.0,138.1L225.2,140.0L214.8,140.6L207.1,142.3L202.4,142.4L202.1,141.1L208.4,139.4L194.6,139.8L190.3,139.1L194.5,135.2L197.4,134.1L206.0,135.4L211.4,137.8L216.7,138.1L212.4,134.3L215.2,132.8L218.3,133.3L219.4,135.2L220.6,136.6Z M224.5,147.7L227.9,149.3L229.9,153.2L230.8,156.0L235.9,158.0L241.4,159.9L241.1,161.7L236.1,162.0L238.0,163.5L237.0,165.0L231.5,164.4L226.2,163.3L222.7,163.5L216.9,164.9L209.2,165.5L203.8,165.9L202.1,164.0L197.9,162.9L195.2,163.3L191.5,160.2L193.5,159.7L198.2,159.1L202.5,159.2L206.5,158.5L200.6,157.6L194.1,157.9L189.7,157.8L188.1,156.4L195.2,154.8L190.5,154.8L185.2,153.8L187.7,150.8L189.9,149.2L198.0,146.7L201.2,147.5L199.6,149.4L206.4,148.2L210.7,150.2L214.1,148.2L216.9,149.5L219.4,153.4L221.0,151.7L218.8,147.6L221.5,147.1L224.5,147.7Z M243.1,149.2L239.7,146.6L243.4,144.6L247.0,145.5L252.5,145.0L253.2,146.1L250.4,148.0L255.0,149.8L254.5,153.4L249.5,154.9L246.5,154.6L244.4,153.0L236.8,150.0L236.9,148.7L243.1,149.2Z M224.3,145.6L228.4,145.4L230.7,146.3L228.0,149.0L223.2,146.2L224.3,145.6Z M249.0,133.1L251.4,135.0L251.5,137.0L250.1,140.0L245.0,140.4L241.7,139.8L241.8,137.4L236.8,137.7L236.6,134.7L239.9,134.8L244.5,133.4L248.8,133.6L249.0,133.1Z M256.6,117.6L258.7,116.4L261.9,116.1L260.5,115.2L267.6,115.0L271.5,117.1L276.7,118.0L277.9,126.9L272.5,127.1L266.2,126.6L262.9,125.0L263.0,123.5L265.4,122.5L259.8,122.5L256.4,121.2L254.5,119.4L256.6,117.6Z M270.2,112.4L274.7,111.7L278.3,111.5L276.6,134.1L276.2,132.2L280.3,128.4L276.9,116.6L274.4,115.0L270.8,113.8L270.2,112.4Z M255.9,162.0L257.7,163.6L255.8,165.0L251.7,163.8L249.2,164.2L245.1,162.4L247.8,161.2L249.9,159.4L253.1,160.6L255.0,161.3L255.9,162.0Z`,cx:210,cy:285},
+  north_america_east: {d:`M259.2,244.0L259.2,242.5L260.3,242.4L260.8,244.6L261.8,245.3L263.9,245.6L267.0,246.2L270.0,247.4L272.5,246.9L276.2,248.0L277.2,247.9L280.0,246.8L282.8,248.2L285.8,249.8L288.3,251.1L290.7,252.4L291.0,253.5L291.7,253.8L291.5,254.2L292.3,254.4L292.9,254.0L293.1,254.9L293.7,255.5L294.5,255.5L295.0,256.0L294.6,256.7L297.8,258.6L298.4,262.2L299.0,265.7L298.1,268.1L296.7,270.3L296.0,271.7L296.0,272.1L296.3,272.7L297.3,273.3L298.1,273.3L301.7,271.2L304.8,270.5L308.8,268.5L308.9,268.1L308.6,266.9L308.1,266.1L309.5,265.5L312.5,265.5L315.3,265.5L316.2,263.9L316.6,263.6L319.9,260.7L321.2,260.0L325.9,260.0L331.5,260.0L331.8,259.0L332.8,258.8L334.1,258.2L335.2,256.3L336.1,253.2L338.4,250.2L339.5,251.3L341.5,250.6L342.9,251.7L342.9,257.2L344.9,259.4L345.4,260.8L342.1,262.7L339.0,264.1L335.8,265.3L334.1,267.6L333.6,268.5L333.6,270.7L334.6,272.8L335.9,272.9L335.5,271.4L336.5,272.3L336.2,273.5L334.2,274.1L332.7,274.0L330.4,274.7L329.1,274.9L327.3,275.1L324.8,276.3L329.3,275.5L330.2,276.3L325.9,277.5L323.9,277.5L324.0,277.0L323.1,278.1L324.0,278.3L323.3,281.2L321.1,284.2L320.9,283.2L320.2,283.0L319.2,282.0L319.9,284.2L320.6,284.9L320.7,286.4L319.7,287.9L318.0,291.1L317.7,291.0L318.6,288.3L317.1,286.7L316.7,283.4L316.1,285.1L316.8,287.7L314.8,287.0L316.9,288.3L317.0,292.1L317.9,292.4L318.2,293.8L318.6,297.8L316.7,300.8L313.5,302.0L311.5,304.3L310.0,304.6L308.4,306.0L308.0,307.4L304.6,310.0L302.9,311.9L301.5,314.2L301.0,317.1L301.5,319.9L302.6,323.3L303.9,326.1L303.9,327.8L305.4,332.5L305.3,335.2L305.2,336.7L304.4,339.2L303.5,339.7L302.0,339.2L301.5,337.4L300.3,336.5L298.7,333.1L297.3,330.0L296.8,328.5L297.5,325.8L296.6,323.6L294.2,320.3L293.0,319.6L289.9,321.5L289.4,321.3L287.9,319.4L286.0,318.4L282.5,318.9L279.8,318.5L277.5,318.7L276.2,319.4L276.8,320.4L276.7,322.0L277.4,322.8L276.8,323.4L275.7,322.8L274.5,323.5L272.3,323.4L270.0,321.3L267.4,321.8L265.1,320.9L263.2,321.1L260.7,322.1L257.9,325.0Z M270.4,159.2L273.3,162.0L273.3,166.1L277.4,163.0L281.1,165.5L280.1,168.5L283.1,171.2L286.3,168.3L288.5,164.9L288.7,160.5L293.0,160.8L297.5,161.4L301.6,163.4L301.8,165.3L299.6,167.5L301.7,169.6L301.3,171.6L295.3,174.4L291.1,175.0L287.9,173.8L287.0,175.8L284.1,179.1L283.2,180.9L279.6,183.6L275.3,183.9L272.8,185.6L272.6,188.2L269.1,188.7L272.3,210.9L277.9,212.6L281.0,214.1L283.2,216.0L287.0,217.1L290.2,218.8L295.3,219.0L298.6,219.4L298.1,222.9L299.1,226.9L301.3,231.4L305.8,235.2L308.2,233.9L309.8,229.8L308.2,223.4L306.1,221.3L311.0,219.5L314.4,216.7L316.1,213.9L315.9,211.2L313.8,207.8L310.1,204.8L313.7,200.6L312.4,197.0L311.3,190.7L313.5,189.8L318.7,190.9L321.8,191.3L324.4,190.2L327.2,191.6L331.0,193.9L331.9,195.5L337.4,195.8L337.3,199.1L338.3,204.2L341.1,204.8L343.3,207.2L347.7,204.9L350.6,200.5L352.7,198.7L355.0,202.2L359.0,207.3L362.4,212.1L361.2,214.6L365.2,216.9L368.0,219.2L372.9,220.2L374.8,221.5L376.0,224.9L378.4,225.4L379.6,226.9L379.9,231.4L377.6,232.9L375.4,234.3L370.4,235.7L366.6,239.0L361.4,239.7L354.9,238.8L350.3,238.8L347.1,239.1L344.6,242.0L340.7,243.7L336.3,249.0L332.7,252.7L335.3,252.1L340.2,246.8L346.6,243.5L351.2,243.1L353.9,245.0L351.0,247.7L352.0,252.0L353.0,255.0L357.0,257.0L362.0,256.5L365.1,252.0L365.3,254.9L367.3,256.3L363.5,258.9L356.7,261.3L353.7,262.9L350.3,265.8L348.0,265.5L347.8,262.1L353.1,258.8L348.3,259.0L344.9,259.4L342.9,257.2L342.9,251.7L341.5,250.6L339.5,251.3L338.4,250.2L336.1,253.2L335.2,256.3L334.1,258.2L332.8,258.8L331.8,259.0L331.5,260.0L325.9,260.0L321.2,260.0L319.9,260.7L316.6,263.6L316.2,263.9L315.3,265.5L312.5,265.5L309.5,265.5L308.1,266.1L308.6,266.9L308.9,268.1L308.8,268.5L304.8,270.5L301.7,271.2L298.1,273.3L297.3,273.3L296.3,272.7L296.0,272.1L296.0,271.7L296.7,270.3L298.1,268.1L299.0,265.7L298.4,262.2L297.8,258.6L294.6,256.7L295.0,256.0L294.5,255.5L293.7,255.5L293.1,254.9L292.9,254.0L292.3,254.4L291.5,254.2L291.7,253.8L291.0,253.5L290.7,252.4L288.3,251.1L285.8,249.8L282.8,248.2L280.0,246.8L277.2,247.9L276.2,248.0L272.5,246.9L270.0,247.4Z M293.4,190.2L295.6,188.3L299.8,188.4L299.8,189.2L296.2,191.4L294.0,191.3L293.4,190.2Z M306.2,148.8L302.9,146.7L303.0,145.2L304.5,145.0L311.5,145.4L316.7,147.6L317.0,148.7L313.8,148.6L310.5,148.5L307.1,149.0L306.2,148.8Z M304.6,191.7L305.8,190.5L307.0,190.5L307.8,191.4L306.6,193.5L305.3,193.1L304.4,191.9L304.6,191.7Z M280.7,142.4L275.7,141.9L270.1,132.9L272.7,134.2L272.0,135.7L275.5,136.6L277.5,137.6L281.6,137.7L286.1,138.1L290.9,137.2L297.1,136.9L302.1,137.1L305.4,138.7L306.1,140.3L304.2,141.4L299.6,142.2L295.7,141.7L286.9,142.4L280.7,142.4Z M380.1,234.7L378.5,237.3L376.5,240.8L378.5,239.4L380.5,240.3L379.4,241.7L382.1,242.7L383.6,241.8L386.6,243.0L385.7,245.9L387.8,245.2L388.2,247.4L389.1,249.9L387.8,253.4L386.5,253.5L384.5,252.8L385.1,249.5L384.3,249.0L380.7,252.5L378.9,252.3L381.1,250.4L378.1,249.5L374.8,249.7L368.9,249.6L368.4,248.4L370.3,247.0L369.0,245.9L371.6,243.5L374.7,237.1L376.6,234.9L379.3,233.5L380.7,233.6L380.1,234.7Z M293.7,179.6L297.0,180.9L300.5,182.2L300.8,184.1L303.1,183.8L305.2,185.1L302.5,186.4L297.8,185.4L296.1,183.6L293.0,185.7L288.7,187.8L287.6,185.5L283.5,185.8L286.1,183.9L286.5,180.7L287.6,177.0L289.8,177.4L290.4,179.1L291.9,178.5L293.7,179.6Z M309.3,150.6L312.2,149.0L319.0,151.0L323.2,152.9L323.6,154.7L329.3,153.8L332.4,156.3L339.8,157.9L342.5,159.5L345.4,163.3L339.8,165.1L347.0,167.7L351.8,168.6L356.2,172.3L361.0,172.6L360.1,175.4L354.7,180.0L350.9,178.3L346.1,174.4L342.2,174.9L341.8,177.2L345.0,179.6L349.2,181.4L350.4,182.5L352.4,186.4L351.3,189.3L347.5,188.2L339.8,185.0L344.1,188.5L347.3,190.9L347.8,192.3L339.5,190.7L333.0,188.4L329.3,186.4L330.3,185.3L325.8,183.2L321.3,181.3L321.4,182.4L312.6,183.1L310.0,181.7L312.0,178.8L317.7,178.7L324.0,178.2L323.0,176.8L324.1,174.8L328.0,170.9L327.2,169.1L326.0,167.7L321.3,165.8L315.1,164.4L317.1,163.4L313.8,160.9L311.2,160.7L308.7,159.3L307.1,160.5L301.6,161.0L290.4,160.1L284.0,159.0L279.0,158.4L276.5,157.0L279.7,155.1L275.3,155.1L274.4,151.1L276.7,147.5L279.9,145.8L287.8,144.8L285.5,147.4L287.9,149.9L290.7,146.6L298.5,145.0L303.7,149.1L303.3,151.8L309.3,150.6Z M271.5,117.1L276.7,118.0L281.7,118.7L284.1,121.4L287.8,122.7L283.6,123.8L277.9,126.9L272.5,127.1Z M270.2,112.4L274.7,111.7L278.3,111.5L284.3,110.9L288.8,109.4L292.5,109.6L295.8,110.7L298.2,108.6L302.2,107.9L307.7,107.5L317.0,107.3L318.6,107.7L327.5,107.1L334.1,107.3L340.7,107.6L348.9,107.9L355.4,108.4L361.0,109.5L360.9,110.6L353.4,112.3L346.0,113.1L343.3,114.0L349.9,114.0L342.7,116.4L337.7,117.5L332.5,120.8L326.2,121.5L324.3,122.3L315.0,122.7L319.2,123.2L317.1,123.9L319.6,125.9L316.7,127.3L312.0,128.4L310.6,130.0L306.3,131.2L306.7,132.1L311.9,131.9L312.0,132.9L303.8,135.3L295.9,134.2L286.9,134.8L282.3,134.3L276.6,134.1L276.2,132.2L281.8,131.3L280.3,128.4L282.2,128.1L290.4,129.8L286.2,127.3L281.2,126.5L283.7,125.0L289.1,124.0L290.0,122.6L285.7,121.1L284.4,119.0L292.7,119.2L295.1,119.6L299.9,118.1L293.0,117.7L282.3,117.9L276.9,116.6L274.4,115.0L270.8,113.8L270.2,112.4Z M320.2,170.2L318.2,171.4L314.8,171.6L314.0,169.6L315.3,167.4L318.1,166.9L320.5,168.0L320.5,169.7L320.2,170.2Z M352.9,240.5L353.9,240.2L357.9,241.2L361.1,242.8L361.1,243.6L359.7,243.7L355.7,242.4L352.9,240.5Z M354.4,251.9L355.5,253.8L357.7,254.3L360.5,254.2L359.0,255.9L357.9,256.1L354.0,254.4L353.2,253.1L354.4,251.9Z`,cx:310,cy:265},
+  central_america: {d:`M192.1,309.9L195.6,309.6L199.5,309.1L199.2,309.9L203.8,311.8L210.8,314.7L216.8,314.6L219.3,314.6L219.3,313.0L224.6,313.0L225.7,314.4L227.2,315.7L229.1,317.4L230.1,319.5L230.8,321.7L232.4,322.9L234.9,324.1L236.9,321.0L239.4,320.9L241.5,322.5L243.1,325.2L244.1,327.6L245.9,329.8L246.6,332.6L247.4,334.5L249.8,335.8L252.0,336.6L253.2,336.5L252.0,340.0L251.5,342.9L251.2,348.3L250.9,350.2L251.5,352.4L252.4,354.4L253.0,357.5L255.1,360.4L255.8,362.7L257.0,364.7L260.2,365.7L261.5,367.4L264.2,366.3L266.5,365.9L268.8,365.2L270.7,364.5L272.6,362.9L273.4,360.5L273.6,357.2L274.1,356.0L276.2,355.0L279.4,354.0L282.2,354.2L284.0,353.8L284.7,354.7L284.6,356.6L283.0,359.0L282.3,361.4L282.8,362.1L282.4,363.8L281.6,367.0L280.8,365.9L280.2,366.0L279.6,366.1L278.5,368.5L278.0,368.0L277.6,368.2L277.6,368.8L274.8,368.7L271.9,368.7L271.9,371.0L270.6,371.0L271.7,372.3L272.8,373.3L273.2,374.1L273.7,374.4L273.6,375.7L269.7,375.7L268.2,379.0L268.6,379.7L268.3,380.7L268.2,381.8L264.7,377.5L263.2,376.2L260.7,375.2L259.0,375.5L256.5,377.0L255.0,377.4L252.8,376.3L250.5,375.6L247.7,373.7L245.4,373.2L241.9,371.3L239.4,369.4L238.6,368.3L236.9,368.1L233.7,366.8L232.5,365.0L229.2,362.7L227.7,360.2L226.9,358.3L228.0,357.9L227.6,356.7L228.3,355.7L228.4,354.3L227.3,352.5L227.0,350.9L226.0,348.9L223.3,344.9L220.3,341.8L218.8,339.3L216.1,337.7L215.6,336.7L216.1,334.2L214.5,333.3L212.7,331.4L211.9,328.6L210.3,328.2L208.5,326.1L207.1,324.2L206.9,322.9L205.3,319.9L204.2,316.9L204.3,315.3L202.1,313.7L201.0,313.9L199.3,312.8L198.8,314.4L199.3,316.3L199.6,319.3L200.7,321.0L202.9,323.8L203.4,324.7L203.9,325.0L204.3,326.4L204.8,326.3L205.5,328.9L206.4,329.9L207.0,331.3L208.9,333.3L210.0,337.1L210.9,338.8L211.7,340.7L211.9,342.8L213.4,342.9L214.6,344.8L215.7,346.5L215.6,347.3L214.3,348.7L213.8,348.7L213.0,346.3L211.0,344.0L208.8,342.1L207.2,341.0L207.3,338.1L206.9,336.0L205.4,334.7L203.3,332.9L202.9,333.4L202.1,332.4L200.2,331.4L198.4,329.1L198.7,328.8L199.9,329.0L201.1,327.5L201.2,325.7L198.8,322.9L197.0,321.8L195.9,319.3L194.8,316.7L193.4,313.5L192.1,309.9Z M268.2,381.8L268.3,380.7L268.6,379.7L268.2,379.0L269.7,375.7L273.6,375.7L273.7,374.4L273.2,374.1L272.8,373.3L271.7,372.3L270.6,371.0L271.9,371.0L271.9,368.7L274.8,368.7L277.6,368.8L277.6,371.9L277.4,376.5L278.3,376.5L279.3,377.2L279.5,376.6L280.4,377.1L279.0,378.6L277.6,379.7L277.4,380.5L277.6,381.3L277.0,382.3L276.3,382.5L276.4,383.0L275.8,383.5L274.8,384.5L274.7,385.1L273.1,384.4L271.2,384.3L269.8,383.5L268.2,381.8Z M277.6,368.8L277.6,368.2L278.0,368.0L278.5,368.5L279.6,366.1L280.2,366.0L280.2,366.6L280.8,366.6L280.7,367.7L280.2,369.4L280.5,370.0L280.2,371.5L280.4,371.9L280.0,373.9L279.4,374.9L278.9,375.1L278.3,376.5L277.4,376.5L277.6,371.9L277.6,368.8Z M295.9,380.0L294.9,379.9L294.5,380.5L293.4,381.0L292.6,381.0L292.0,381.5L291.3,381.3L290.8,380.7L290.5,380.8L290.1,381.8L289.8,381.8L289.8,382.6L288.7,383.7L288.1,384.2L287.8,384.7L286.9,383.8L286.3,384.9L285.6,384.9L284.9,385.0L285.0,386.9L284.5,387.0L284.1,387.9L283.2,388.1L282.7,386.8L281.7,386.5L282.0,384.9L281.5,384.4L280.9,384.1L279.6,384.6L279.5,384.1L278.5,383.4L277.9,382.6L277.0,382.3L277.6,381.3L277.4,380.5L277.6,379.7L279.0,378.6L280.4,377.1L280.7,377.2L281.4,376.5L282.3,376.5L282.6,376.8L283.0,376.6L284.5,377.0L285.9,376.9L286.9,376.4L287.2,376.0L288.2,376.2L288.9,376.5L289.7,376.4L290.3,376.0L291.7,376.6L292.2,376.7L293.1,377.4L294.0,378.3L295.1,378.9L295.9,380.0Z M277.0,382.3L277.9,382.6L278.5,383.4L279.5,384.1L279.6,384.6L280.9,384.1L281.5,384.4L282.0,384.9L281.7,386.5L281.4,387.4L279.6,387.3L278.5,387.0L277.3,386.2L275.6,385.9L274.7,385.1L274.8,384.5L275.8,383.5L276.4,383.0L276.3,382.5L277.0,382.3Z M294.4,396.2L293.7,397.1L292.8,396.8L292.2,396.0L291.3,395.7L290.6,396.2L288.6,395.1L288.1,395.6L287.0,394.4L285.6,392.8L284.9,391.4L283.7,390.2L282.1,388.4L282.5,387.7L283.0,388.3L283.2,388.1L284.1,387.9L284.5,387.0L285.0,386.9L284.9,385.0L285.6,384.9L286.3,384.9L286.9,383.8L287.8,384.7L288.1,384.2L288.7,383.7L289.8,382.6L289.8,381.8L290.1,381.8L290.5,380.8L290.8,380.7L291.3,381.3L292.0,381.5L292.6,381.0L293.4,381.0L294.5,380.5L294.9,379.9L295.9,380.0L295.7,380.4L295.5,381.3L295.8,382.8L295.1,384.1L294.8,385.7L294.7,387.5L294.9,388.5L294.9,390.3L294.5,390.7L294.2,392.4L294.4,393.5L293.8,394.5L293.9,395.6L294.4,396.2Z M297.8,401.7L296.6,402.1L296.6,403.7L297.2,404.3L296.8,404.8L296.9,405.5L296.7,406.3L296.5,407.1L294.8,406.2L294.2,405.4L294.6,404.7L294.5,403.8L293.6,402.8L292.4,402.1L291.4,401.5L291.2,400.4L290.4,399.7L290.5,400.8L289.9,401.8L289.2,400.7L288.3,400.3L287.8,399.5L287.9,398.2L288.3,397.0L287.4,396.4L288.1,395.6L288.6,395.1L290.6,396.2L291.3,395.7L292.2,396.0L292.8,396.8L293.7,397.1L294.4,396.2L295.2,398.4L296.3,400.0L297.8,401.7Z M313.6,405.3L313.3,405.9L314.0,408.3L313.4,409.4L312.4,409.2L312.0,411.1L311.0,410.0L310.4,407.8L311.1,406.7L310.3,406.4L309.8,405.1L308.2,404.0L306.9,404.3L306.3,405.7L305.1,406.7L304.4,406.8L304.1,407.6L305.5,409.8L304.7,410.3L304.3,410.9L302.8,411.1L302.3,408.7L301.9,409.4L300.9,409.2L300.3,407.6L299.0,407.3L298.2,406.8L296.9,406.8L296.8,407.7L296.5,407.1L296.7,406.3L296.9,405.5L296.8,404.8L297.2,404.3L296.6,403.7L296.6,402.1L297.8,401.7L298.9,403.2L298.8,404.0L300.0,404.2L300.3,403.9L301.2,404.9L302.7,404.6L304.0,403.6L305.8,402.7L306.9,401.6L308.5,401.8L308.4,402.2L310.1,402.3L311.5,403.0L312.5,404.2L313.6,405.3Z`,cx:280,cy:382},
+  caribbean: {d:`M298.6,347.2L301.3,347.5L303.7,347.6L306.5,348.9L307.8,350.4L310.6,350.0L311.7,350.9L314.3,353.4L316.2,355.2L317.2,355.1L319.0,355.9L318.8,357.1L321.0,357.2L323.3,358.9L323.0,359.8L321.0,360.3L318.9,360.5L316.8,360.2L312.4,360.6L314.5,358.3L313.2,357.3L311.2,357.0L310.2,355.9L309.5,353.6L307.7,353.8L304.9,352.7L304.0,351.9L300.0,351.2L298.9,350.5L300.1,349.5L297.1,349.2L294.9,351.3L293.6,351.4L293.2,352.4L291.7,352.8L290.4,352.4L292.0,351.2L292.6,349.7L294.0,348.8L295.6,348.1L297.9,347.7L298.6,347.2Z M330.9,361.1L331.1,363.3L330.9,364.9L330.2,365.5L331.0,366.7L330.9,367.8L328.9,367.1L327.4,367.4L325.6,367.1L324.1,367.9L322.5,366.6L322.8,365.3L325.6,365.9L327.9,366.2L329.0,365.3L327.6,363.6L327.6,362.1L325.7,361.4L326.4,360.3L328.2,360.5L330.9,361.1Z M330.9,367.8L331.0,366.7L330.2,365.5L330.9,364.9L331.1,363.3L330.9,361.1L331.3,360.5L333.6,360.5L335.5,361.5L336.3,361.4L336.8,362.8L338.5,362.7L338.4,363.9L339.7,364.1L341.3,365.6L340.1,367.2L338.7,366.3L337.3,366.5L336.3,366.3L335.7,367.0L334.5,367.3L334.1,366.3L333.1,366.9L331.8,369.6L331.0,369.0L330.9,367.8Z M313.0,366.0L315.0,366.4L316.7,367.4L317.2,368.5L315.0,368.5L314.1,369.2L312.4,368.6L310.6,367.1L311.0,366.2L312.3,365.9L313.0,366.0Z M361.5,397.0L363.3,396.4L363.9,396.6L363.8,399.6L361.3,400.0L360.7,399.6L361.6,398.5L361.5,397.0Z M308.7,332.8L310.1,332.5L312.1,332.6L312.2,333.7L308.9,334.3L308.7,332.8Z M312.3,331.8L314.7,333.6L314.2,336.5L313.6,336.0L313.7,333.9L312.3,332.3L312.3,331.8Z M311.1,339.2L312.0,339.3L313.1,342.6L313.1,345.0L312.3,345.2L311.6,342.9L310.4,341.7L311.1,339.2Z`,cx:326,cy:365},
+  south_america_north: {d:`M364.4,419.2L364.8,420.3L363.7,421.9L360.3,423.4L358.1,424.0L357.2,424.9L354.8,423.9L352.5,423.4L352.0,423.8L353.3,424.8L353.2,427.5L353.6,430.0L356.2,430.4L356.4,431.2L354.2,432.3L353.8,434.0L352.6,434.7L350.3,435.6L349.7,436.8L347.3,437.1L345.7,435.0L344.7,431.0L343.9,429.6L342.8,428.7L344.4,426.7L344.2,425.8L343.4,424.6L342.8,422.0L343.0,419.1L343.7,417.8L344.2,415.6L343.2,414.9L341.4,415.4L339.2,415.2L338.0,415.6L335.8,412.2L334.1,411.6L330.1,412.0L329.4,410.6L328.6,410.3L328.5,409.5L328.9,408.0L328.7,406.4L328.0,405.5L327.6,403.7L326.0,403.4L326.9,401.1L327.2,398.2L328.1,396.7L329.3,395.6L330.1,393.6L332.0,392.9L332.0,393.8L330.2,394.3L331.2,396.1L331.1,398.2L329.8,400.5L330.9,403.7L332.2,403.5L332.9,400.6L332.0,399.2L331.8,396.1L335.6,394.5L335.2,392.6L336.3,391.4L337.4,394.2L339.5,394.2L341.5,396.5L341.6,397.8L344.4,397.8L347.6,397.4L349.4,399.2L351.7,399.7L353.4,398.4L353.5,397.4L357.3,397.2L360.9,397.1L358.3,398.3L359.4,400.2L361.8,400.5L364.1,402.5L364.6,405.7L366.2,405.6L367.4,406.5L365.0,408.9L364.7,410.3L365.8,411.8L365.0,412.6L363.1,413.2L363.2,415.1L362.4,416.2L364.4,419.2Z M345.7,435.0L345.1,435.5L344.5,433.1L343.6,431.9L342.6,433.2L336.7,433.1L336.7,435.6L338.5,436.1L338.4,437.6L337.8,437.2L336.1,437.8L336.0,440.7L337.4,442.2L337.9,444.5L337.8,446.2L336.4,457.2L334.9,455.1L334.0,455.0L336.0,450.9L333.6,449.0L331.8,449.4L330.7,448.7L329.0,449.7L326.7,449.2L324.9,445.0L323.5,444.0L322.5,442.1L320.5,440.2L319.7,440.6L318.4,439.7L316.9,438.3L316.0,439.0L313.4,438.4L312.7,436.7L312.1,436.8L309.1,434.5L308.6,433.2L309.8,432.9L309.6,430.9L310.4,429.5L311.9,429.2L313.2,426.7L314.3,424.6L313.2,423.6L313.8,421.3L313.1,417.7L313.7,416.6L313.3,413.2L312.0,411.1L312.4,409.2L313.4,409.4L314.0,408.3L313.3,405.9L313.6,405.3L315.2,405.4L317.5,402.7L318.8,402.2L318.8,400.9L319.4,397.5L321.1,395.7L323.0,395.6L323.3,394.8L325.7,395.1L328.1,393.1L329.3,392.2L330.8,390.3L331.8,390.5L332.6,391.5L332.0,392.9L330.1,393.6L329.3,395.6L328.1,396.7L327.2,398.2L326.9,401.1L326.0,403.4L327.6,403.7L328.0,405.5L328.7,406.4L328.9,408.0L328.5,409.5L328.6,410.3L329.4,410.6L330.1,412.0L334.1,411.6L335.8,412.2L338.0,415.6L339.2,415.2L341.4,415.4L343.2,414.9L344.2,415.6L343.7,417.8L343.0,419.1L342.8,422.0L343.4,424.6L344.2,425.8L344.4,426.7L342.8,428.7L343.9,429.6L344.7,431.0L345.7,435.0Z M377.2,432.4L376.5,432.5L374.8,432.2L373.8,433.3L372.4,434.0L371.5,434.1L371.1,434.9L369.6,434.7L367.7,432.9L367.5,431.0L366.7,429.0L367.2,425.6L368.1,424.2L367.4,422.3L366.3,421.7L366.7,419.9L366.0,419.0L364.4,419.2L362.4,416.2L363.2,415.1L363.1,413.2L365.0,412.6L365.8,411.8L364.7,410.3L365.0,408.9L367.4,406.5L369.4,408.0L371.3,410.6L371.4,412.7L372.5,412.8L374.2,414.7L375.4,416.1L374.9,419.7L373.0,420.7L373.2,421.7L372.6,423.8L374.0,426.7L375.0,426.7L375.4,428.9L377.2,432.4Z M383.4,430.8L381.6,429.9L380.2,430.3L379.0,430.0L378.7,431.1L379.2,431.9L378.9,432.7L377.2,432.4L375.4,428.9L375.0,426.7L374.0,426.7L372.6,423.8L373.2,421.7L373.0,420.7L374.9,419.7L375.4,416.1L379.0,416.9L379.4,416.2L381.8,415.9L385.1,417.0L383.5,420.4L383.8,423.1L385.0,425.5L384.4,427.2L384.2,429.1L383.4,430.8Z`,cx:356,cy:420},
+  amazon: {d:`M386.9,575.1L386.1,572.8L387.4,570.9L385.6,568.2L383.3,566.0L380.1,563.4L379.0,563.5L375.9,560.4L373.9,560.9L378.0,555.4L381.4,551.5L383.5,549.9L386.1,547.7L386.1,544.5L384.6,542.2L383.1,543.0L383.7,540.6L384.1,538.3L384.1,536.1L383.0,535.4L381.9,536.0L380.7,535.8L380.4,534.3L380.1,530.6L379.5,529.4L377.4,528.3L376.2,529.1L373.0,528.4L373.2,522.9L372.3,520.7L373.2,519.9L372.9,517.6L373.8,515.8L374.3,512.7L373.6,510.2L371.9,509.1L371.6,507.5L372.0,505.2L366.2,505.0L365.0,500.4L365.9,500.3L365.9,498.6L365.3,497.4L365.1,495.1L363.4,493.9L361.4,494.0L360.2,492.8L358.1,492.0L356.9,490.5L353.5,489.8L350.2,486.3L350.4,483.6L350.0,482.0L350.4,479.0L346.4,479.7L344.7,481.2L342.1,482.8L341.4,484.1L339.8,484.1L337.5,483.8L335.8,484.5L334.4,484.0L334.6,478.0L332.1,480.3L329.4,480.2L328.3,478.1L326.3,477.8L326.9,476.1L325.2,473.7L323.9,470.1L324.7,469.4L324.7,467.7L326.6,466.5L326.3,464.4L327.1,463.0L327.3,461.1L330.8,458.4L333.3,457.6L333.7,457.0L336.4,457.2L337.8,446.2L337.9,444.5L337.4,442.2L336.0,440.7L336.1,437.8L337.8,437.2L338.4,437.6L338.5,436.1L336.7,435.6L336.7,433.1L342.6,433.2L343.6,431.9L344.5,433.1L345.1,435.5L345.7,435.0L347.3,437.1L349.7,436.8L350.3,435.6L352.6,434.7L353.8,434.0L354.2,432.3L356.4,431.2L356.2,430.4L353.6,430.0L353.2,427.5L353.3,424.8L352.0,423.8L352.5,423.4L354.8,423.9L357.2,424.9L358.1,424.0L360.3,423.4L363.7,421.9L364.8,420.3L364.4,419.2L366.0,419.0L366.7,419.9L366.3,421.7L367.4,422.3L368.1,424.2L367.2,425.6L366.7,429.0L367.5,431.0L367.7,432.9L369.6,434.7L371.1,434.9L371.5,434.1L372.4,434.0L373.8,433.3L374.8,432.2L376.5,432.5L377.2,432.4L378.9,432.7L379.2,431.9L378.7,431.1L379.0,430.0L380.2,430.3L381.6,429.9L383.4,430.8L384.7,431.6L385.7,430.5L386.4,430.7L386.8,431.8L388.2,431.5L389.4,430.0L390.3,427.0L392.2,423.4L393.2,423.2L394.0,425.4L395.7,432.4L397.3,433.1L397.4,435.8L395.1,439.1L396.0,440.3L401.4,440.9L401.5,445.0L403.9,442.3L407.7,443.8L412.8,446.2L414.3,448.6L413.8,450.8L417.3,449.5L423.3,451.6L427.8,451.5L432.4,454.8L436.3,459.3L438.6,460.4L441.2,460.6L442.3,461.9L443.4,467.0L443.9,469.4L442.7,476.0L441.1,478.6L436.8,484.2L434.9,488.7L432.6,492.2L431.8,492.2L431.0,495.2L431.2,502.7L430.3,508.8L430.0,511.5L429.1,513.0L428.5,518.4L425.4,523.6L424.9,527.7L422.4,529.5L421.7,531.9L418.4,531.9L413.6,533.4L411.4,535.2L408.0,536.4L404.4,539.5L401.8,543.5L401.4,546.5L401.9,548.7L401.3,552.7L400.6,554.7L398.5,556.9L395.1,563.9L392.4,567.1L390.3,569.0L388.9,572.8L386.9,575.1Z`,cx:376,cy:479},
+  south_america_east: {d:`M372.3,520.7L373.2,522.9L373.0,528.4L376.2,529.1L377.4,528.3L379.5,529.4L380.1,530.6L380.4,534.3L380.7,535.8L381.9,536.0L383.0,535.4L384.1,536.1L384.1,538.3L383.7,540.6L383.1,543.0L382.6,546.5L379.8,549.6L377.4,550.2L374.0,549.6L370.9,548.5L373.9,542.4L373.5,540.6L370.3,539.1L366.6,536.1L364.1,535.5L358.5,529.0L359.7,524.2L359.7,522.1L361.2,518.5L366.5,517.4L369.4,517.4L372.2,519.5L372.3,520.7Z M373.9,560.9L375.9,560.4L379.0,563.5L380.1,563.4L383.3,566.0L385.6,568.2L387.4,570.9L386.1,572.8L386.9,575.1L385.6,577.6L382.1,579.8L379.9,579.0L378.2,579.4L375.4,577.7L373.3,577.9L371.5,575.6L371.7,573.1L372.4,572.2L372.3,568.2L373.2,564.1L373.9,560.9Z M340.3,650.5L341.5,652.4L343.0,655.4L347.0,657.8L351.2,658.8L349.9,660.8L347.0,661.0L345.4,659.6L343.6,659.5L340.3,659.5L340.3,650.5Z M373.9,560.9L373.2,564.1L372.3,568.2L372.4,572.2L371.7,573.1L371.5,575.6L371.3,577.7L375.1,581.2L374.7,583.9L376.6,585.7L376.5,587.6L373.5,592.7L369.0,594.9L362.9,595.7L359.5,595.3L360.2,597.7L359.5,600.7L360.1,602.7L358.3,604.1L355.1,604.7L352.2,603.2L351.0,604.3L351.5,608.2L353.5,609.4L355.2,608.2L356.1,610.3L353.3,611.5L350.8,614.0L350.4,618.0L349.7,620.1L346.8,620.2L344.4,622.2L343.5,625.2L346.5,628.1L349.4,628.9L348.4,632.5L344.8,634.8L342.8,639.5L340.0,641.1L338.7,642.9L339.7,647.1L341.8,649.4L340.5,649.2L337.6,648.6L330.3,648.0L329.0,645.7L329.1,642.7L327.0,643.0L325.9,641.5L325.7,637.3L328.0,635.5L329.0,633.0L328.6,631.0L330.3,627.5L331.4,622.2L331.0,619.9L332.4,619.1L332.0,617.6L330.6,616.8L331.6,615.2L330.3,613.6L329.5,609.0L330.8,608.2L330.3,603.3L331.0,599.2L331.8,595.7L333.6,594.2L332.7,590.3L332.7,586.6L335.0,584.0L334.9,580.7L336.7,576.8L336.7,573.1L335.9,572.4L334.5,565.5L336.4,561.3L336.1,557.5L337.2,553.8L339.2,550.1L341.3,547.6L340.4,546.0L341.0,544.7L340.9,538.1L344.3,536.1L345.3,531.9L345.0,530.9L347.5,527.3L351.5,528.3L353.3,531.2L354.5,528.0L358.0,528.1L358.5,529.0L364.1,535.5L366.6,536.1L370.3,539.1L373.5,540.6L373.9,542.4L370.9,548.5L374.0,549.6L377.4,550.2L379.8,549.6L382.6,546.5L383.1,543.0L384.6,542.2L386.1,544.5L386.1,547.7L383.5,549.9L381.4,551.5L378.0,555.4L373.9,560.9Z`,cx:368,cy:564},
+  south_america_west: {d:`M336.4,457.2L333.7,457.0L333.3,457.6L330.8,458.4L327.3,461.1L327.1,463.0L326.3,464.4L326.6,466.5L324.7,467.7L324.7,469.4L323.9,470.1L325.2,473.7L326.9,476.1L326.3,477.8L328.3,478.1L329.4,480.2L332.1,480.3L334.6,478.0L334.4,484.0L335.8,484.5L337.5,483.8L340.2,490.2L339.5,491.6L339.4,494.4L339.3,497.8L338.1,499.8L338.7,501.3L338.0,502.6L339.3,506.0L337.4,510.3L336.5,512.4L335.0,513.4L331.9,511.1L331.6,509.5L325.6,505.4L320.1,501.1L317.7,498.6L316.5,495.3L317.0,494.1L314.4,488.9L311.4,481.5L308.5,473.5L307.2,471.7L306.3,468.8L303.9,466.2L301.7,464.5L302.7,462.8L301.2,458.9L302.2,456.1L304.6,453.6L305.0,455.3L304.1,456.2L304.2,457.7L305.5,457.4L306.7,457.8L308.0,459.8L309.7,458.2L310.3,455.5L312.2,452.0L315.8,450.4L319.2,446.2L320.1,443.6L319.7,440.6L320.5,440.2L322.5,442.1L323.5,444.0L324.9,445.0L326.7,449.2L329.0,449.7L330.7,448.7L331.8,449.4L333.6,449.0L336.0,450.9L334.0,455.0L334.9,455.1L336.4,457.2Z M337.5,483.8L339.8,484.1L341.4,484.1L342.1,482.8L344.7,481.2L346.4,479.7L350.4,479.0L350.0,482.0L350.4,483.6L350.2,486.3L353.5,489.8L356.9,490.5L358.1,492.0L360.2,492.8L361.4,494.0L363.4,493.9L365.1,495.1L365.3,497.4L365.9,498.6L365.9,500.3L365.0,500.4L366.2,505.0L372.0,505.2L371.6,507.5L371.9,509.1L373.6,510.2L374.3,512.7L373.8,515.8L372.9,517.6L373.2,519.9L372.3,520.7L372.2,519.5L369.4,517.4L366.5,517.4L361.2,518.5L359.7,522.1L359.7,524.2L358.5,529.0L358.0,528.1L354.5,528.0L353.3,531.2L351.5,528.3L347.5,527.3L345.0,530.9L342.7,531.5L341.6,526.0L339.9,521.5L340.9,517.6L339.3,515.9L338.9,513.0L337.4,510.3L339.3,506.0L338.0,502.6L338.7,501.3L338.1,499.8L339.3,497.8L339.4,494.4L339.5,491.6L340.2,490.2L337.5,483.8Z M340.3,650.5L340.3,659.5L343.6,659.5L345.4,659.6L344.4,661.2L341.8,662.4L340.3,662.3L338.5,662.0L336.2,660.8L333.0,660.2L329.2,658.0L326.1,655.8L321.9,651.3L324.4,652.2L328.7,654.9L332.7,656.3L334.3,654.5L335.3,651.7L338.1,650.1L340.3,650.5Z M337.4,510.3L338.9,513.0L339.3,515.9L340.9,517.6L339.9,521.5L341.6,526.0L342.7,531.5L345.0,530.9L345.3,531.9L344.3,536.1L340.9,538.1L341.0,544.7L340.4,546.0L341.3,547.6L339.2,550.1L337.2,553.8L336.1,557.5L336.4,561.3L334.5,565.5L335.9,572.4L336.7,573.1L336.7,576.8L334.9,580.7L335.0,584.0L332.7,586.6L332.7,590.3L333.6,594.2L331.8,595.7L331.0,599.2L330.3,603.3L330.8,608.2L329.5,609.0L330.3,613.6L331.6,615.2L330.6,616.8L332.0,617.6L332.4,619.1L331.0,619.9L331.4,622.2L330.3,627.5L328.6,631.0L329.0,633.0L328.0,635.5L325.7,637.3L325.9,641.5L327.0,643.0L329.1,642.7L329.0,645.7L330.3,648.0L337.6,648.6L340.5,649.2L337.8,649.2L336.3,650.2L333.5,651.6L333.0,655.3L331.7,655.4L328.3,654.1L324.8,651.3L324.8,651.3L321.0,649.1L320.0,646.5L320.9,644.2L319.4,641.5L319.0,634.7L320.3,630.8L323.5,627.8L318.9,626.6L321.8,623.1L322.8,616.4L326.2,617.8L327.8,609.5L325.8,608.5L324.8,613.5L322.9,612.9L323.8,607.2L324.9,599.8L326.3,597.0L325.4,593.1L325.1,588.6L326.4,588.5L328.3,582.0L330.4,575.6L331.7,569.7L331.0,563.7L331.9,560.4L331.6,555.4L333.3,550.6L333.9,542.8L334.9,534.5L335.8,525.6L335.6,519.0L335.0,513.4L336.5,512.4L337.4,510.3Z M319.7,440.6L320.1,443.6L319.2,446.2L315.8,450.4L312.2,452.0L310.3,455.5L309.7,458.2L308.0,459.8L306.7,457.8L305.5,457.4L304.2,457.7L304.1,456.2L305.0,455.3L304.6,453.6L306.3,450.6L305.6,448.9L304.4,450.7L302.6,449.0L303.2,447.9L302.7,444.2L303.8,443.6L304.3,441.1L305.5,438.6L305.3,436.9L307.0,436.1L309.1,434.5L312.1,436.8L312.7,436.7L313.4,438.4L316.0,439.0L316.9,438.3L318.4,439.7L319.7,440.6Z`,cx:330,cy:504},
+  australia: {d:`M1001.3,603.2L1003.1,603.5L1003.3,608.2L1002.3,609.6L1002.0,612.8L1000.9,611.8L998.8,614.5L998.1,614.3L996.3,614.2L994.4,610.8L994.0,608.1L992.2,604.7L992.3,602.8L994.3,603.2L997.2,604.6L998.9,604.0L1001.3,603.2Z M935.5,568.9L932.2,570.9L929.6,571.8L929.0,573.9L927.8,575.6L925.3,575.7L923.3,576.0L920.6,575.3L918.4,575.7L916.3,575.9L914.5,578.0L913.6,577.9L912.1,579.0L910.6,580.3L908.4,580.1L906.4,580.1L903.1,577.5L901.5,576.8L901.5,574.5L903.1,573.9L903.6,573.0L903.5,571.6L903.8,568.8L903.5,566.4L901.9,562.4L901.4,560.1L901.5,557.8L900.3,555.2L900.2,554.1L898.9,552.5L898.5,549.3L896.7,546.2L896.3,544.5L897.7,546.2L896.6,542.5L898.1,543.6L899.0,545.2L899.0,543.1L897.5,540.0L897.2,538.7L896.5,537.5L896.8,535.2L897.4,534.2L897.9,532.2L897.5,529.9L898.8,527.0L899.0,530.1L900.3,527.3L902.8,526.0L904.3,524.3L906.6,522.8L908.0,522.5L908.8,523.0L911.3,521.5L913.1,521.1L913.6,520.2L914.4,519.8L916.1,519.9L919.3,518.7L920.9,517.0L921.7,514.8L923.5,512.8L923.7,511.2L923.7,509.0L925.9,505.6L927.2,509.1L928.5,508.3L927.4,506.4L928.3,504.4L929.7,505.3L930.0,502.3L931.7,500.3L932.5,498.7L934.0,498.0L934.0,496.9L935.4,497.4L935.4,496.4L936.8,495.8L938.3,495.3L940.5,497.1L942.2,499.5L944.1,499.5L946.1,499.9L945.4,497.7L946.9,494.5L948.3,493.4L947.8,492.4L949.1,490.1L951.0,488.7L952.5,489.2L955.1,488.5L955.0,486.4L952.8,485.1L954.4,484.5L956.4,485.5L958.1,487.1L960.6,488.2L961.5,487.8L963.4,489.0L965.2,487.8L966.3,488.2L967.1,487.4L968.5,489.4L967.6,491.5L966.5,493.2L965.4,493.3L965.8,494.9L964.9,496.9L963.8,498.9L964.0,500.0L966.5,502.2L968.8,503.5L970.4,504.9L972.6,507.2L973.5,507.2L975.1,508.3L975.5,509.5L978.4,510.8L980.5,509.5L981.1,507.3L981.7,505.6L982.1,503.4L983.0,500.2L982.6,498.2L982.8,497.1L982.4,494.8L982.8,491.8L983.4,491.0L982.9,489.6L983.7,487.5L984.3,485.3L984.3,484.2L985.5,482.7L986.3,484.6L986.5,487.1L987.3,487.6L987.4,489.3L988.5,491.3L988.8,493.6L988.7,495.1L989.8,498.2L991.7,496.7L992.7,498.4L994.2,499.9L993.9,501.7L994.5,505.1L995.0,507.1L995.8,507.6L996.6,511.0L996.3,513.1L997.3,515.8L1000.6,517.9L1002.8,519.8L1004.8,521.6L1004.4,522.5L1006.2,525.0L1007.4,529.4L1008.6,528.5L1009.8,530.2L1010.6,529.6L1011.1,533.8L1013.3,536.3L1014.7,537.8L1017.1,541.1L1017.9,544.3L1018.0,546.6L1017.8,549.0L1019.2,552.4L1019.1,556.0L1018.5,557.8L1017.7,561.4L1017.8,563.7L1017.2,566.6L1015.8,570.2L1013.6,572.2L1012.4,575.3L1011.4,577.2L1010.5,580.7L1009.3,582.7L1008.6,585.7L1008.2,588.4L1008.3,589.7L1006.6,591.1L1003.2,591.2L1000.3,592.9L998.9,594.4L997.1,596.1L994.6,594.4L992.7,593.7L993.2,591.6L991.5,592.3L988.8,595.2L986.2,594.2L984.4,593.5L982.7,593.2L979.7,592.1L977.8,589.6L977.2,586.6L976.5,584.6L975.0,582.9L972.0,582.4L973.0,580.5L972.3,577.5L970.8,580.3L968.1,581.0L969.7,578.8L970.2,576.5L971.3,574.6L971.1,571.6L968.6,575.0L966.7,576.4L965.5,579.6L963.1,577.9L963.2,575.8L961.3,572.9L959.7,571.4L960.3,570.5L956.4,568.0L954.2,567.9L951.3,566.0L945.8,566.4L941.8,567.8L938.4,569.1L935.5,568.9Z`,cx:957,cy:535},
+  new_zealand: {d:`M1090.5,600.3L1089.3,602.4L1087.8,605.2L1085.5,606.8L1084.9,605.7L1083.7,605.1L1085.4,601.8L1084.4,599.6L1081.1,598.0L1081.2,596.6L1083.4,595.2L1083.9,592.1L1083.8,589.5L1082.6,586.8L1082.6,586.1L1081.2,584.5L1078.8,580.9L1077.5,578.1L1078.6,577.8L1080.3,580.0L1082.7,581.1L1083.5,584.6L1085.8,588.8L1085.8,586.1L1087.2,587.2L1087.7,590.2L1090.1,591.5L1092.2,591.8L1093.9,590.3L1095.5,590.8L1094.7,594.3L1093.8,596.7L1091.5,596.6L1090.6,597.8L1090.9,599.5L1090.5,600.3Z M1068.4,614.2L1071.0,612.1L1072.9,610.1L1074.2,607.1L1075.4,606.1L1075.9,603.8L1078.0,602.0L1078.7,603.7L1079.4,605.3L1081.5,603.7L1082.4,605.4L1082.4,607.1L1081.3,608.9L1079.3,611.9L1077.7,613.5L1078.9,615.4L1076.5,615.5L1073.9,617.0L1073.1,619.6L1071.3,623.6L1068.9,625.4L1067.4,626.6L1064.6,626.5L1062.6,625.2L1059.3,624.9L1058.8,623.4L1060.4,620.4L1064.3,616.5L1066.2,615.7L1068.4,614.2Z`,cx:1086,cy:593},
+  pacific_islands: {d:`M1100.0,504.3L1100.0,506.2L1098.1,507.2L1096.1,508.0L1095.7,506.6L1097.2,505.7L1098.2,505.5L1100.0,504.3Z M1094.3,510.0L1095.0,509.4L1096.1,510.5L1095.6,512.6L1093.7,513.2L1092.0,512.7L1091.7,510.9L1092.9,509.5L1094.3,510.0Z M1045.4,481.9L1046.2,483.3L1044.1,483.3L1042.9,480.8L1044.7,481.8L1045.4,481.9Z M1044.0,478.4L1043.6,479.1L1041.3,475.7L1040.7,473.3L1041.7,473.3L1042.8,476.5L1044.0,478.4Z M1041.5,479.5L1040.3,479.6L1038.4,479.2L1037.8,478.6L1038.0,477.0L1040.0,477.6L1041.0,478.4L1041.5,479.5Z M1037.8,472.1L1038.5,473.3L1038.6,474.2L1036.2,472.5L1034.6,471.0L1033.4,469.7L1033.9,469.3L1035.3,470.2L1037.8,472.1Z M1030.2,468.1L1031.4,469.4L1030.8,469.6L1029.4,468.7L1028.2,467.1L1028.3,466.4L1030.2,468.1Z M1060.9,503.6L1062.9,505.9L1061.9,506.4L1060.8,504.6L1060.9,503.6Z M1059.6,502.7L1059.2,501.6L1059.1,498.5L1060.6,499.7L1061.1,503.0L1060.3,502.5L1059.6,502.7Z`,cx:1063,cy:495},
+};
+
+const REGION_COLORS = {
+  arctic:            '#2a4a6b',
+  greenland:         '#5c4a72',
+  british_isles:     '#3d5a73',
+  scandinavia:       '#4a6741',
+  northern_europe:   '#5c4a72',
+  western_europe:    '#4a6741',
+  iberia:            '#3d5a73',
+  eastern_europe:    '#3d5a73',
+  balkans:           '#5c4a72',
+  russia:            '#5c4a72',
+  caucasus:          '#4a6741',
+  middle_east:       '#6b5b3e',
+  arabian_peninsula: '#3d5a73',
+  central_asia:      '#3d5a73',
+  mongolia:          '#3d5a73',
+  china:             '#5c4a72',
+  japan_korea:       '#4a6741',
+  india:             '#4a6741',
+  southeast_asia:    '#3d5a73',
+  north_africa:      '#5c4a72',
+  west_africa:       '#3d5a73',
+  central_africa:    '#5c4a72',
+  east_africa:       '#4a6741',
+  south_africa:      '#3d5a73',
+  north_america_west:'#3d5a73',
+  north_america_east:'#4a6741',
+  central_america:   '#5c4a72',
+  caribbean:         '#3d5a73',
+  south_america_north:'#4a6741',
+  amazon:            '#3d5a73',
+  south_america_east:'#5c4a72',
+  south_america_west:'#5c4a72',
+  australia:         '#4a6741',
+  new_zealand:       '#3d5a73',
+  pacific_islands:   '#5c4a72',
+};
+
+function buildMap() {
+  const g = document.getElementById('regions-g');
+  const lg = document.getElementById('labels-g');
+  g.innerHTML = '';
+  lg.innerHTML = '';
+
+  REGIONS.forEach(rd => {
+    const rp = REGION_PATHS[rd.id];
+    if (!rp) return;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', rp.d);
+    path.setAttribute('id', 'r-' + rd.id);
+    path.setAttribute('class', 'region');
+    path.setAttribute('data-id', rd.id);
+    path.style.fill = REGION_COLORS[rd.id] || '#2a3a52';
+
+    path.addEventListener('click', () => selectRegion(rd.id));
+    path.addEventListener('mouseenter', (e) => showTooltip(e, rd.id));
+    path.addEventListener('mousemove', (e) => moveTooltip(e));
+    path.addEventListener('mouseleave', () => hideTooltip());
+    g.appendChild(path);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', rp.cx);
+    text.setAttribute('y', rp.cy);
+    text.setAttribute('class', 'region-label');
+    text.setAttribute('id', 'rl-' + rd.id);
+    text.textContent = rd.name;
+    lg.appendChild(text);
+  });
+}
+
+function renderMapColors() {
+  REGIONS.forEach(rd => {
+    const poly = document.getElementById('r-' + rd.id);
+    if (!poly) return;
+    const rs = state.regions[rd.id];
+    if (!rs) return;
+
+    let cls = 'region';
+    if (rd.id === state.selectedRegion) cls += ' selected';
+
+    if (rs.owner === 'player') {
+      cls += ' owned';
+      poly.style.fill = '';
+    } else if (rs.owner !== 'neutral') {
+      cls += ` enemy-${rs.owner}`;
+      poly.style.fill = '';
+    } else {
+      poly.style.fill = REGION_COLORS[rd.id] || '#2a3a52';
+    }
+    poly.setAttribute('class', cls);
+  });
+}
+
+function updateOwnedCount() {
+  const cnt = Object.values(state.regions).filter(r => r.owner === 'player').length;
+  const el = document.getElementById('owned-count');
+  if (el) el.textContent = cnt;
+
+  const ms = document.getElementById('map-stats');
+  if (ms) {
+    const totalPow = calcTotalMilPower();
+    ms.textContent = `Total Power: ${Math.round(totalPow).toLocaleString()}`;
+  }
+}
+
+function calcTotalMilPower() {
+  let total = 0;
+  UNIT_DEFS.forEach(ud => {
+    total += (state.mil[ud.id] || 0) * ud.power;
+  });
+  return total;
+}
+
+// =====================================================================
+// SELECTION
+// =====================================================================
+
+function selectRegion(id) {
+  state.selectedRegion = id;
+  renderMapColors();
+  const rd = REGIONS.find(r => r.id === id);
+  const rs = state.regions[id];
+  if (rd && rs) {
+    const fl = document.getElementById('map-footer-left');
+    if (fl) fl.textContent = `Selected: ${rd.name} — ${rs.owner === 'player' ? 'Owned' : rs.owner === 'neutral' ? 'Neutral' : 'Enemy'}`;
+  }
+  if (rightTab === 'region' || rightTab === 'buildings') renderRightPanel();
+}
+
+// =====================================================================
+// UI RENDERS
+// =====================================================================
+
+function renderAll() {
+  updateHeader();
+  renderLeftPanel();
+  renderRightPanel();
+  renderMapColors();
+  updateOwnedCount();
+  renderBoostBar();
+}
+
+function updateHeader() {
+  const bar = document.getElementById('res-bar');
+  if (!bar) return;
+  const primary = ['gold','food','energy','pop','iron','oil','wood','copper'];
+  const secondary = ['silicon','uranium','surplus_food','diamond','rare_earth','ice_core'];
+  let html = '';
+  [...primary, ...secondary].forEach(k => {
+    const val = state.res[k] || 0;
+    const rate = state.lastRates[k] || 0;
+    if (secondary.includes(k) && val < 1 && Math.abs(rate) < 0.01) return;
+    const cap = state.resCap[k];
+    const valStr = k === 'pop' && cap ? `${fmtRes(val)}/${fmtRes(cap)}` : fmtRes(val);
+    html += `<div class="res-chip" data-res="${k}"
+      onmouseenter="showResTooltip(event,'${k}')"
+      onmousemove="moveResTooltip(event)"
+      onmouseleave="hideResTooltip()">
+      <span class="icon">${RES_ICONS[k]}</span>
+      <span class="val">${valStr}</span>
+      ${rate !== 0 ? `<span class="rate">${fmtRate(rate)}</span>` : ''}
+    </div>`;
+  });
+  bar.innerHTML = html;
+}
+
+function renderBoostBar() {
+  const bar = document.getElementById('boost-bar');
+  if (!bar) return;
+  const now = Date.now();
+  const active = state.activeBoosts.filter(b => b.endsAt > now);
+  if (active.length === 0) { bar.classList.remove('active'); bar.innerHTML = ''; return; }
+  bar.classList.add('active');
+  bar.innerHTML = active.map((b, i) => {
+    const secs = Math.ceil((b.endsAt - now) / 1000);
+    const evDef = RANDOM_EVENTS.find(e => e.title === b.name || b.name.startsWith(e.title));
+    const desc = evDef ? evDef.desc : b.name;
+    return `<div class="boost-chip" data-boost-idx="${i}" data-boost-desc="${desc}" data-boost-name="${b.name}">⚡ ${b.name} (${secs}s)</div>`;
+  }).join('');
+  bar.querySelectorAll('.boost-chip').forEach(chip => {
+    chip.onmouseenter = (e) => {
+      const tt = document.getElementById('event-banner-tooltip');
+      document.getElementById('ebt-title').textContent = chip.dataset.boostName;
+      document.getElementById('ebt-desc').textContent = chip.dataset.boostDesc;
+      tt.style.top = (e.clientY + 12) + 'px';
+      tt.style.left = e.clientX + 'px';
+      tt.classList.add('visible');
+    };
+    chip.onmousemove = (e) => {
+      const tt = document.getElementById('event-banner-tooltip');
+      tt.style.top = (e.clientY + 12) + 'px';
+      tt.style.left = e.clientX + 'px';
+    };
+    chip.onmouseleave = () => document.getElementById('event-banner-tooltip').classList.remove('visible');
+  });
+}
+
+function switchLeftTab(tab) {
+  leftTab = tab;
+  document.querySelectorAll('.ptab[data-ltab]').forEach(el => {
+    el.classList.toggle('active', el.dataset.ltab === tab);
+  });
+  renderLeftPanel();
+}
+
+function switchRightTab(tab) {
+  rightTab = tab;
+  document.querySelectorAll('.ptab[data-rtab]').forEach(el => {
+    el.classList.toggle('active', el.dataset.rtab === tab);
+  });
+  renderRightPanel();
+}
+
+function buildTechTreeOrder(techs) {
+  const roots = techs.filter(t => t.req.length === 0 || !t.req.some(r => techs.find(t2 => t2.id === r)));
+  const ordered = [];
+  const visited = new Set();
+  function addNode(t, depth) {
+    if (visited.has(t.id)) return;
+    visited.add(t.id);
+    ordered.push({ tech: t, depth });
+    techs.filter(tc => tc.req.includes(t.id)).forEach(child => addNode(child, depth + 1));
+  }
+  roots.forEach(r => addNode(r, 0));
+  techs.forEach(t => { if (!visited.has(t.id)) ordered.push({ tech: t, depth: 0 }); });
+  return ordered;
+}
+
+// ── Tech Tree 2D grid layout ──
+// tier = Y axis (rows top→bottom), slot = X axis (position within tier)
+function computeTreeLayout(techs) {
+  const nodeMap = {};
+  const children = {};
+  techs.forEach(t => { nodeMap[t.id] = t; children[t.id] = []; });
+  techs.forEach(t => {
+    t.req.forEach(pid => { if (children[pid]) children[pid].push(t.id); });
+  });
+
+  // BFS to assign tier (depth) — each node's tier = max(parent tiers) + 1
+  const tier = {};
+  const roots = techs.filter(t => t.req.length === 0 || !t.req.some(r => nodeMap[r]));
+  roots.forEach(r => tier[r.id] = 0);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    techs.forEach(t => {
+      const maxParentTier = t.req.reduce((mx, pid) => {
+        if (nodeMap[pid] === undefined) return mx;
+        return Math.max(mx, tier[pid] !== undefined ? tier[pid] : 0);
+      }, -1);
+      const newTier = maxParentTier + 1;
+      if (tier[t.id] !== newTier) { tier[t.id] = newTier; changed = true; }
+    });
+  }
+  techs.forEach(t => { if (tier[t.id] === undefined) tier[t.id] = 0; });
+
+  // Group by tier, assign slot (x) within each tier
+  const tierGroups = {};
+  techs.forEach(t => {
+    const ti = tier[t.id];
+    if (!tierGroups[ti]) tierGroups[ti] = [];
+    tierGroups[ti].push(t.id);
+  });
+
+  const slot = {};
+  Object.keys(tierGroups).forEach(ti => {
+    tierGroups[ti].forEach((id, i) => { slot[id] = i; });
+  });
+
+  const maxTier = Math.max(...Object.values(tier));
+  const maxSlots = Math.max(...Object.keys(tierGroups).map(ti => tierGroups[ti].length));
+
+  return { tier, slot, tierGroups, maxTier, maxSlots };
+}
+
+// ── SVG Tech Tree renderer (2D grid, top-down like skill tree) ──
+function renderTechTreeSVG(techs, containerId, opts = {}) {
+  const { tier, slot, tierGroups, maxTier, maxSlots } = computeTreeLayout(techs);
+
+  const nodeSize = opts.nodeSize || 58; // square node
+  const gapX     = opts.gapX    || 18;
+  const gapY     = opts.gapY    || 36;
+  const padX     = 12;
+  const padY     = 12;
+
+  // Center each tier's nodes horizontally relative to the widest tier
+  const totalW = padX * 2 + maxSlots * (nodeSize + gapX) - gapX;
+
+  const cx = id => {
+    const tiSlots = tierGroups[tier[id]].length;
+    const tiW = tiSlots * (nodeSize + gapX) - gapX;
+    const offset = (totalW - tiW) / 2;
+    return padX + offset + slot[id] * (nodeSize + gapX) + nodeSize / 2;
+  };
+  const cy = id => padY + tier[id] * (nodeSize + gapY) + nodeSize / 2;
+
+  const totalH = padY * 2 + (maxTier + 1) * (nodeSize + gapY) - gapY;
+
+  let edges = '';
+  let nodes = '';
+
+  // Edges — vertical lines from bottom-center of parent to top-center of child
+  techs.forEach(t => {
+    t.req.forEach(pid => {
+      if (tier[pid] === undefined) return;
+      const researched   = state.research.has(t.id) && state.research.has(pid);
+      const parentDone   = state.research.has(pid);
+      const color  = researched ? '#43aa8b' : parentDone ? 'rgba(249,199,79,0.55)' : 'rgba(255,255,255,0.13)';
+      const sw     = researched ? 2.5 : 1.5;
+
+      const x1 = cx(pid), y1 = cy(pid) + nodeSize / 2;
+      const x2 = cx(t.id), y2 = cy(t.id) - nodeSize / 2;
+      const my = (y1 + y2) / 2;
+
+      edges += `<path id="tte-${pid}__${t.id}" data-from="${pid}" data-to="${t.id}"
+        d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}"
+        stroke="${color}" stroke-width="${sw}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    });
+  });
+
+  // Nodes — square with rounded corners, icon + short name
+  techs.forEach(t => {
+    const researched = state.research.has(t.id);
+    const prereqMet  = t.req.every(r => state.research.has(r));
+    const affordable = canAfford(t.cost);
+    const locked     = !prereqMet;
+
+    const nx = cx(t.id) - nodeSize / 2;
+    const ny = cy(t.id) - nodeSize / 2;
+    const rr = 8;
+
+    let fill, stroke, sw, op;
+    if (researched)     { fill='rgba(67,170,139,0.3)';  stroke='#43aa8b';               sw=2.5; op=1;    }
+    else if (locked)    { fill='rgba(10,20,40,0.6)';    stroke='rgba(255,255,255,0.12)'; sw=1;   op=0.45; }
+    else if (affordable){ fill='rgba(61,156,212,0.22)'; stroke='#3d9cd4';               sw=2;   op=1;    }
+    else                { fill='rgba(255,255,255,0.05)'; stroke='rgba(255,255,255,0.25)'; sw=1;  op=0.8;  }
+
+    // Glow ring for available nodes
+    const glow = (!locked && !researched && affordable)
+      ? `<rect x="${nx-3}" y="${ny-3}" width="${nodeSize+6}" height="${nodeSize+6}" rx="${rr+3}" ry="${rr+3}" fill="none" stroke="rgba(61,156,212,0.18)" stroke-width="4"/>`
+      : researched
+      ? `<rect x="${nx-3}" y="${ny-3}" width="${nodeSize+6}" height="${nodeSize+6}" rx="${rr+3}" ry="${rr+3}" fill="none" stroke="rgba(67,170,139,0.15)" stroke-width="4"/>`
+      : '';
+
+    const iconFontSize = 22;
+    const iconY = ny + nodeSize * 0.42;
+    const nameY = ny + nodeSize - 9;
+    const shortName = t.name.length > 11 ? t.name.slice(0, 10) + '…' : t.name;
+
+    nodes += `<g id="ttn-${t.id}" class="tt-node" data-id="${t.id}" onclick="ttNodeClick('${t.id}')" onmouseenter="ttShowTip(event,'${t.id}')" onmouseleave="ttHideTip()" style="opacity:${op}">
+      ${glow}
+      <rect x="${nx}" y="${ny}" width="${nodeSize}" height="${nodeSize}" rx="${rr}" ry="${rr}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" class="tt-node-circle"/>
+      <text x="${cx(t.id)}" y="${iconY}" text-anchor="middle" dominant-baseline="middle" font-size="${iconFontSize}" style="pointer-events:none">${t.icon}</text>
+      <text x="${cx(t.id)}" y="${nameY}" text-anchor="middle" dominant-baseline="auto" font-size="7.5" fill="rgba(232,244,253,0.88)" font-weight="700" font-family="Nunito,sans-serif" style="pointer-events:none">${shortName}</text>
+    </g>`;
+  });
+
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = `<svg viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" style="display:block">${edges}${nodes}</svg>`;
+}
+
+function ttNodeClick(techId) {
+  researchTech(techId);
+}
+
+const _ttTipEl = () => document.getElementById('tt-tooltip');
+
+// Collect all ancestor IDs (nodes that lead TO techId)
+function _ttAncestors(techId) {
+  const visited = new Set();
+  function walk(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    const t = TECH_DEFS.find(x => x.id === id);
+    if (t) t.req.forEach(pid => walk(pid));
+  }
+  walk(techId);
+  visited.delete(techId);
+  return visited;
+}
+
+// Collect all descendant IDs (nodes that require techId, directly or indirectly)
+function _ttDescendants(techId) {
+  const visited = new Set();
+  function walk(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    TECH_DEFS.filter(x => x.req.includes(id)).forEach(child => walk(child.id));
+  }
+  TECH_DEFS.filter(x => x.req.includes(techId)).forEach(child => walk(child.id));
+  return visited;
+}
+
+function _ttHighlightPath(techId) {
+  const ancestors   = _ttAncestors(techId);
+  const descendants = _ttDescendants(techId);
+  const allNodes    = new Set([techId, ...ancestors, ...descendants]);
+
+  document.querySelectorAll('.tt-node').forEach(el => {
+    const id = el.dataset.id;
+    if (!allNodes.has(id)) {
+      el.style.opacity = '0.12';
+      el.style.filter  = '';
+    } else if (id === techId) {
+      el.style.opacity = '1';
+      el.style.filter  = 'drop-shadow(0 0 8px rgba(249,199,79,0.9))';
+    } else if (ancestors.has(id)) {
+      el.style.opacity = '1';
+      el.style.filter  = 'brightness(1.35)';
+    } else {
+      el.style.opacity = '0.65';
+      el.style.filter  = 'brightness(0.85)';
+    }
+  });
+
+  document.querySelectorAll('[id^="tte-"]').forEach(el => {
+    const from = el.dataset.from, to = el.dataset.to;
+    const onAncPath  = (ancestors.has(from)   || from === techId) && (ancestors.has(to)   || to === techId);
+    const onDescPath = (descendants.has(from) || from === techId) && (descendants.has(to) || to === techId);
+    // Save originals once
+    if (!el.dataset.origStroke) {
+      el.dataset.origStroke = el.getAttribute('stroke') || '';
+      el.dataset.origSw     = el.getAttribute('stroke-width') || '';
+    }
+    if (onAncPath) {
+      el.setAttribute('stroke', '#f9c74f');
+      el.setAttribute('stroke-width', '3.5');
+      el.style.opacity = '1';
+    } else if (onDescPath) {
+      el.setAttribute('stroke', 'rgba(61,156,212,0.8)');
+      el.setAttribute('stroke-width', '2.5');
+      el.style.opacity = '1';
+    } else {
+      el.style.opacity = '0.07';
+    }
+  });
+}
+
+function _ttResetHighlight() {
+  document.querySelectorAll('.tt-node').forEach(el => {
+    el.style.opacity = '';
+    el.style.filter  = '';
+  });
+  document.querySelectorAll('[id^="tte-"]').forEach(el => {
+    // Restore original stroke values saved before highlight
+    if (el.dataset.origStroke !== undefined) {
+      if (el.dataset.origStroke) el.setAttribute('stroke', el.dataset.origStroke);
+      else el.removeAttribute('stroke');
+      if (el.dataset.origSw) el.setAttribute('stroke-width', el.dataset.origSw);
+      else el.removeAttribute('stroke-width');
+      delete el.dataset.origStroke;
+      delete el.dataset.origSw;
+    }
+    el.style.opacity = '';
+  });
+}
+
+function ttShowTip(e, techId) {
+  const t = TECH_DEFS.find(td => td.id === techId);
+  if (!t) return;
+  const researched = state.research.has(t.id);
+  const prereqMet  = t.req.every(r => state.research.has(r));
+  const affordable = canAfford(t.cost);
+  const locked     = !prereqMet;
+
+  const costStr = Object.entries(t.cost).map(([k,v]) =>
+    `<span class="cost-chip">${RES_ICONS[k]||k}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`
+  ).join('');
+
+  let statusColor, statusText;
+  if (researched)     { statusColor = '#43aa8b'; statusText = '✅ Already researched'; }
+  else if (locked)    { statusColor = '#e63946'; statusText = '\u{1F512} Locked — needs: ' + t.req.filter(r=>!state.research.has(r)).map(r=>{const td=TECH_DEFS.find(x=>x.id===r);return td?td.name:r;}).join(' + '); }
+  else if (affordable){ statusColor = '#3d9cd4'; statusText = '\u{1F52C} Click to research'; }
+  else                { statusColor = '#f9c74f'; statusText = '⏳ Insufficient resources'; }
+
+  const el = _ttTipEl();
+  el.innerHTML = `<div class="tt-name">${t.icon} ${t.name}</div><div class="tt-desc">${t.desc}</div><div class="tt-cost-row">${costStr}</div><div class="tt-status" style="color:${statusColor}">${statusText}</div>`;
+  el.classList.remove('hidden');
+  _ttPositionTip(e);
+  _ttHighlightPath(techId);
+}
+
+function ttHideTip() {
+  _ttTipEl().classList.add('hidden');
+  _ttResetHighlight();
+}
+
+
+function _ttPositionTip(e) {
+  const el = _ttTipEl();
+  const W = el.offsetWidth || 200, H = el.offsetHeight || 100;
+  let x = e.clientX + 14, y = e.clientY + 10;
+  if (x + W > window.innerWidth - 8)  x = e.clientX - W - 8;
+  if (y + H > window.innerHeight - 8) y = e.clientY - H - 8;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+}
+
+function renderLeftPanel() {
+  const body = document.getElementById('left-panel-body');
+  if (!body) return;
+  const techs = TECH_DEFS.filter(t => t.branch === leftTab);
+  if (techs.length === 0) { body.innerHTML = '<div class="empty-msg">No technologies in this branch.</div>'; return; }
+
+  const ordered = buildTechTreeOrder(techs);
+  const visible = ordered.filter(({ tech }) => {
+    if (state.research.has(tech.id)) return true;
+    return tech.req.every(r => state.research.has(r));
+  });
+
+  const curTab = leftTab;
+  let html = `<button class="tech-tree-btn" onclick="openTechTreeModal('${curTab}')">\u{1F333} View Tree</button>`;
+  html += visible.map(({ tech, depth }) => {
+    const indent = depth * 14;
+    const connector = depth > 0 ? '<span class="tn-connector">\u2514\u2500 </span>' : '';
+    const researched = state.research.has(tech.id);
+    const prereqMet = tech.req.every(r => state.research.has(r));
+    const affordable = canAfford(tech.cost);
+    const locked = !prereqMet;
+    let cls = 'tech-node';
+    if (researched) cls += ' researched';
+    else if (locked) cls += ' locked';
+    const costStr = Object.entries(tech.cost).map(([k,v]) => `<span class="cost-chip">${RES_ICONS[k]}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`).join('');
+    return `<div class="${cls}" style="margin-left:${indent}px" onclick="researchTech('${tech.id}')">
+      <div class="tn-head">${connector}<span class="tn-icon">${tech.icon}</span><span class="tn-name">${tech.name}</span></div>
+      <div class="tn-cost">${costStr}</div>
+      <div class="tn-desc">${tech.desc}</div>
+      ${locked ? `<div style="font-size:9px;color:var(--red);margin-top:2px">\u{1F512} Needs: ${tech.req.filter(r=>!state.research.has(r)).map(r=>{const t=TECH_DEFS.find(td=>td.id===r);return t?t.name:r;}).join(' + ')}</div>` : ''}
+      <div class="tn-status">${researched ? '\u2705 Researched' : locked ? '\u{1F512} Locked' : affordable ? '\u{1F52C} Research' : '\u23F3 Insufficient resources'}</div>
+    </div>`;
+  }).join('');
+  body.innerHTML = html;
+}
+
+function openTechTreeModal(branch) {
+  const modal = document.getElementById('tech-tree-modal');
+  const modalBox = modal.querySelector('.modal-box');
+  const body = document.getElementById('tech-tree-modal-body');
+  const BRANCH_COLOR = { economy:'#f9c74f', science:'#3d9cd4', military:'#e63946' };
+
+  modalBox.style.width = '92vw';
+  modalBox.style.maxWidth = '1200px';
+
+  const activeBranch = branch || 'economy';
+
+  let html = `<div style="display:flex;gap:6px;margin-bottom:14px">
+    ${['economy','science','military'].map(b => {
+      const active = b === activeBranch;
+      const col = BRANCH_COLOR[b];
+      return `<button onclick="openTechTreeModal('${b}')" style="flex:1;padding:7px;border:1px solid ${active?col:'var(--border)'};border-radius:7px;background:${active?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.03)'};color:${active?col:'var(--muted)'};font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;transition:.15s">${b.charAt(0).toUpperCase()+b.slice(1)}</button>`;
+    }).join('')}
+  </div>
+  <div id="tech-modal-svg-${activeBranch}" style="overflow:auto;display:flex;justify-content:center;padding:8px 0"></div>`;
+
+  body.innerHTML = html;
+
+  const techs = TECH_DEFS.filter(t => t.branch === activeBranch);
+  renderTechTreeSVG(techs, `tech-modal-svg-${activeBranch}`, { nodeSize: 68, gapX: 20, gapY: 48 });
+
+  modal.classList.remove('hidden');
+}
+
+function renderTechNode(t) {
+  const researched = state.research.has(t.id);
+  const prereqMet = t.req.every(r => state.research.has(r));
+  const affordable = canAfford(t.cost);
+  const locked = !prereqMet;
+  let cls = 'tech-node';
+  if (researched) cls += ' researched';
+  else if (locked) cls += ' locked';
+
+  const costStr = Object.entries(t.cost).map(([k,v]) => `<span class="cost-chip">${RES_ICONS[k]}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`).join('');
+
+  return `<div class="${cls}" onclick="researchTech('${t.id}')">
+    <div class="tn-head">
+      <span class="tn-icon">${t.icon}</span>
+      <span class="tn-name">${t.name}</span>
+    </div>
+    <div class="tn-cost">${costStr}</div>
+    <div class="tn-desc">${t.desc}</div>
+    <div class="tn-status">${researched ? '✅ Researched' : locked ? '🔒 Locked' : affordable ? '🔬 Research' : '⏳ Insufficient resources'}</div>
+  </div>`;
+}
+
+function renderRightPanel() {
+  const body = document.getElementById('right-panel-body');
+  if (!body) return;
+  if (rightTab === 'region')    body.innerHTML = renderRegionPanel();
+  else if (rightTab === 'military') body.innerHTML = renderMilitaryPanel();
+  else if (rightTab === 'buildings') body.innerHTML = renderBuildingsPanel();
+}
+
+function renderRegionPanel() {
+  if (!state.selectedRegion) return '<div class="empty-msg">Select a region on the map.</div>';
+  const rd = REGIONS.find(r => r.id === state.selectedRegion);
+  const rs = state.regions[state.selectedRegion];
+  if (!rd || !rs) return '<div class="empty-msg">Region not found.</div>';
+
+  const isPlayer = rs.owner === 'player';
+  const isEnemy  = rs.owner !== 'player' && rs.owner !== 'neutral';
+  const isNeutral = rs.owner === 'neutral';
+  const faction = ENEMY_FACTIONS.find(f => f.id === rs.owner);
+  const ownerName = isPlayer ? '🟢 Your Territory' : isNeutral ? '⚪ Neutral' : `🔴 ${faction ? faction.name : rs.owner}`;
+  const defense = getRegionDefense(rd.id);
+  const blds = state.buildings[rd.id] || [];
+
+  const defLabel = isNeutral ? '⚔️ Militia Power' : isPlayer ? '🛡️ Defense' : '🔴 Enemy Power';
+  let html = `<div class="region-info">
+    <div class="ri-name">${rd.name}</div>
+    <div class="ri-row"><span class="ri-label">Owner</span><span>${ownerName}</span></div>
+    <div class="ri-row"><span class="ri-label">Terrain</span><span>${rd.terrain}</span></div>
+    <div class="ri-row"><span class="ri-label">Resources</span><span style="display:flex;flex-direction:column;gap:1px;text-align:right">${rd.specialRes.length > 0 ? rd.specialRes.map(r => `<span>- ${RES_ICONS[r]||r} ${RES_NAMES[r]||r}</span>`).join('') : 'None'}</span></div>
+    <div class="ri-row"><span class="ri-label">${defLabel}</span><span style="font-weight:700;color:${isNeutral?'#aaa':isPlayer?'var(--green)':'var(--red)'}">${Math.round(defense)}</span></div>
+    <div class="ri-row"><span class="ri-label">Troops</span><span>${rs.troops || 0}</span></div>
+    <div class="ri-row"><span class="ri-label">Buildings</span><span>${blds.length > 0 ? blds.map(b => { const bd = BUILDING_DEFS.find(x=>x.id===b); return bd ? bd.icon : b; }).join(' ') : 'None'}</span></div>
+    <div class="ri-row"><span class="ri-label">Neighbors</span><span style="font-size:10px">${rd.neighbors.length}</span></div>
+  </div>`;
+
+  html += '<div class="action-btns">';
+  if (isEnemy || (rs.owner === 'rebel')) {
+    const isAdjacent = REGIONS.some(r => r.id !== rd.id && r.neighbors.includes(rd.id) && state.regions[r.id].owner === 'player');
+    if (!isAdjacent) {
+      html += `<button class="action-btn btn-attack" disabled>Not Adjacent</button>`;
+    } else if (requiresNavalToAttack(rd.id) && !state.research.has('copper_smelting')) {
+      html += `<button class="action-btn btn-attack" disabled>⚓ Naval Force Required</button>`;
+    } else {
+      html += `<button class="action-btn btn-attack" onclick="openCombat('${rd.id}')">⚔️ Attack ${rd.name}</button>`;
+    }
+  } else if (isNeutral) {
+    const isAdjacent = REGIONS.some(r => r.id !== rd.id && r.neighbors.includes(rd.id) && state.regions[r.id].owner === 'player');
+    if (!isAdjacent) {
+      html += `<button class="action-btn btn-reinforce" disabled>Not Adjacent</button>`;
+    } else if (requiresNavalToAttack(rd.id) && !state.research.has('copper_smelting')) {
+      html += `<button class="action-btn btn-reinforce" disabled>⚓ Naval Force Required</button>`;
+    } else {
+      html += `<button class="action-btn btn-attack" onclick="colonize('${rd.id}')">⚔️ Conquer ${rd.name}</button>`;
+    }
+  } else if (isPlayer) {
+    html += `<button class="action-btn btn-reinforce" onclick="reinforceRegion('${rd.id}')">🔄 Reinforce (+5 troops) — 💰25</button>`;
+    html += `<button class="action-btn btn-build" onclick="switchRightTab('buildings')">🏗️ Build</button>`;
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function renderMilitaryPanel() {
+  const cats = ['land','sea','air','space'];
+  const catNames = { land:'⚔️ Land Forces', sea:'⚓ Naval Forces', air:'✈️ Air Forces', space:'🚀 Space Forces' };
+  let totalPow = 0;
+  let html = '';
+
+  cats.forEach(cat => {
+    const units = UNIT_DEFS.filter(u => u.category === cat);
+    if (!units.length) return;
+    const anyVisible = units.some(u => u.unlockPhase <= state.phase);
+    if (!anyVisible) return;
+
+    html += `<div class="cat-header">${catNames[cat]}</div>`;
+    units.forEach(ud => {
+      if (ud.unlockPhase > state.phase) return;
+      const cnt = state.mil[ud.id] || 0;
+      const pow = cnt * ud.power;
+      totalPow += pow;
+      const hasReq = ud.requires.every(r => state.research.has(r));
+      const atCap = cnt >= ud.limit;
+      const affordable = canAfford(ud.cost);
+      const costStr = Object.entries(ud.cost).map(([k,v]) => `<span class="cost-chip">${RES_ICONS[k]}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`).join('');
+      const btnDisabled = !hasReq || atCap || !affordable;
+
+      if (!hasReq) {
+        // Show locked state with required techs
+        const missingReqs = ud.requires.filter(r => !state.research.has(r))
+          .map(r => { const t = TECH_DEFS.find(td=>td.id===r); return t ? t.name : r; }).join(', ');
+        html += `<div class="unit-row" style="opacity:.45" title="${ud.desc}">
+          <div class="u-icon">${ud.icon}</div>
+          <div class="u-info">
+            <div class="u-name">${ud.name} 🔒</div>
+            <div class="u-count" style="color:var(--red)">Needs: ${missingReqs}</div>
+          </div>
+          <button class="u-btn" disabled>🔒</button>
+        </div>`;
+      } else {
+        html += `<div class="unit-row" title="${ud.desc}">
+          <div class="u-icon">${ud.icon}</div>
+          <div class="u-info">
+            <div class="u-name">${ud.name}</div>
+            <div class="u-count">${cnt}/${ud.limit} — Pwr:${ud.power}</div>
+            <div class="u-power">${costStr}</div>
+          </div>
+          <div class="u-recruit-btns">
+            <button class="u-btn" onclick="recruitUnit('${ud.id}',1)" ${btnDisabled ? 'disabled' : ''}>${atCap ? 'MAX' : '+1'}</button>
+            ${!atCap ? `<button class="u-btn u-btn-sm" onclick="recruitUnit('${ud.id}',5)" ${btnDisabled ? 'disabled' : ''}>+5</button>
+            <button class="u-btn u-btn-sm" onclick="recruitUnit('${ud.id}',10)" ${btnDisabled ? 'disabled' : ''}>+10</button>` : ''}
+          </div>
+        </div>`;
+      }
+    });
+  });
+
+  html += `<div class="total-power-row">⚔️ Total Power: ${Math.round(totalPow).toLocaleString()}</div>`;
+  return html;
+}
+
+function renderBuildingsPanel() {
+  const rid = state.selectedRegion;
+  if (!rid) return '<div class="empty-msg">Select a region first.</div>';
+  const rs = state.regions[rid];
+  const rd = REGIONS.find(r => r.id === rid);
+  if (!rs || rs.owner !== 'player') return '<div class="empty-msg">Select one of your regions.</div>';
+
+  const existing = state.buildings[rid] || [];
+  let html = `<div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--blue)">🏗️ Buildings in ${rd ? rd.name : rid}</div>`;
+
+  if (existing.length > 0) {
+    html += '<div style="margin-bottom:8px">';
+    existing.forEach(b => {
+      const bd = BUILDING_DEFS.find(x => x.id === b);
+      if (bd) html += `<span style="display:inline-block;padding:2px 6px;background:rgba(67,170,139,0.15);border:1px solid var(--green);border-radius:4px;margin:2px;font-size:10px">${bd.icon} ${bd.name}</span>`;
+    });
+    html += '</div>';
+  }
+
+  html += '<hr class="section-sep">';
+
+  BUILDING_DEFS.forEach(bd => {
+    const built = existing.includes(bd.id);
+    const terrainOk = !bd.terrains || bd.terrains.length === 0 || bd.terrains.includes(rd ? rd.terrain : '');
+    const researchOk = !bd.req_research || bd.req_research.every(r => state.research.has(r));
+    const prereqBldOk = !bd.req_building || existing.includes(bd.req_building);
+    const affordable = canAfford(bd.cost);
+    const canBuild = !built && terrainOk && researchOk && prereqBldOk && affordable;
+    const disabled = built || !terrainOk || !researchOk || !prereqBldOk;
+    const costStr = Object.entries(bd.cost).map(([k,v]) => `<span class="cost-chip">${RES_ICONS[k]}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`).join('');
+
+    let reasonLines = [];
+    if (!terrainOk) {
+      const allowed = bd.terrains.join(', ');
+      reasonLines.push(`🏔️ Requires terrain: <b>${allowed}</b> (this region: ${rd ? rd.terrain : '?'})`);
+    }
+    if (!researchOk) {
+      const missing = (bd.req_research || []).filter(r => !state.research.has(r))
+        .map(r => { const t = TECH_DEFS.find(td => td.id === r); return t ? `${t.icon} ${t.name}` : r; });
+      reasonLines.push(`🔬 Research needed: <b>${missing.join(', ')}</b>`);
+    }
+    if (!prereqBldOk) {
+      const prereqDef = BUILDING_DEFS.find(x => x.id === bd.req_building);
+      reasonLines.push(`🏗️ Build first: <b>${prereqDef ? prereqDef.icon + ' ' + prereqDef.name : bd.req_building}</b>`);
+    }
+    if (terrainOk && researchOk && prereqBldOk && !affordable && !built) {
+      const missing = Object.entries(bd.cost)
+        .filter(([k, v]) => (state.res[k] || 0) < v)
+        .map(([k, v]) => `${RES_ICONS[k]} ${fmtRes(v - (state.res[k] || 0))} more ${RES_NAMES[k] || k}`);
+      reasonLines.push(`💸 Need: ${missing.join(', ')}`);
+    }
+
+    const lockBlock = reasonLines.length > 0
+      ? `<div style="margin-top:4px;font-size:10px;color:var(--red);line-height:1.6">${reasonLines.join('<br>')}</div>`
+      : '';
+
+    html += `<div class="bld-row">
+      <div class="bld-icon">${bd.icon}</div>
+      <div class="bld-info">
+        <div class="bld-name">${bd.name}</div>
+        <div class="bld-desc">${bd.desc}</div>
+        <div class="bld-cost">${costStr}</div>
+        ${lockBlock}
+      </div>
+      <button class="bld-btn" onclick="buildBuilding('${rid}','${bd.id}')" ${disabled ? 'disabled' : ''}>
+        ${built ? '✅' : disabled ? '🔒' : '🏗️ Build'}
+      </button>
+    </div>`;
+  });
+  return html;
+}
+
+// =====================================================================
+// ACTIONS
+// =====================================================================
+
+function colonize(regionId) {
+  // Neutral regions require combat — redirect to troop selection
+  openCombat(regionId);
+}
+
+function reinforceRegion(regionId) {
+  if (!canAfford({ gold:25 })) { showFloat(400,250,'Need 25 gold!','#e63946'); return; }
+  spendRes({ gold:25 });
+  state.regions[regionId].troops = (state.regions[regionId].troops || 0) + 5;
+  showFloat(400,250,'+5 Troops!','#43aa8b');
+  renderRightPanel();
+}
+
+// =====================================================================
+// TOOLTIP
+// =====================================================================
+
+function showTooltip(e, regionId) {
+  const rd = REGIONS.find(r => r.id === regionId);
+  const rs = state.regions[regionId];
+  if (!rd || !rs) return;
+  const faction = ENEMY_FACTIONS.find(f => f.id === rs.owner);
+  const ownerName = rs.owner === 'player' ? 'Your Territory' : rs.owner === 'neutral' ? 'Neutral' : faction ? faction.name : rs.owner;
+  const def = getRegionDefense(regionId);
+
+  const defLabel = rs.owner === 'neutral' ? 'Militia Power' : 'Defense';
+  const tt = document.getElementById('tooltip');
+  tt.innerHTML = `<div class="tt-name">${rd.name}</div>
+    <div class="tt-row"><span class="tt-label">Owner</span><span>${ownerName}</span></div>
+    <div class="tt-row"><span class="tt-label">Terrain</span><span>${rd.terrain}</span></div>
+    <div class="tt-row"><span class="tt-label">${defLabel}</span><span>${Math.round(def)}</span></div>
+    <div class="tt-row"><span class="tt-label">Resources</span><span style="display:flex;flex-direction:column;gap:1px;text-align:right">${rd.specialRes.length > 0 ? rd.specialRes.map(r => `<span>- ${RES_ICONS[r]||r} ${RES_NAMES[r]||r}</span>`).join('') : '<span>None</span>'}</span></div>`;
+  tt.classList.remove('hidden');
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const tt = document.getElementById('tooltip');
+  let x = e.clientX + 14;
+  let y = e.clientY + 14;
+  if (x + 210 > window.innerWidth) x = e.clientX - 214;
+  if (y + 120 > window.innerHeight) y = e.clientY - 124;
+  tt.style.left = x + 'px';
+  tt.style.top  = y + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.add('hidden');
+}
+
+// =====================================================================
+// RESOURCE TOOLTIP
+// =====================================================================
+
+const RES_DESC = {
+  gold:         'Primary currency. Earned from every owned region.',
+  food:         'Feeds your population and military. Plains & farms produce food.',
+  energy:       'Powers advanced units and buildings. Solar farms & nuclear plants.',
+  pop:          'Population drives your economy. Grows with territory & buildings.',
+  iron:         'Core industrial metal. Mined from mountain regions.',
+  oil:          'Fuel for vehicles, ships & aircraft. Desert & coast regions.',
+  silicon:      'High-tech resource for electronics, AI, satellites.',
+  uranium:      'Rare fissile material. Powers nuclear units & reactors.',
+  wood:         'Construction material. Forest regions produce wood.',
+  copper:       'Conductor metal for electronics & early naval units.',
+  surplus_food: 'Exported food. Generates trade income.',
+  diamond:      'Precious resource. Traded for large gold bonuses.',
+  rare_earth:   'Critical for space & quantum tech. Polar & Siberian regions.',
+  ice_core:     'Exotic polar material. Required for galactic weapons.',
+};
+
+function computeResourceUsage(resKey) {
+  let produced = state.lastRates[resKey] || 0;
+  let consumed = 0;
+  UNIT_DEFS.forEach(ud => {
+    const cnt = state.mil[ud.id] || 0;
+    if (cnt > 0 && ud.upkeep[resKey]) consumed += ud.upkeep[resKey] * cnt;
+  });
+  if (resKey === 'pop') {
+    UNIT_DEFS.forEach(ud => {
+      const cnt = state.mil[ud.id] || 0;
+      if (cnt > 0) {
+        const popCost = ud.category === 'land' ? 0.05 : ud.category === 'sea' ? 0.08 : ud.category === 'air' ? 0.06 : 0.12;
+        consumed += popCost * cnt;
+      }
+    });
+  }
+  return { produced, consumed, net: produced - consumed };
+}
+
+function showResTooltip(e, resKey) {
+  const tt = document.getElementById('res-tooltip');
+  const val = state.res[resKey] || 0;
+  const cap = state.resCap[resKey] || 0;
+  const { produced, consumed, net } = computeResourceUsage(resKey);
+  const desc = RES_DESC[resKey] || '';
+  const netClass = net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral';
+  const fillPct = cap > 0 ? Math.round((val / cap) * 100) : 0;
+
+  tt.innerHTML = `
+    <div class="res-tt-name">${RES_ICONS[resKey]} ${RES_NAMES[resKey]}</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${desc}</div>
+    <hr class="res-tt-sep">
+    <div class="res-tt-row"><span class="res-tt-label">Stored</span><span class="res-tt-val neutral">${fmtRes(val)} / ${fmtRes(cap)}</span></div>
+    <div class="res-tt-row"><span class="res-tt-label">Storage %</span><span class="res-tt-val neutral">${fillPct}%</span></div>
+    <hr class="res-tt-sep">
+    <div class="res-tt-row"><span class="res-tt-label">Production</span><span class="res-tt-val positive">+${produced.toFixed(2)}/s</span></div>
+    <div class="res-tt-row"><span class="res-tt-label">Upkeep</span><span class="res-tt-val ${consumed > 0 ? 'negative' : 'neutral'}">${consumed > 0 ? '-' : ''}${consumed.toFixed(2)}/s</span></div>
+    <div class="res-tt-row"><span class="res-tt-label">Net</span><span class="res-tt-val ${netClass}">${net >= 0 ? '+' : ''}${net.toFixed(2)}/s</span></div>`;
+  tt.classList.remove('hidden');
+  moveResTooltip(e);
+}
+
+function moveResTooltip(e) {
+  const tt = document.getElementById('res-tooltip');
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 240 > window.innerWidth) x = e.clientX - 244;
+  if (y + 200 > window.innerHeight) y = e.clientY - 204;
+  tt.style.left = x + 'px';
+  tt.style.top  = y + 'px';
+}
+
+function hideResTooltip() {
+  document.getElementById('res-tooltip').classList.add('hidden');
+}
+
+// =====================================================================
+// NOTIFICATION SYSTEM
+// =====================================================================
+
+function showNotif(text, warn = false) {
+  const stack = document.getElementById('notif-stack');
+  if (!stack) return;
+  const el = document.createElement('div');
+  el.className = 'notif-chip' + (warn ? ' warn' : '');
+  el.textContent = text;
+  stack.appendChild(el);
+  setTimeout(() => el.remove(), 2700);
+}
+
+// =====================================================================
+// RESET / SHARE
+// =====================================================================
+
+function confirmReset() {
+  localStorage.removeItem('worldconquest_v1');
+  document.getElementById('reset-confirm').classList.add('hidden');
+  location.reload();
+}
+
+function openShareModal() {
+  const owned = Object.values(state.regions).filter(r => r.owner === 'player').length;
+  const total = REGIONS.length;
+  const pct = Math.round((owned / total) * 100);
+  const milPow = Math.round(calcTotalMilPower()).toLocaleString();
+  const researchCount = state.research.size;
+  const playtime = Math.floor(state.totalTime / 60);
+  const phase = PHASES[state.phase];
+
+  const text = [
+    `🌍 World Conquest — Phase ${state.phase}: ${phase ? phase.name : ''}`,
+    `🗺️ Territory: ${owned}/${total} regions (${pct}%)`,
+    `⚔️ Military Power: ${milPow}`,
+    `🔬 Researches: ${researchCount}`,
+    `⏱️ Playtime: ${playtime} min`,
+    `💰 Gold: ${fmtRes(state.res.gold)}`,
+    `📊 Stats: ${state.stats.conquered} conquered, ${state.stats.combatsWon} battles won`,
+  ].join('\n');
+
+  document.getElementById('share-text').textContent = 'Copy this text to share your progress:';
+  document.getElementById('share-content').textContent = text;
+  document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function copyShareText() {
+  const txt = document.getElementById('share-content').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    showNotif('📋 Copied to clipboard!');
+    document.getElementById('share-modal').classList.add('hidden');
+  }).catch(() => {
+    showNotif('⚠️ Copy failed — select text manually', true);
+  });
+}
+
+// =====================================================================
+// FLOATING TEXT
+// =====================================================================
+
+function showFloat(x, y, text, color = '#f9c74f') {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  el.style.color = color;
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// =====================================================================
+// EVENT BANNER
+// =====================================================================
+
+function showEventBanner(ev) {
+  const banner = document.getElementById('event-banner');
+  const tooltip = document.getElementById('event-banner-tooltip');
+  banner.innerHTML = `<div class="ev-title">${ev.icon} ${ev.title}</div><div class="ev-desc">${ev.desc}</div>`;
+  document.getElementById('ebt-title').textContent = `${ev.icon || ''} ${ev.title}`;
+  document.getElementById('ebt-desc').textContent = ev.desc || '';
+  banner.classList.remove('hidden');
+  tooltip.classList.remove('visible');
+  setTimeout(() => banner.classList.add('hidden'), 4000);
+  banner.onmouseenter = () => {
+    const rect = banner.getBoundingClientRect();
+    tooltip.style.top = (rect.bottom + 6) + 'px';
+    tooltip.style.left = rect.left + 'px';
+    tooltip.classList.add('visible');
+  };
+  banner.onmouseleave = () => tooltip.classList.remove('visible');
+}
+
+// =====================================================================
+// PHASE BANNER
+// =====================================================================
+
+function showPhaseBanner(phase) {
+  const ph = PHASES[phase];
+  if (!ph) return;
+  const el = document.createElement('div');
+  el.className = 'phase-banner';
+  el.innerHTML = `<div class="pb-title">⚡ Phase ${phase}: ${ph.name}</div><div class="pb-sub">${ph.desc}</div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// =====================================================================
+// TUTORIAL
+// =====================================================================
+
+let _tutStep = 0;
+const _TUT_TOTAL = 4;
+
+function showTutorial() {
+  _tutStep = 0;
+  _renderTutStep();
+  document.getElementById('tutorial-overlay').classList.remove('hidden');
+}
+
+function closeTutorial() {
+  document.getElementById('tutorial-overlay').classList.add('hidden');
+}
+
+function tutStep(dir) {
+  _tutStep = Math.max(0, Math.min(_TUT_TOTAL - 1, _tutStep + dir));
+  _renderTutStep();
+}
+
+function _renderTutStep() {
+  for (let i = 0; i < _TUT_TOTAL; i++) {
+    const s = document.getElementById(`tut-step-${i}`);
+    const d = document.getElementById(`tut-dot-${i}`);
+    if (s) s.classList.toggle('active', i === _tutStep);
+    if (d) d.classList.toggle('active', i === _tutStep);
+  }
+  const prevBtn = document.getElementById('tut-prev-btn');
+  const nextBtn = document.getElementById('tut-next-btn');
+  if (prevBtn) prevBtn.style.display = _tutStep > 0 ? '' : 'none';
+  if (nextBtn) {
+    if (_tutStep === _TUT_TOTAL - 1) {
+      nextBtn.textContent = '🚀 Start Playing!';
+      nextBtn.onclick = closeTutorial;
+    } else {
+      nextBtn.textContent = 'Next ▶';
+      nextBtn.onclick = () => tutStep(1);
+    }
+  }
+}
+
+// =====================================================================
+// WIN CONDITION
+// =====================================================================
+
+let _phase5StartTime = 0;
+let _winTriggered = false;
+const WIN_HOLD_SECS = 300; // 5 minutes
+
+function checkWinCondition() {
+  if (_winTriggered) return;
+  if (state.phase < 5) { _phase5StartTime = 0; return; }
+
+  // Start timer when phase 5 first reached
+  if (_phase5StartTime === 0) _phase5StartTime = Date.now();
+
+  const playerRegions = Object.values(state.regions).filter(r => r.owner === 'player').length;
+  const totalRegions = REGIONS.length;
+
+  // Reset timer if player loses a region below 90%
+  if (playerRegions / totalRegions < 0.90) { _phase5StartTime = Date.now(); return; }
+
+  const held = Math.floor((Date.now() - _phase5StartTime) / 1000);
+  if (held >= WIN_HOLD_SECS) {
+    _winTriggered = true;
+    triggerVictory();
+  }
+}
+
+function triggerVictory() {
+  const totalMins = Math.floor(state.totalTime / 60);
+  const ws = document.getElementById('win-stats');
+  if (ws) {
+    ws.innerHTML = `
+      <div class="win-stat">Playtime<br><span>${totalMins} minutes</span></div>
+      <div class="win-stat">Regions Conquered<br><span>${state.stats.conquered}</span></div>
+      <div class="win-stat">Combats Won<br><span>${state.stats.combatsWon}</span></div>
+      <div class="win-stat">Units Lost<br><span>${state.stats.unitsLost}</span></div>
+      <div class="win-stat">Techs Researched<br><span>${state.stats.researchDone}</span></div>
+      <div class="win-stat">Buildings Built<br><span>${Object.values(state.buildings).reduce((a,b)=>a+b.length,0)}</span></div>
+    `;
+  }
+  document.getElementById('win-modal').classList.remove('hidden');
+}
+
+
+// =====================================================================
+// SAVE / LOAD
+// =====================================================================
+
+function saveGame(silent = false) {
+  try {
+    const saveObj = {
+      res: state.res,
+      resCap: state.resCap,
+      regions: state.regions,
+      mil: state.mil,
+      research: Array.from(state.research),
+      buildings: state.buildings,
+      phase: state.phase,
+      totalTime: state.totalTime,
+      startedAt: state.startedAt,
+      selectedRegion: state.selectedRegion,
+      activeBoosts: state.activeBoosts,
+      stats: state.stats,
+      firstCombatShown: state.firstCombatShown,
+      alienWave: alienWave,
+      alienAttackTimer: alienAttackTimer,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem('worldconquest_v1', JSON.stringify(saveObj));
+    if (!silent) {
+      const btn = document.getElementById('save-btn');
+      if (btn) { btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 800); }
+      showFloat(window.innerWidth - 100, 80, '💾 Saved!', '#43aa8b');
+    }
+  } catch(e) { console.error('Save failed:', e); }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem('worldconquest_v1');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.res)       Object.assign(state.res, s.res);
+    if (s.resCap)    Object.assign(state.resCap, s.resCap);
+    if (s.regions)   Object.assign(state.regions, s.regions);
+    if (s.mil)       Object.assign(state.mil, s.mil);
+    if (s.research)  state.research = new Set(s.research);
+    if (s.buildings) Object.assign(state.buildings, s.buildings);
+    if (s.phase)     state.phase = s.phase;
+    if (s.totalTime) state.totalTime = s.totalTime;
+    if (s.startedAt) state.startedAt = s.startedAt;
+    if (s.selectedRegion) state.selectedRegion = s.selectedRegion;
+    if (s.activeBoosts) {
+      const now = Date.now();
+      state.activeBoosts = s.activeBoosts.filter(b => b.endsAt > now);
+    }
+    if (s.stats)     Object.assign(state.stats, s.stats);
+    if (s.firstCombatShown) state.firstCombatShown = s.firstCombatShown;
+    if (s.alienWave)        alienWave = s.alienWave;
+    if (s.alienAttackTimer != null) alienAttackTimer = s.alienAttackTimer;
+    // Backfill neutralDefense for old saves that lack it
+    REGIONS.forEach(r => {
+      const rs = state.regions[r.id];
+      if (rs && rs.owner === 'neutral' && !rs.neutralDefense) {
+        rs.neutralDefense = Math.round(r.baseDefense * 0.3);
+        rs.troops = rs.neutralDefense;
+      }
+    });
+    // Re-sync faction region lists
+    ENEMY_FACTIONS.forEach(f => { f.regions = []; });
+    Object.keys(state.regions).forEach(rid => {
+      const owner = state.regions[rid].owner;
+      if (owner !== 'player' && owner !== 'neutral') {
+        const fac = ENEMY_FACTIONS.find(f => f.id === owner);
+        if (fac && !fac.regions.includes(rid)) fac.regions.push(rid);
+      }
+    });
+    // Update phase badge
+    const ph = PHASES[state.phase];
+    const badge = document.getElementById('phase-badge');
+    if (badge && ph) badge.textContent = `Phase ${state.phase}: ${ph.name}`;
+  } catch(e) { console.error('Load failed:', e); }
+}
+
+// =====================================================================
+// MAP CLICK OUTSIDE REGIONS
+// =====================================================================
+
+const worldMapEl = document.getElementById('world-map');
+if (worldMapEl) worldMapEl.addEventListener('click', (e) => {
+  if (e.target.id === 'world-map' || e.target.tagName === 'rect') {
+    state.selectedRegion = null;
+    renderMapColors();
+    const fl = document.getElementById('map-footer-left');
+    if (fl) fl.textContent = 'Click a region to select it';
+    renderRightPanel();
+  }
+});
+
+// Close combat modal on backdrop click
+const combatModalEl = document.getElementById('combat-modal');
+if (combatModalEl) combatModalEl.addEventListener('click', (e) => {
+  if (e.target === combatModalEl) closeCombatModal();
+});
+
+// =====================================================================
+// KEYBOARD SHORTCUTS
+// =====================================================================
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeCombatModal();
+    hideTooltip();
+  }
+  if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    saveGame();
+  }
+});
+
+// =====================================================================
+// START
+// =====================================================================
+initGame();
