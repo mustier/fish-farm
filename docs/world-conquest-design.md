@@ -3,42 +3,66 @@
 **Proje Adı:** World Conquest  
 **Platform:** clickingame.com  
 **Teknoloji:** Vanilla HTML/CSS/JS — tek dosya mimarisi  
-**Dosya:** `world-conquest/index.html` (~2600+ satır)  
-**Tahmini Oyun Süresi:** 8-20 saat (birinci oynanış), New Game+ ile tekrar oynanabilir
-
----
-
-## Konsept Özeti
-
-Tek bir başkent bölgesi ile başlıyorsun. Tıklayarak kaynak üretir, yapılar inşa eder, askeri kuvvetler oluşturur ve dünyanın tüm bölgelerini ele geçirirsin. Her bölge benzersiz kaynaklar barındırır, bazıları düşman ülkelerin kontrolündedir, bazıları boştur. Tüm dünya ele geçirildikten sonra uzay savaşları ve uzaylı istilası başlar.
+**Dosya:** `world-conquest/index.html` (~3074 satır)  
+**Save Key:** `worldconquest_v1` (localStorage)  
+**Auto-save:** 30 saniyede bir (`setInterval(autoSaveTimer_tick, 30000)`)  
+**Tahmini Oyun Süresi:** 8-20 saat (birinci oynanış)
 
 ---
 
 ## 1. KAYNAK SİSTEMİ
 
-### 1.1 Temel Kaynaklar (her zaman üretilebilir)
-| Kaynak | Ikon | Açıklama |
-|--------|------|----------|
-| Altın | 💰 | Evrensel para birimi; bina, asker, araştırma |
-| Nüfus | 👥 | Çalışan, asker kaynağı; büyüme organik |
-| Yiyecek | 🌾 | Nüfus büyümesi ve ordunun iaşesi |
-| Enerji | ⚡ | Fabrika ve ileri yapılar için |
-| Demir | ⚙️ | Kara ordusu, binalar — primary kaynak olarak gösterilir |
-| Petrol | 🛢️ | Hava & deniz kuvvetleri — primary kaynak |
-| Ahşap | 🪵 | Erken yapılar, ticaret gemisi — primary kaynak |
-| Bakır | 🔶 | Elektronik altyapı — primary kaynak |
+### 1.1 Temel Kaynaklar (res-strip'te her zaman görünür)
 
-> **Önemli:** `primary` dizisi `['gold','food','energy','pop','iron','oil','wood','copper']` — bu kaynaklar kaynak çubuğunda HER ZAMAN gösterilir, değer 0 olsa bile. `secondary` dizisindeki kaynaklar yalnızca üretiliyorken görünür.
-
-### 1.2 Bölgeye Özgü Kaynaklar (secondary)
-| Kaynak | Ikon | Bölge Tipi | Kullanım |
+| Kaynak | İkon | Başlangıç | Açıklama |
 |--------|------|-----------|----------|
-| Silisyum | 💎 | Teknoloji bölgesi | Elektronik, uzay |
-| Uranyum | ☢️ | Sarp dağlar | Nükleer, uzay silahları |
-| Gıda Fazlası | 🌽 | Verimli ova | Ordunun hızlı toparlanması |
-| Elmas | 💍 | Afrika/Güney bölge | Diplomatik güç, lüks yükseltmeler |
-| Nadir Toprak | 🌐 | Asya iç bölge | Uzay teknolojisi |
-| Buz Çekirdeği | 🧊 | Kutup | Uzay-sonrası içerik |
+| Altın | 💰 | 300 | Evrensel para birimi |
+| Yiyecek | 🌾 | 150 | Nüfus büyümesi + ordu iaşesi |
+| Enerji | ⚡ | 80 | Fabrika ve ileri yapılar |
+| Nüfus | 👥 | 60 | Asker ve çalışan kaynağı |
+| Demir | ⚙️ | 0 | Kara ordusu + binalar |
+| Petrol | 🛢️ | 0 | Hava & deniz kuvvetleri |
+| Silisyum | 💡 | 0 | Elektronik + uzay |
+| Uranyum | ☢️ | 0 | Nükleer + uzay silahları |
+| Ahşap | 🪵 | 0 | Erken yapılar |
+| Bakır | 🔧 | 0 | Elektronik altyapı |
+
+### 1.2 Secondary Kaynaklar (üretilince görünür)
+
+| Kaynak | İkon | Bölge Tipi |
+|--------|------|-----------|
+| Yiyecek Fazlası | 🌽 | Ova, kıyı |
+| Elmas | 💎 | Afrika, Amazon |
+| Nadir Toprak | 🔮 | Polar, Asya iç |
+| Buz Çekirdeği | 🧊 | Kutup |
+
+### 1.3 Kaynak Üretim Mantığı (computeRates)
+
+- Her sahip olunan bölge: +2 altın/s, +0.5 yiyecek/s, +1 enerji/s, +0.1 nüfus/s (cap'e kadar)
+- Bölge `specialRes` dizisindeki her kaynak: +1.5/s (araştırma çarpanlarıyla)
+- Araştırma çarpanları: `ironMult`, `oilMult`, `silMult`, `goldMult`, `energyMult`, `woodMult`, `allProd`
+- Boost sistemi: `state.activeBoosts[]` → `gold_mult`, `all_prod`, `uranium_mult` tipleri
+
+### 1.4 Depo Kapları (computeStorageCaps)
+
+Bölge sayısına göre dinamik olarak büyür:
+- Altın: `1000 + landCount * 300`  
+- Yiyecek: `500 + landCount * 150`  
+- Enerji: `400 + landCount * 100`  
+Terrain bonusları (dağ → demir+50, çöl → petrol+60, orman → ahşap+60, kutup → nadir_toprak+40).  
+Bina bonusları (`warehouse` → tüm kaynaklar +500).  
+Araştırma bonusları: `banking` → altın +2000, `quantum` → tüm kaplar ×1.3.
+
+### 1.5 Bakım Maliyeti (applyUpkeep)
+
+Her saniye `state.mil` üzerindeki birimlerden:
+- Kara birimi: pop ×0.05/birim
+- Deniz birimi: pop ×0.08/birim
+- Hava birimi: pop ×0.06/birim
+- Uzay birimi: pop ×0.12/birim
++ Birim bazlı yiyecek/petrol/enerji/uranyum upkeep'i
+
+Kaynak sıfıra düşerse `desertion()` → rastgele ilgili birim silinir, bildirim gösterilir.
 
 ---
 
@@ -46,162 +70,214 @@ Tek bir başkent bölgesi ile başlıyorsun. Tıklayarak kaynak üretir, yapıla
 
 ### 2.1 SVG Harita Mimarisi
 
-- **viewBox:** `0 0 1100 580`
-- **Bölge sayısı:** 38 (SVG polygon + label)
-- **Shared-edge prensibi:** Komşu bölgeler sınırlarındaki köşe noktalarını tam olarak paylaşır. Örnek: `western_europe` ve `northern_europe` `354,136` ve `380,150` noktalarını her ikisi de içerir.
-- **Grid snap:** Tüm koordinatlar ~22px grid'e yaslandı — koordinat kaymaları önlenir.
-- **Kıta renklendirme:** Her bölgeye `cont-[kıta]` CSS sınıfı verilir → farklı tonlar
+- **viewBox:** `-80 -10 1195 700`
+- **Bölge sayısı:** 35 (REGIONS dizisi) — footer'da "0/35" yazıyor
+- **Ocean background:** `radialGradient` `#0d2240` → `#060e1c`
+- **Grid:** Latitude/longitude çizgileri (rgba opacity 0.05–0.08)
+- **DOM:** `<g id="regions-g">` + `<g id="labels-g">` — buildMap() ile doldurulur
 
-**CONTINENT_CLASS haritası (JavaScript):**
-```js
-const CONTINENT_CLASS = {
-  british_isles:'europe', scandinavia:'europe', northern_europe:'europe',
-  western_europe:'europe', iberia:'europe', eastern_europe:'europe', balkans:'europe',
-  russia:'russia', siberia:'russia',
-  caucasus:'middleeast', middle_east:'middleeast', arabian_peninsula:'middleeast',
-  central_asia:'asia', mongolia:'asia', china:'asia', japan_korea:'asia',
-  india:'asia', southeast_asia:'asia',
-  north_africa:'africa', west_africa:'africa', central_africa:'africa',
-  east_africa:'africa', south_africa:'africa',
-  north_america_west:'americas', north_america_east:'americas', central_america:'americas',
-  caribbean:'americas', south_america_north:'americas', amazon:'americas',
-  south_america_east:'americas', south_america_west:'americas',
-  australia:'oceania', new_zealand:'oceania', pacific_islands:'oceania',
-  greenland:'polar', arctic:'polar',
-};
-```
+### 2.2 Bölgeler ve Kıtalar (tam liste)
 
-**Kıta CSS renkleri:**
-```css
-.region.cont-europe    { fill:#2a4a7a; }
-.region.cont-russia    { fill:#1e3d5c; }
-.region.cont-asia      { fill:#3a2a5e; }
-.region.cont-middleeast{ fill:#5a3a18; }
-.region.cont-africa    { fill:#5c3318; }
-.region.cont-americas  { fill:#1a4a2e; }
-.region.cont-oceania   { fill:#1a3a4e; }
-.region.cont-polar     { fill:#1e2e4a; }
-```
+| Kıta | Bölgeler |
+|------|---------|
+| Polar/Arktik | arctic, greenland, siberia_far_east, antarctica |
+| Avrupa | scandinavia, british_isles, northern_europe, western_europe, iberia, eastern_europe, balkans |
+| Rusya | russia |
+| Kafkasya/Orta Asya | caucasus, central_asia |
+| Orta Doğu | middle_east, arabian_peninsula |
+| Afrika | north_africa, west_africa, central_africa, east_africa, south_africa |
+| Asya | mongolia, china, japan_korea, india, southeast_asia |
+| Amerika | north_america_west, north_america_east, central_america, caribbean, south_america_north, amazon, south_america_east, south_america_west |
+| Okyanusya | pacific_islands, australia, new_zealand |
 
-**SVG render CSS (önemli):**
-```css
-.region {
-  stroke: rgba(255,255,255,0.25);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  paint-order: stroke fill;  /* border üstüne fill değil, fill üstüne border */
-}
-```
+**Başlangıç bölgesi:** `western_europe` (tech terrain, specialRes: silicon + surplus_food)
 
-### 2.2 Bölge Tipleri
-| Tip | İkon | Özellik |
-|-----|------|---------|
-| Ova | 🟩 | Yüksek nüfus, orta kaynak |
-| Dağlık | 🏔️ | Demir/uranyum, zor savunma — kara saldırıya direnç +30% |
-| Kıyı | 🌊 | Deniz yolu avantajı, petrol |
-| Çöl | 🏜️ | Petrol, düşük nüfus |
-| Orman | 🌲 | Ahşap, gizlilik |
-| Teknoloji | 🏙️ | Silisyum, araştırma hızı |
-| Kutup | 🧊 | Buz çekirdeği — tüm bakım maliyeti +40% |
+### 2.3 Terrain Tipleri ve Savaş Modifikatörleri (TERRAIN_MOD)
 
-### 2.3 Bölge Durumu
-- **Boş:** Sahipsiz. Düşük direniş ama isyancı riski var.
-- **Kendi kontrolünde:** Tıklamayla kaynak üretir, yapı kurulabilir.
-- **Düşman ülke:** İşgal edilmeden üretilemeyen kaynaklar.
+| Terrain | Kara | Deniz | Hava | Uzay |
+|---------|------|-------|------|------|
+| plains | 1.0 | 0 | 1.0 | 1.0 |
+| mountains | 0.7 | 0 | 1.1 | 1.0 |
+| coast | 0.9 | 1.4 | 1.1 | 1.0 |
+| desert | 0.8 | 0 | 1.0 | 1.0 |
+| forest | 0.85 | 0 | 0.8 | 1.0 |
+| tech | 1.0 | 1.0 | 1.2 | 1.3 |
+| polar | 0.6 | 0.5 | 0.9 | 1.2 |
 
-### 2.4 Kolonizasyon Değişikliği
-**Eski tasarım:** Boş bölgeler anında altın ödeyerek alınıyordu.  
-**Yeni tasarım:** `colonize()` fonksiyonu artık `openCombat()` çağırıyor — tüm bölge alımları savaş gerektiriyor.
+### 2.4 Bölge Durumu
 
-```js
-function colonize(regionId) {
-  openCombat(regionId);
-}
-```
+- `neutral` — İşgal edilmemiş; `neutralDefense` değeri init'te rastgele atanır (`baseDefense * 0.2–0.5`)
+- `player` — Oyuncuya ait; kaynak üretir, yapı kurulabilir
+- `factionId` (militia/warlord/federation/empire/superpower/sea_empire/tech_nation) — Düşman faction
+- `rebel` — Başkaldırı veya uzaylı istilası sırasında geçici durum
 
 ---
 
-## 3. SAVAŞ SİSTEMİ (İmplementasyon Detayları)
+## 3. DÜŞMAN SİSTEMİ
 
-### 3.1 İlk Savaş Gösterimi
-`state.firstCombatShown` flag'i ile ilk savaşta tutorial gösterilir:
+### 3.1 Enemy Factions (ENEMY_FACTIONS)
 
-```html
-<div id="combat-howto" style="display:none; background:rgba(255,255,150,0.15);
-  border:1px solid #ffd700; border-radius:8px; padding:10px; margin-bottom:10px; font-size:0.85em;">
-  <b>⚔️ How Combat Works</b><br>
-  • Rounds auto-fire every 2 seconds — watch the progress bars<br>
-  • Click during combat to deal extra damage each round<br>
-  • Units are permanently lost when you take damage<br>
-  • You can retreat anytime to save remaining forces<br>
-  • Win to capture the region — lose and it stays enemy
-</div>
-```
+| ID | İsim | Power Mult | Tutum | Tercih |
+|----|------|-----------|-------|--------|
+| militia | Rebels | 0.5 | aggressive | land |
+| warlord | Warlord State | 0.8 | aggressive | land |
+| federation | Federation | 1.0 | defensive | sea |
+| empire | E. Empire | 1.3 | expansionist | air |
+| superpower | Superpower | 1.8 | militarist | all |
+| sea_empire | Sea Empire | 1.5 | expansionist | sea |
+| tech_nation | Tech Nation | 2.0 | peaceful | air |
 
-### 3.2 Kayıp Takibi (preForce Snapshot)
-Savaş başlarken anlık snapshot alınır:
+### 3.2 Başlangıç Atamaları (assignEnemies)
 
-```js
-// startCombatWithForce içinde:
-const preForce = {};
-Object.keys(force).forEach(uid => { preForce[uid] = state.mil[uid] || 0; });
-state.combat.preForce = preForce;
-```
+- Militia: west_africa, amazon, central_africa  
+- Warlord: arabian_peninsula, mongolia, caucasus  
+- Federation: north_america_east, north_america_west, central_america  
+- Empire: china, southeast_asia, mongolia  
+- Superpower: russia, eastern_europe  
+- Sea Empire: japan_korea, pacific_islands, new_zealand  
+- Tech Nation: india, south_america_north, east_africa
 
-### 3.3 Savaş Özeti (showCombatSummary)
-```js
-function showCombatSummary(won) {
-  const c = state.combat;
-  const casualties = {};
-  if (c.preForce) {
-    Object.keys(c.preForce).forEach(uid => {
-      const lost = c.preForce[uid] - (state.mil[uid] || 0);
-      if (lost > 0) casualties[uid] = lost;
-    });
-  }
-  // yeşil = zafer kutusu, kırmızı = yenilgi kutusu
-  // kayıp listesini gösterir
-  document.getElementById('retreat-btn').textContent = '✕ Close';
-}
-```
+### 3.3 Enemy Tick (enemyTick — her 45 saniyede bir)
 
-### 3.4 Retreat → Close Dönüşümü
-```js
-function retreatOrClose() {
-  if (state.combat && state.combat.done) {
-    closeCombatModal();
-  } else {
-    retreatCombat();
-  }
-}
-```
+- %35 ihtimalle aktif olmayan faction atlanır
+- Önce boş bölgelere yayılır (neutral neighbor, %65 ihtimal)
+- Aggressive/militarist/expansionist faction'lar oyuncu bölgelerine saldırır (%25 ihtimal, `openDefenseModal` açar)
+- Phase 4'te oyuncu %60'tan fazla toprak kontrolündeyse "Great Coalition" uyarısı çıkar (%5 ihtimal)
 
-Buton `onclick="retreatOrClose()"` ile bağlı. Savaş bitince text `✕ Close` olur.
+### 3.4 Alien Attack (Phase 5 — triggerAlienAttack)
 
-### 3.5 Kayıplar Kalıcıdır
-Birimler global `state.mil` üzerinden takip ediliyor. Savaştaki hasar direkt `state.mil[uid]` değerini azaltıyor. `preForce` snapshot ile sadece gösterim için önceki değer hatırlanıyor, sıfırlanmıyor.
+ALIEN_UNITS:
+- Alien Scout: 300 güç (dalga 1)
+- Combat Drone: 600 güç (dalga 2)
+- Plasma Warrior: 1200 güç (dalga 2)
+- Alien Mothership: 6000 güç (dalga 3)
+- Star Crusher: 25000 güç (dalga 4)
+
+Dalga sayısı: `Math.min(4, Math.floor(state.totalTime / 600) + 1)` — her 10 dakikada bir artıyor.  
+Oyuncu gücü uzaylı gücünün %50'sinden fazlaysa: saldırı savuşturulur, küçük kayıp.  
+Değilse: bölge `rebel` olarak işaretlenir, 60 saniye sonra otomatik geri alınır.
 
 ---
 
-## 4. YÜKSELTME AĞACI (TECH TREE)
+## 4. SAVAŞ SİSTEMİ
 
-### 4.1 Yapı
+### 4.1 Güç Hesabı (calcPlayerPower)
+
+1. Tüm birimleri kategoriye göre toplar (land/sea/air/space)
+2. Araştırma çarpanları uygular (mechanized +50%, armor_doctrine +60%, vb.)
+3. `TERRAIN_MOD` uygular
+4. Helicopter synergy: `state.mil.helicopter > 0 && landPow > 0` → landPow ×1.35
+5. Active boost `combat_intel` çarpanı eklenir
+
+### 4.2 Savaş Matrisi (COMBAT_MATRIX)
+
+| Saldıran \ Savunan | land | sea | air | space | rebel | alien |
+|---------------------|------|-----|-----|-------|-------|-------|
+| land | 1.0 | 0.4 | 0.6 | 0.2 | 1.5 | 0.3 |
+| sea | 1.4 | 1.0 | 0.5 | 0.2 | 0.6 | 0.4 |
+| air | 1.6 | 1.8 | 1.0 | 0.5 | 1.2 | 0.6 |
+| space | 2.5 | 2.0 | 2.2 | 1.0 | 1.0 | 2.0 |
+
+### 4.3 Savaş Akışı
+
+1. Oyuncu bölge seçer → "Attack" → `openTroopSelect(regionId)` → kuvvet seçim modalı
+2. Terrain preview gösterilir (bonus/ceza/bloke)
+3. Onay → `startCombatWithForce(regionId, force)` çağrılır
+4. `preForce` snapshot: `Object.keys(force).forEach(uid => { preForce[uid] = state.mil[uid] || 0; })`
+5. Auto-round her 5 saniyede bir (combat-howto'da belirtilmiş)
+6. "STRIKE!" butonu: bonus hasar her round sonunda uygulanır
+7. Savaş bitince: `showCombatSummary(won)` → kayıp listesi gösterilir → buton "✕ Close" olur
+8. `retreatOrClose()`: `state.combat.done` ise modalı kapat, değilse geri çekil
+
+### 4.4 Kayıplar
+
+- Global `state.mil` üzerinde takip edilir — bölge bağımsız
+- Savaş hasarı direkt `state.mil[uid]` azaltır — kalıcıdır
+- `preForce` sadece görüntüleme için tutulur, sıfırlamaz
+
+### 4.5 Defense Modal
+
+Düşman saldırısında `openDefenseModal(targetId, factionId, factionPow)` açılır.  
+"Defend!" → `confirmDefense()`, "Retreat" → `retreatDefense()`.
+
+---
+
+## 5. ASKERİYE SİSTEMİ
+
+### 5.1 Birim Kategorileri ve Örnekler (UNIT_DEFS — 36 birim)
+
+**Kara (10 birim):**
+- Militia: güç 1, maliyet 15💰+3🌾, limit 200 (başlangıçta mevcut)
+- Infantry: güç 5, maliyet 50💰+5⚙️, req: military_org
+- Tank: güç 60, maliyet 600💰+30⚙️+15🛢️, req: armor_doctrine (Phase 2)
+- Titan Mech: güç 2000, maliyet 50000💰+80⚙️+40💡, limit 3, req: nuclear_weapons+automation+satellite (Phase 5)
+
+**Deniz (9 birim):**
+- Patrol Boat: güç 4, req: copper_smelting
+- Aircraft Carrier: güç 350, limit 5, req: carrier_ops (Phase 4)
+- Ocean Titan: güç 1800, limit 2 (Phase 5)
+
+**Hava (9 birim):**
+- Combat Drone: güç 8, req: electronics (Phase 2)
+- Strato Bomber: güç 500, limit 5, req: air_doctrine2 (Phase 5)
+- Orbital Bomb: güç 1000, limit 3 (Phase 5)
+
+**Uzay (8 birim):**
+- Recon Sat: güç 50, req: space_doctrine (Phase 5)
+- Star Destroyer: güç 3500, req: galactic_war
+- Quantum Weapon: güç 25000, limit 1, req: galactic_war+automation+quantum
+
+### 5.2 Unlock Koşulları
+
+Her birim `unlockPhase` ve `requires[]` (araştırma ID'leri) ile kilitlenir.  
+Yalnızca o phase'e girilmişse ve araştırmalar tamamlanmışsa recruit edilebilir.
+
+---
+
+## 6. TEKNOLOJİ AĞACI
+
+### 6.1 Yapı
+
 - 3 dal: `economy`, `science`, `military`
-- 83 araştırma (başlangıçta 41'den genişletildi)
-- DFS sıralaması ile `buildTechTreeOrder()` — ön gereksinimler önce gelir
+- Toplam: **83 araştırma** (TECH_DEFS dizisi)
+- DFS sıralaması `buildTechTreeOrder()` ile — prereq'ler önce
 - Her araştırmanın `req:[]` dizisi önceki araştırmaları listeler
 
-### 4.2 Ekonomi Dalı (örnek)
-```js
-{ id:'agriculture', name:'Agriculture', icon:'🌾', cost:{gold:50}, req:[], branch:'economy' },
-{ id:'advanced_farming', name:'Advanced Farming', icon:'🚜', cost:{gold:150,food:50}, req:['agriculture'] },
-{ id:'industrial_farm', name:'Industrial Farm', icon:'🏭', cost:{gold:500,food:200}, req:['advanced_farming'] },
-// ... devam eder
-```
+### 6.2 Ekonomi Dalı Özeti (27 araştırma)
 
-### 4.3 Tech Düzenleme Notu
-TECH_DEFS dizisi emoji karakterleri içerdiğinden Edit tool'u ile düzenlemek başarısız oluyor.  
-**Çözüm:** Python line-range replacement kullanıldı:
+Tier 0: basic_industry, agriculture, carpentry, copper_smelting  
+Tier 1: oil_drilling, logistics, taxation, population_growth, aquaculture, timber_industry  
+Tier 2: trade_routes, mercantile_guilds, steel_production, irrigation, urbanization, mining_guilds, energy_grid  
+Tier 3: banking, industrial_farming, cold_storage, oil_refining, recycling, rare_earth_extraction  
+Tier 4: stock_market, megaprojects, automation, nano_mining  
+Tier 5: fusion_reactor, space_mining  
+Tier 6: antimatter_economy
+
+### 6.3 Bilim Dalı Özeti (21 araştırma)
+
+Tier 0: writing  
+Tier 1: mathematics, medicine, psychology, cryptography  
+Tier 2: electronics, chemistry, materials_science, climate_science  
+Tier 3: computing, nuclear_theory, genetics, robotics  
+Tier 4: nuclear_energy, satellite, ai, cybernetics, fusion_theory  
+Tier 5: quantum, bioengineering, nanotech, xenobiology  
+Tier 6: warp_theory, singularity
+
+### 6.4 Askeri Dal Özeti (22 araştırma)
+
+Tier 0: military_org, fortification  
+Tier 1: psychological_warfare, mechanized, naval_doctrine, guerrilla, strategic_reserves  
+Tier 2: military_intelligence, armor_doctrine, air_superiority, amphibious, siege_warfare  
+Tier 3: special_forces, land_doctrine2 (Blitzkrieg), naval_domination, stealth_tech, missile_program, biological_warfare  
+Tier 4: electronic_warfare, drone_swarms, air_doctrine2, nuclear_weapons, carrier_ops, cyber_warfare  
+Tier 5: mech_division, space_doctrine, orbital_defense  
+Tier 6: galactic_war, dimensional_tactics
+
+### 6.5 Teknik Not: Emoji İçeren Bloklar
+
+TECH_DEFS, UNIT_DEFS, BUILDING_DEFS, REGIONS dizileri emoji karakter içerir.  
+Edit tool ile düzenlemek Unicode mismatch hatası verir.  
+**Çözüm:** Python line-range replacement:
 ```python
 with open('world-conquest/index.html', 'r') as f:
     lines = f.readlines()
@@ -212,216 +288,233 @@ with open('world-conquest/index.html', 'w') as f:
 
 ---
 
-## 5. YAPI SİSTEMİ (BUILDING_DEFS)
+## 7. YAPI SİSTEMİ (BUILDING_DEFS — 19 yapı)
 
-### 5.1 Village Bug Fix
-**Problem:** Village `terrains:['plains','coast','forest']` ile tanımlanmıştı. Haritadaki çoğu bölge `tech`, `mountains`, `desert`, `polar` terrain'e sahip olduğundan village hiçbir yerde inşa edilemiyordu.  
-**Çözüm:** `terrains:[]` — tüm terrain tiplerinde inşa edilebilir.
+### 7.1 Erken Oyun (her terrain'de inşa edilebilir)
 
-```js
-{ id:'village', name:'Village', icon:'🏘️', desc:'+0.5 pop/s; +50 pop cap',
-  cost:{gold:100}, terrains:[], req_research:['agriculture'] },
-```
+| Yapı | Maliyet | Efekt | Req Araştırma |
+|------|---------|-------|---------------|
+| Watchtower | 60💰+10🪵 | +50 savunma; komşuları açar | carpentry |
+| Village | 100💰 | +0.5 nüfus/s; +50 pop cap | agriculture |
+| Smithy | 120💰+10🪵 | +0.8 demir/s; barracks açar | basic_industry |
+| Barracks | 200💰+20⚙️+10🪵 | -20% birim maliyeti; +100 savunma | military_org + smithy |
 
-### 5.2 Bölgeye Özgü Yapılar
-`terrains:['coast']`, `terrains:['mountains']` gibi kısıtlamalar sadece gerçekten arazi-bağımlı yapılarda kullanılır (petrol kuyusu, demir madeni, liman vb.).
+### 7.2 Terrain Kısıtlı
 
----
+| Yapı | Terrain | Efekt |
+|------|---------|-------|
+| Lumber Camp | forest | +1.5 ahşap/s |
+| Granary | plains, coast, forest | +500 yiyecek depo; +0.3 yiyecek/s |
+| Deep Mine | mountains | +1.5 demir/s; +0.5 bakır/s |
+| Naval Base | coast | +30% deniz gücü; naval upkeep -20% |
+| Oil Refinery | coast, desert | +2 petrol/s |
+| Farm Complex | plains | +3 yiyecek/s; +1 surplus_food/s |
 
-## 6. KAYNAK HEADER BARI
+### 7.3 Geç Oyun
 
-### 6.1 Konum
-Kaynak bar (`#res-strip`) haritanın üstünde, ana header'ın altında konumlandırılmıştır:
-
-```html
-<section class="map-area">
-  <div id="res-strip">
-    <div class="res-bar" id="res-bar"></div>
-  </div>
-  <div class="map-header">...</div>
-  <div class="map-wrap">...</div>
-</section>
-```
-
-### 6.2 Gösterim Mantığı
-```js
-const primary   = ['gold','food','energy','pop','iron','oil','wood','copper'];
-const secondary = ['silicon','uranium','surplus_food','diamond','rare_earth','ice_core'];
-
-// primary: her zaman göster
-// secondary: rate > 0.01 veya değer > 0 ise göster
-```
+Space Base: 5000💰+100💡+30🔮, terrain: tech veya plains, req: space_doctrine → uzay birimleri açılır; rare_earth ×2
 
 ---
 
-## 7. UI DÜZENİ (3-SÜTUN GRID)
+## 8. RASTGELE OLAYLAR (RANDOM_EVENTS)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ [🌍 LOGO]     Başlık / Ana Header                           │ ← Header
-├─────────────────────────────────────────────────────────────┤
-│  ← Kaynak Bar (gold, food, energy, pop, iron, oil, wood...) │ ← #res-strip
-├────────────────┬──────────────────────────┬─────────────────┤
-│                │   Harita Header           │                 │
-│  TEKNOLOJİ     │   (bölge bilgisi)         │  ASKERİ PANEL   │
-│  AĞACI         │                           │                 │
-│                │   🗺️ SVG HARİTA            │                 │
-│  [Ekonomi]     │   38 bölge, kıta renkleri │ Birim listesi   │
-│  [Bilim]       │   Tıklanabilir bölgeler   │ Savaş butonları │
-│  [Askeri]      │                           │                 │
-└────────────────┴──────────────────────────┴─────────────────┘
-```
+Her 90 saniyede %30 ihtimalle tetiklenir. 12 olay:
 
----
-
-## 8. TEKNİK NOTLAR & HATALAR
-
-### 8.1 Edit Tool ile Emoji Sorunu
-TECH_DEFS, BUILDING_DEFS, REGIONS gibi emoji içeren bloklar Edit tool ile düzenlenmek istendiğinde Unicode mismatch hatası veriyor. **Çözüm:** Python scripti ile line number üzerinden değiştirme.
-
-### 8.2 Python Script ile SVG Grid Hatası
-SVG grid/background bloğunu Python ile değiştirirken kazara çift kopyalanma ve yanlış konumlandırma oldu. **Ders:** SVG bloklarını değiştirirken eski bloğu önce tamamen sil, sonra yeni bloğu ekle.
-
-### 8.3 renderMapColors() Dikkat
-Bu fonksiyon çağrıldığında bölge SVG elemanlarından `class` attribute'unu tamamen sıfırlıyor. Bu yüzden kıta CSS sınıflarını (`cont-europe` vs) burada yeniden uygulamak gerekiyor:
-
-```js
-function renderMapColors() {
-  REGIONS.forEach(r => {
-    const el = document.getElementById('r_' + r.id);
-    if (!el) return;
-    const contClass = CONTINENT_CLASS[r.id] ? ' cont-' + CONTINENT_CLASS[r.id] : '';
-    // ... owner/selected renklendirmesi + contClass ekle
-  });
-}
-```
-
-### 8.4 Force Azalması Sorusu
-Kullanıcı "Neden kuvvetlerim zamanla azalıyor?" diye sordu. **Cevap:** Kuvvetler azalmıyor, kaynak çubuğundaki sayılar kaynak üretimine göre değişiyor. Ancak bakım maliyeti (maintenance cost) varsa `state.mil` değil `state.res.gold` azalır.
+| Olay | Etki |
+|------|------|
+| Trade Windfall! | +200 altın |
+| Rebel Uprising! | Rastgele bölge rebel olur |
+| Oil Discovery! | +80 petrol |
+| Famine Warning! | Yiyecek -40 |
+| Tech Breakthrough! | Tüm üretim ×1.5, 60 saniye |
+| Mercenaries! | +15 infantry bedava |
+| Gold Rush! | Altın ×2, 45 saniye |
+| Earthquake! | Rastgele bölge savunma -100 |
+| Espionage Report! | Sonraki savaş +20%, 180 saniye |
+| Peace Offer! | Ceasefire 120 saniye |
+| Iron Cache Found! | +100 demir |
+| Radiation Leak! | Uranyum üretimi -50%, 60 saniye |
 
 ---
 
-## 9. KAYNAK SİSTEMİ DETAYLARI
+## 9. OYUN AŞAMALARI (PHASES)
 
-### 9.1 Kayıt Sistemi
-- localStorage anahtarı: `worldconquest_save`
-- Her 15s otomatik kayıt + sayfa kapanırken kayıt
+| Phase | Tetik (bölge oranı) | İsim | Açıklama |
+|-------|---------------------|------|---------|
+| 1 | 0% (başlangıç) | Foundation | Kuruluş, boş topraklar |
+| 2 | %12 (~4 bölge) | Expansion | Rakip uluslarla ilk karşılaşma |
+| 3 | %30 (~11 bölge) | Conflict | Büyük savaşlar, ittifaklar |
+| 4 | %60 (~21 bölge) | Dominance | Büyük Koalisyon tehdidi |
+| 5 | %100 (35/35) | Space Age | Uzaylı istilası başlar |
 
-### 9.2 State Nesnesi (Özet)
+Phase 5 kazanma koşulu: 35 bölgenin %90'ını (%90 = 31+ bölge) 300 saniye (5 dakika) kesintisiz tutmak.
+
+---
+
+## 10. UI DÜZENİ
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  🌍 World Conquest   [Phase badge]   [💾 Save] [📤 Share] [🔄 Reset] │ ← Header
+├────────────────────────────────────────────────────────────────────┤
+│  Boost Bar (gizli, boost aktifken 28px görünür)                     │ ← #boost-bar
+├────────────────────────────────────────────────────────────────────┤
+│  💰 🌾 ⚡ 👥 ⚙️ 🛢️ 💡 ☢️ 🪵 🔧 (+ secondary kaynaklar)          │ ← #res-strip
+├───────────────────┬───────────────────────────────┬────────────────┤
+│  [Economy]        │  🗺️ World Map                   │ [Region]       │
+│  [Military]       │  map-header (bölge adı/istatistik)│ [Military]     │
+│  [Science]        │  SVG harita — 35 bölge          │ [Buildings]    │
+│                   │  map-footer (tıklama ipucu /   │                │
+│  Tech tree        │    "Owned: 0/35")              │ Bölge detay,   │
+│  panel            │                               │ birim listesi, │
+│  (sol panel)      │                               │ yapılar        │
+└───────────────────┴───────────────────────────────┴────────────────┘
+```
+
+Sol panel sekmeleri: Economy / Military / Science (tech tree'ler)  
+Sağ panel sekmeleri: Region / Military / Buildings
+
+---
+
+## 11. STATE NESNESİ
+
 ```js
 state = {
-  res: { gold, food, energy, pop, iron, oil, wood, copper,
-         silicon, uranium, surplus_food, diamond, rare_earth, ice_core },
-  regions: { [id]: { owner, buildings[], defPower, terrain, specialRes[], neighbors[] } },
-  mil: { militia, infantry, sniper, tank, ... },  // global, bölge bağımsız
-  research: Set(completedIds),
-  combat: { active, regionId, turns, attackForce, defForce, preForce, done },
+  res:    { gold, food, energy, pop, iron, oil, silicon, uranium, wood, copper,
+            surplus_food, diamond, rare_earth, ice_core },
+  resCap: { /* her kaynak için dinamik cap */ },
+  regions: {
+    [id]: { owner, troops, neutralDefense, buildings:[], clickPower:1 }
+  },
+  mil:    { militia, infantry, sniper, apc, artillery, tank, missile_battery, war_robot,
+            nuclear_land, titan,
+            boat, corvette, frigate, landing_ship, destroyer, submarine, carrier,
+            nuclear_sub, ocean_titan,
+            drone, fighter, bomber, helicopter, stealth, ew_plane, hypersonic,
+            strato_bomber, orbital_bomb,
+            recon_sat, defense_sat, space_fighter, laser_platform, star_destroyer,
+            asteroid_launcher, nuclear_torpedo, quantum_weapon },
+  research:     Set(completedIds),
+  buildings:    { [regionId]: [buildingId, ...] },
+  phase:        1-5,
+  totalTime:    saniye sayacı,
+  startedAt:    Date.now(),
+  selectedRegion: null,
+  combat:       { active, regionId, turns, attackForce, defForce, preForce, done },
+  events:       [],
+  lastRates:    {},
+  activeBoosts: [{ name, type, mult, endsAt }],
+  stats:        { clicks, conquered, unitsLost, researchDone, combatsWon },
   firstCombatShown: bool,
-  stats: { totalClicks, regionsConquered, unitsLost, ... },
-  totalTime, startedAt
 }
 ```
 
----
-
-## 10. OYUN AKIŞI & AŞAMALAR
-
-### Aşama 1 — KURULUŞ (0-30 dk)
-Başlangıç bölgesi → ilk komşu boş bölgeleri ele geçir → Demir bölgesi → Köy + Kışla
-
-### Aşama 2 — GENIŞLEME (30 dk - 2 saat)
-Petrol → Hava kuvvetleri; Kıyı → Deniz kuvvetleri; İlk düşman ülkeyle karşılaşma
-
-### Aşama 3 — GÜÇ SAVAŞI (2-6 saat)
-Dünya %50; Uranyum → Nükleer; Büyük Koalisyon tehdidi
-
-### Aşama 4 — DÜNYA HAKİMİYETİ (6-12 saat)
-3 Boss Ülke; Nadir Toprak + Buz Çekirdeği; Uzay İstasyonu
-
-### Aşama 5 — UZAY ÇAĞI (12-20 saat)
-Uzaylı dalgaları; Ay, Mars, Asteroid; Nihai zafer
+Global değişkenler (state dışında): `alienAttackTimer`, `alienWave`, `_phase5StartTime`, `_winTriggered`
 
 ---
 
-## 11. ASKERİYE SİSTEMİ (Tasarım)
+## 12. SAVE / LOAD
 
-Detaylı birim tabloları önceki tasarım bölümünde bulunabilir.  
-**Mevcut implemente:**
-- `state.mil` üzerinde global birim takibi
-- Savaşta `preForce` snapshot ile kayıp görüntüleme
-- Kuvvet avantaj/dezavantaj matrisi (tasarım aşamasında)
+- **Save key:** `worldconquest_v1`
+- **Save içeriği:** res, resCap, regions, mil, research (Array), buildings, phase, totalTime, startedAt, selectedRegion, activeBoosts, stats, firstCombatShown, alienWave, alienAttackTimer, savedAt
+- **Tutorial gösterimi:** `localStorage.getItem('worldconquest_v1')` yoksa ilk açılışta tutorial overlay
 
 ---
 
-## 12. YÜKSELTME AĞACI — DAL YAPISI
+## 13. TEKNIK NOTLAR & BİLİNEN SORUNLAR
 
-### DAL A: EKONOMİ
-```
-Tarım I → Tarım II → Endüstriyel Çiftlik → Nano Tarım
-    └─── Ticaret Yolu → Küresel Pazar → Uzay Ticareti
-              └─── Tedarik Ağı → Lojistik İmparatorluğu
+### 13.1 renderMapColors() Class Sıfırlama
+Bu fonksiyon her çağrıldığında region SVG elemanının `class` attribute'unu sıfırlar. Kıta renk sınıfları (`cont-europe` vb.) her render'da yeniden uygulanmalı. Fragile pattern.
 
-Madencilik I → Derin Madencilik → Nano Madencilik
-    └─── Enerji Santrali → Nükleer Enerji → Füzyon Reaktörü
-```
+### 13.2 Global state.mil Tasarımı
+Askeri birimler bölgeye bağlı değil — tek global havuz. Tüm savaşlarda aynı birimler kullanılıyor. Strateji derinliği sınırlı. Bölge bazlı garnizon sistemi ileride değerlendirilebilir.
 
-### DAL B: TEKNOLOJİ & ARAŞTIRMA
-```
-Temel Araştırma → Üniversite → Araştırma Merkezi → Küresel Ar-Ge
-    └─── Elektronik → Bilgisayar → Yapay Zeka → Kuantum Ağı
-              └─── İletişim → Uydu Ağı → Uzay İstasyonu
-                        └─── Lazer Silahı → Yörünge Topu → Uzay Kalesi
-```
+### 13.3 Shared-Edge SVG Prensibi
+Komşu bölgeler sınır koordinatlarını birebir paylaşır. `paint-order: stroke fill` CSS ile border fill üstünde görünür. `stroke: #111111`, `stroke-width: 1.8px`.
 
-### DAL C: ASKERİYE
-```
-Kara Doktrini I → Kara Doktrini II → Zırhlı Savaş → Nükleer Kara
-Deniz Doktrini I → Deniz Doktrini II → Okyanus Hâkimiyeti → Nükleer Deniz
-Hava Doktrini I → Hava Doktrini II → Hava Üstünlüğü → Orbital Saldırı
-Uzay Doktrini I → Uzay Doktrini II → Galaktik Savaş  (dünya sonrası)
-```
+### 13.4 SVG viewBox
+`-80 -10 1195 700` — sol kenar negatife uzanıyor (siberia_far_east için: pts `6,18 ... -75,94`).
+
+### 13.5 Region Sayısı Tutarsızlığı
+REGIONS dizisi 35 elemanlı. Footer "Owned: 0/35" diyor. Eski dokümanda 38 yazıyordu — güncel kod 35.
 
 ---
 
-## 13. GELİŞTİRME SIRASI (MVP → Full)
+## 14. GELİŞTİRME DURUMU
 
-### MVP (İlk Sürüm) ✅ Tamamlandı
-- [x] SVG dünya haritası (38 bölge, kıta renkleri)
-- [x] 8 temel kaynak + 6 özel kaynak
-- [x] Kara kuvvetleri + basit savaş mekaniği
-- [x] Temel upgrade tree (83 araştırma, 3 dal)
-- [x] Savaş kayıp takibi + özet ekranı
-- [x] İlk savaş tutorial metni
-- [x] Kolonizasyon → savaş gerektiriyor
-- [x] Village bug fix (terrains:[])
+### Tamamlanan (MVP)
+- [x] SVG dünya haritası (35 bölge, terrain sistemi)
+- [x] 14 kaynak (10 primary + 4 secondary üretim)
+- [x] Dinamik depo kapları (bölge sayısına göre ölçeklenir)
+- [x] 36 askeri birim (kara/deniz/hava/uzay, 4 kategori)
+- [x] 83 araştırma (economy/science/military, Tier 0–6)
+- [x] 19 bina (terrain kısıtlı + her yerde)
+- [x] 7 düşman faction + assignment sistemi
+- [x] Enemy AI (expand + player'a saldırı, 45s tick)
+- [x] Combat matrix (land/sea/air/space × 6 düşman tipi)
+- [x] Terrain modifikatörleri savaşta aktif
+- [x] Savaş kayıp takibi (preForce snapshot)
+- [x] Savaş özeti + "✕ Close" dönüşümü
+- [x] Defense modal (enemy attack)
+- [x] 5 game phase + phase banner animasyonu
+- [x] Phase 5 alien invasion (4 dalga tipi)
+- [x] Kazanma koşulu (35 bölge %90, 5 dk)
+- [x] 12 rastgele olay sistemi
+- [x] 7 farklı boost tipi
+- [x] Tutorial (4 adım)
+- [x] Save/Load (localStorage worldconquest_v1)
+- [x] Auto-save (30s)
+- [x] Share modal
+- [x] Reset confirm
+- [x] Resource cap bildirim sistemi (60s throttle)
+- [x] Desertion (kaynak sıfırlanınca birim kaybı)
 
-### v1.0 (Sonraki)
-- [ ] Düşman AI (5 tip + Büyük Koalisyon)
-- [ ] Ticaret & tedarik hattı sistemi
-- [ ] Tüm yapılar (bölgeye özgü)
-- [ ] 4 askeri dal tam birimler + avantaj matrisi
-- [ ] Kuvvet avantaj/dezavantaj matrisi savaşa entegre
-
-### v1.5
-- [ ] Uzay aşaması + uzaylı dalgaları
-- [ ] 12 gizli olay
-- [ ] Savaş sinerjisi bonusları
+### Eksik / Planlanan
+- [ ] Unit avantaj matrisi (COMBAT_MATRIX tanımlı ama combat hesabına tam entegre değil)
+- [ ] Bölge bazlı garnizon sistemi
 - [ ] Diplomatik seçenekler
 - [ ] New Game+ modu
-- [ ] Detaylı istatistik & zafer ekranı
+- [ ] Gizli olaylar (12 planlanmış, 12 var ama "damage_region" efekti henüz boş)
+- [ ] Alien bölge geri alma mekanizması (60s timeout var, ama aktif reconquer yok)
 
 ---
 
-## 14. ARAŞTIRMA BULGULARI — HARİTA TASARIMI
+## 15. ARAŞTIRMA BULGULARI — HARİTA TASARIMI
 
-Harita tasarımı için benzer oyunlardan alınan dersler:
+1. **Shared-edge prensibi:** Risk, Civilization, EU gibi oyunlarda komşu bölgeler sınır noktalarını paylaşır. SVG polygon'larda aynı koordinatlar kullanılır.
+2. **Kıta renk kodlaması:** En yüksek görsel ROI — farklı tonlar sezgisel okuma sağlar.
+3. **Grid snap:** Koordinat kaymasını önler.
+4. **Label konumları:** `pointer-events:none` ile tıklamayı geçirir.
+5. **Stroke sırası:** `paint-order: stroke fill` — sınır fill üstünde görünür.
 
-1. **Shared-edge prensibi:** Risk, Civilization, Europa Universalis gibi oyunlarda bölgeler birbirine tam yaslanır — aralarında boşluk olmaz. SVG polygon'larda bu, komşu bölgelerin sınır noktalarını birebir aynı koordinatlarla paylaşmasıyla sağlanır.
+---
 
-2. **Kıta renk kodlaması:** En yüksek görsel ROI. Farklı kıtalar farklı mavi/mor/yeşil tonlarında olduğunda kullanıcı haritayı sezgisel okur.
+---
 
-3. **Grid snap:** ~22px aralıklı grid'e yaslamak kayma ve yanlış hizalamayı önler.
+## 16. DEĞİŞİKLİK KAYDI
 
-4. **Label konumları:** Bölge ismi etiketleri `(x, y)` merkezine konur, bölge şekli ne kadar garip olursa olsun. Label `pointer-events:none` ile tıklamayı geçirmeli.
+### 2026-06-10 — SVG Tech Tree View (Modal)
 
-5. **Stroke sırası:** `paint-order: stroke fill` CSS kuralı ile sınır çizgileri fill üstünde görünür, komşu bölgeler arasında net ayrım oluşur.
+**Sol panel:** Değişmedi — `└─` text-indent listesi, sadece unlocked + researched node'lar görünür. "🌳 View Tree" butonu modal açar.
+
+**Modal (openTechTreeModal):**
+- 3 branch tab switcher (Economy / Science / Military), tek branch gösterir
+- Modal genişliği `92vw / max 1200px` olarak genişletildi
+- `computeTreeLayout(techs)` → iterative BFS ile tier (Y ekseni = depth) ve slot (X ekseni = konum) ataması
+- `renderTechTreeSVG(techs, containerId, opts)` → SVG 2D grid:
+  - Her tier yatayda ortalanır (en geniş tier'e göre)
+  - Node'lar: 68×68 px yuvarlak köşeli kare, ikon + kısa isim
+  - Bağlantı çizgileri: cubic bezier, parent alt-merkez → child üst-merkez
+  - Renk kodları: yeşil (researched) / mavi glow (affordable) / soluk (locked) / sarı (unlocked ama yetersiz kaynak)
+  - Glow ring: available ve researched node'larda hafif hale efekti
+- Hover tooltip: `ttShowTip()` / `ttHideTip()` — maliyet, açıklama, durum
+- **Hover path highlight:** `_ttHighlightPath(techId)` / `_ttResetHighlight()`
+  - Ancestor path (gerekli node'lar): **altın** `#f9c74f` bağlantı çizgisi sw=3.5, node'lar parlak
+  - Descendant path (bu node'dan açılan node'lar): **mavi** `rgba(61,156,212,0.8)` çizgi sw=2.5, node'lar hafif soluk
+  - Hovered node: gold glow (`drop-shadow`)
+  - Diğer tüm node ve çizgiler: opacity 0.07–0.12 ile karartılır
+  - `_ttAncestors()` ve `_ttDescendants()` recursive walk ile tüm zinciri bulur
+  - **Reset:** `_ttHighlightPath` edge'lere dokunmadan önce orijinal `stroke` + `stroke-width` değerlerini `data-orig-stroke` / `data-orig-sw` attribute'larına kaydeder. `_ttResetHighlight` bu kaydedilmiş değerleri geri yükler — base renk sistemi (yeşil/sarı/gri) bozulmaz.
+- `researchTech()` → `renderAll()` → `renderLeftPanel()` zinciri (liste güncellemesi)
+
+*Bu belge her World Conquest geliştirme oturumunda güncellenir.*

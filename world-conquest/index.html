@@ -250,10 +250,22 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
 .ts-row .ts-name{flex:1;font-size:12px;font-weight:700;}
 .ts-row .ts-avail{font-size:11px;color:var(--muted);}
 .ts-row input[type=number]{width:55px;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:4px;color:var(--white);padding:3px 5px;font-size:11px;}
-/* ===== TECH TREE INDENT ===== */
+/* ===== TECH TREE SVG ===== */
 .tech-tree-btn{width:100%;margin-bottom:8px;padding:6px;background:rgba(61,156,212,0.1);border:1px solid var(--blue);border-radius:6px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;}
 .tech-tree-btn:hover{background:rgba(61,156,212,0.2);}
 .tn-connector{color:var(--muted);margin-right:2px;font-size:10px;}
+#tech-tree-svg-wrap{overflow:auto;width:100%;padding-bottom:4px;}
+#tech-tree-svg-wrap::-webkit-scrollbar{height:4px;width:4px;}
+#tech-tree-svg-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.tt-node{cursor:pointer;transition:filter .15s;}
+.tt-node:hover .tt-node-circle{filter:brightness(1.4);}
+.tt-node-circle{transition:stroke-width .12s;}
+.tt-tooltip-box{position:fixed;background:rgba(8,16,36,0.98);border:1px solid var(--gold);border-radius:9px;padding:9px 13px;font-size:11px;pointer-events:none;z-index:500;max-width:210px;line-height:1.6;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.tt-tooltip-box.hidden{display:none;}
+.tt-tooltip-box .tt-name{font-family:'Fredoka One',cursive;font-size:14px;color:var(--gold);margin-bottom:4px;}
+.tt-tooltip-box .tt-desc{color:rgba(255,255,255,.75);font-size:10px;margin-bottom:5px;}
+.tt-tooltip-box .tt-cost-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px;}
+.tt-tooltip-box .tt-status{font-size:10px;font-weight:700;}
 </style>
 </head>
 <body>
@@ -287,7 +299,7 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
       <span id="map-stats" style="font-size:11px;color:var(--muted)"></span>
     </div>
     <div class="map-container">
-      <svg id="world-map" viewBox="-80 -10 1195 700" preserveAspectRatio="xMidYMid meet">
+      <svg id="world-map" viewBox="-10 -10 1115 653" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
             <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -493,6 +505,7 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
 
 <div id="event-banner" class="event-banner hidden"></div>
 <div id="tooltip" class="tooltip hidden"></div>
+<div id="tt-tooltip" class="tt-tooltip-box hidden"></div>
 
 <script>
 // =====================================================================
@@ -2355,6 +2368,277 @@ function buildTechTreeOrder(techs) {
   return ordered;
 }
 
+// ── Tech Tree 2D grid layout ──
+// tier = Y axis (rows top→bottom), slot = X axis (position within tier)
+function computeTreeLayout(techs) {
+  const nodeMap = {};
+  const children = {};
+  techs.forEach(t => { nodeMap[t.id] = t; children[t.id] = []; });
+  techs.forEach(t => {
+    t.req.forEach(pid => { if (children[pid]) children[pid].push(t.id); });
+  });
+
+  // BFS to assign tier (depth) — each node's tier = max(parent tiers) + 1
+  const tier = {};
+  const roots = techs.filter(t => t.req.length === 0 || !t.req.some(r => nodeMap[r]));
+  roots.forEach(r => tier[r.id] = 0);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    techs.forEach(t => {
+      const maxParentTier = t.req.reduce((mx, pid) => {
+        if (nodeMap[pid] === undefined) return mx;
+        return Math.max(mx, tier[pid] !== undefined ? tier[pid] : 0);
+      }, -1);
+      const newTier = maxParentTier + 1;
+      if (tier[t.id] !== newTier) { tier[t.id] = newTier; changed = true; }
+    });
+  }
+  techs.forEach(t => { if (tier[t.id] === undefined) tier[t.id] = 0; });
+
+  // Group by tier, assign slot (x) within each tier
+  const tierGroups = {};
+  techs.forEach(t => {
+    const ti = tier[t.id];
+    if (!tierGroups[ti]) tierGroups[ti] = [];
+    tierGroups[ti].push(t.id);
+  });
+
+  const slot = {};
+  Object.keys(tierGroups).forEach(ti => {
+    tierGroups[ti].forEach((id, i) => { slot[id] = i; });
+  });
+
+  const maxTier = Math.max(...Object.values(tier));
+  const maxSlots = Math.max(...Object.keys(tierGroups).map(ti => tierGroups[ti].length));
+
+  return { tier, slot, tierGroups, maxTier, maxSlots };
+}
+
+// ── SVG Tech Tree renderer (2D grid, top-down like skill tree) ──
+function renderTechTreeSVG(techs, containerId, opts = {}) {
+  const { tier, slot, tierGroups, maxTier, maxSlots } = computeTreeLayout(techs);
+
+  const nodeSize = opts.nodeSize || 58; // square node
+  const gapX     = opts.gapX    || 18;
+  const gapY     = opts.gapY    || 36;
+  const padX     = 12;
+  const padY     = 12;
+
+  // Center each tier's nodes horizontally relative to the widest tier
+  const totalW = padX * 2 + maxSlots * (nodeSize + gapX) - gapX;
+
+  const cx = id => {
+    const tiSlots = tierGroups[tier[id]].length;
+    const tiW = tiSlots * (nodeSize + gapX) - gapX;
+    const offset = (totalW - tiW) / 2;
+    return padX + offset + slot[id] * (nodeSize + gapX) + nodeSize / 2;
+  };
+  const cy = id => padY + tier[id] * (nodeSize + gapY) + nodeSize / 2;
+
+  const totalH = padY * 2 + (maxTier + 1) * (nodeSize + gapY) - gapY;
+
+  let edges = '';
+  let nodes = '';
+
+  // Edges — vertical lines from bottom-center of parent to top-center of child
+  techs.forEach(t => {
+    t.req.forEach(pid => {
+      if (tier[pid] === undefined) return;
+      const researched   = state.research.has(t.id) && state.research.has(pid);
+      const parentDone   = state.research.has(pid);
+      const color  = researched ? '#43aa8b' : parentDone ? 'rgba(249,199,79,0.55)' : 'rgba(255,255,255,0.13)';
+      const sw     = researched ? 2.5 : 1.5;
+
+      const x1 = cx(pid), y1 = cy(pid) + nodeSize / 2;
+      const x2 = cx(t.id), y2 = cy(t.id) - nodeSize / 2;
+      const my = (y1 + y2) / 2;
+
+      edges += `<path id="tte-${pid}__${t.id}" data-from="${pid}" data-to="${t.id}"
+        d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}"
+        stroke="${color}" stroke-width="${sw}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    });
+  });
+
+  // Nodes — square with rounded corners, icon + short name
+  techs.forEach(t => {
+    const researched = state.research.has(t.id);
+    const prereqMet  = t.req.every(r => state.research.has(r));
+    const affordable = canAfford(t.cost);
+    const locked     = !prereqMet;
+
+    const nx = cx(t.id) - nodeSize / 2;
+    const ny = cy(t.id) - nodeSize / 2;
+    const rr = 8;
+
+    let fill, stroke, sw, op;
+    if (researched)     { fill='rgba(67,170,139,0.3)';  stroke='#43aa8b';               sw=2.5; op=1;    }
+    else if (locked)    { fill='rgba(10,20,40,0.6)';    stroke='rgba(255,255,255,0.12)'; sw=1;   op=0.45; }
+    else if (affordable){ fill='rgba(61,156,212,0.22)'; stroke='#3d9cd4';               sw=2;   op=1;    }
+    else                { fill='rgba(255,255,255,0.05)'; stroke='rgba(255,255,255,0.25)'; sw=1;  op=0.8;  }
+
+    // Glow ring for available nodes
+    const glow = (!locked && !researched && affordable)
+      ? `<rect x="${nx-3}" y="${ny-3}" width="${nodeSize+6}" height="${nodeSize+6}" rx="${rr+3}" ry="${rr+3}" fill="none" stroke="rgba(61,156,212,0.18)" stroke-width="4"/>`
+      : researched
+      ? `<rect x="${nx-3}" y="${ny-3}" width="${nodeSize+6}" height="${nodeSize+6}" rx="${rr+3}" ry="${rr+3}" fill="none" stroke="rgba(67,170,139,0.15)" stroke-width="4"/>`
+      : '';
+
+    const iconFontSize = 22;
+    const iconY = ny + nodeSize * 0.42;
+    const nameY = ny + nodeSize - 9;
+    const shortName = t.name.length > 11 ? t.name.slice(0, 10) + '…' : t.name;
+
+    nodes += `<g id="ttn-${t.id}" class="tt-node" data-id="${t.id}" onclick="ttNodeClick('${t.id}')" onmouseenter="ttShowTip(event,'${t.id}')" onmouseleave="ttHideTip()" style="opacity:${op}">
+      ${glow}
+      <rect x="${nx}" y="${ny}" width="${nodeSize}" height="${nodeSize}" rx="${rr}" ry="${rr}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" class="tt-node-circle"/>
+      <text x="${cx(t.id)}" y="${iconY}" text-anchor="middle" dominant-baseline="middle" font-size="${iconFontSize}" style="pointer-events:none">${t.icon}</text>
+      <text x="${cx(t.id)}" y="${nameY}" text-anchor="middle" dominant-baseline="auto" font-size="7.5" fill="rgba(232,244,253,0.88)" font-weight="700" font-family="Nunito,sans-serif" style="pointer-events:none">${shortName}</text>
+    </g>`;
+  });
+
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = `<svg viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" style="display:block">${edges}${nodes}</svg>`;
+}
+
+function ttNodeClick(techId) {
+  researchTech(techId);
+}
+
+const _ttTipEl = () => document.getElementById('tt-tooltip');
+
+// Collect all ancestor IDs (nodes that lead TO techId)
+function _ttAncestors(techId) {
+  const visited = new Set();
+  function walk(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    const t = TECH_DEFS.find(x => x.id === id);
+    if (t) t.req.forEach(pid => walk(pid));
+  }
+  walk(techId);
+  visited.delete(techId);
+  return visited;
+}
+
+// Collect all descendant IDs (nodes that require techId, directly or indirectly)
+function _ttDescendants(techId) {
+  const visited = new Set();
+  function walk(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    TECH_DEFS.filter(x => x.req.includes(id)).forEach(child => walk(child.id));
+  }
+  TECH_DEFS.filter(x => x.req.includes(techId)).forEach(child => walk(child.id));
+  return visited;
+}
+
+function _ttHighlightPath(techId) {
+  const ancestors   = _ttAncestors(techId);
+  const descendants = _ttDescendants(techId);
+  const allNodes    = new Set([techId, ...ancestors, ...descendants]);
+
+  document.querySelectorAll('.tt-node').forEach(el => {
+    const id = el.dataset.id;
+    if (!allNodes.has(id)) {
+      el.style.opacity = '0.12';
+      el.style.filter  = '';
+    } else if (id === techId) {
+      el.style.opacity = '1';
+      el.style.filter  = 'drop-shadow(0 0 8px rgba(249,199,79,0.9))';
+    } else if (ancestors.has(id)) {
+      el.style.opacity = '1';
+      el.style.filter  = 'brightness(1.35)';
+    } else {
+      el.style.opacity = '0.65';
+      el.style.filter  = 'brightness(0.85)';
+    }
+  });
+
+  document.querySelectorAll('[id^="tte-"]').forEach(el => {
+    const from = el.dataset.from, to = el.dataset.to;
+    const onAncPath  = (ancestors.has(from)   || from === techId) && (ancestors.has(to)   || to === techId);
+    const onDescPath = (descendants.has(from) || from === techId) && (descendants.has(to) || to === techId);
+    // Save originals once
+    if (!el.dataset.origStroke) {
+      el.dataset.origStroke = el.getAttribute('stroke') || '';
+      el.dataset.origSw     = el.getAttribute('stroke-width') || '';
+    }
+    if (onAncPath) {
+      el.setAttribute('stroke', '#f9c74f');
+      el.setAttribute('stroke-width', '3.5');
+      el.style.opacity = '1';
+    } else if (onDescPath) {
+      el.setAttribute('stroke', 'rgba(61,156,212,0.8)');
+      el.setAttribute('stroke-width', '2.5');
+      el.style.opacity = '1';
+    } else {
+      el.style.opacity = '0.07';
+    }
+  });
+}
+
+function _ttResetHighlight() {
+  document.querySelectorAll('.tt-node').forEach(el => {
+    el.style.opacity = '';
+    el.style.filter  = '';
+  });
+  document.querySelectorAll('[id^="tte-"]').forEach(el => {
+    // Restore original stroke values saved before highlight
+    if (el.dataset.origStroke !== undefined) {
+      if (el.dataset.origStroke) el.setAttribute('stroke', el.dataset.origStroke);
+      else el.removeAttribute('stroke');
+      if (el.dataset.origSw) el.setAttribute('stroke-width', el.dataset.origSw);
+      else el.removeAttribute('stroke-width');
+      delete el.dataset.origStroke;
+      delete el.dataset.origSw;
+    }
+    el.style.opacity = '';
+  });
+}
+
+function ttShowTip(e, techId) {
+  const t = TECH_DEFS.find(td => td.id === techId);
+  if (!t) return;
+  const researched = state.research.has(t.id);
+  const prereqMet  = t.req.every(r => state.research.has(r));
+  const affordable = canAfford(t.cost);
+  const locked     = !prereqMet;
+
+  const costStr = Object.entries(t.cost).map(([k,v]) =>
+    `<span class="cost-chip">${RES_ICONS[k]||k}<span class="cost-name">${RES_NAMES[k]||k}</span><span class="cost-val">${v}</span></span>`
+  ).join('');
+
+  let statusColor, statusText;
+  if (researched)     { statusColor = '#43aa8b'; statusText = '✅ Already researched'; }
+  else if (locked)    { statusColor = '#e63946'; statusText = '\u{1F512} Locked — needs: ' + t.req.filter(r=>!state.research.has(r)).map(r=>{const td=TECH_DEFS.find(x=>x.id===r);return td?td.name:r;}).join(' + '); }
+  else if (affordable){ statusColor = '#3d9cd4'; statusText = '\u{1F52C} Click to research'; }
+  else                { statusColor = '#f9c74f'; statusText = '⏳ Insufficient resources'; }
+
+  const el = _ttTipEl();
+  el.innerHTML = `<div class="tt-name">${t.icon} ${t.name}</div><div class="tt-desc">${t.desc}</div><div class="tt-cost-row">${costStr}</div><div class="tt-status" style="color:${statusColor}">${statusText}</div>`;
+  el.classList.remove('hidden');
+  _ttPositionTip(e);
+  _ttHighlightPath(techId);
+}
+
+function ttHideTip() {
+  _ttTipEl().classList.add('hidden');
+  _ttResetHighlight();
+}
+
+
+function _ttPositionTip(e) {
+  const el = _ttTipEl();
+  const W = el.offsetWidth || 200, H = el.offsetHeight || 100;
+  let x = e.clientX + 14, y = e.clientY + 10;
+  if (x + W > window.innerWidth - 8)  x = e.clientX - W - 8;
+  if (y + H > window.innerHeight - 8) y = e.clientY - H - 8;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+}
+
 function renderLeftPanel() {
   const body = document.getElementById('left-panel-body');
   if (!body) return;
@@ -2362,18 +2646,16 @@ function renderLeftPanel() {
   if (techs.length === 0) { body.innerHTML = '<div class="empty-msg">No technologies in this branch.</div>'; return; }
 
   const ordered = buildTechTreeOrder(techs);
-
-  // Only show researched nodes + nodes whose prereqs are all met (directly unlockable)
   const visible = ordered.filter(({ tech }) => {
     if (state.research.has(tech.id)) return true;
     return tech.req.every(r => state.research.has(r));
   });
 
   const curTab = leftTab;
-  let html = `<button class="tech-tree-btn" onclick="openTechTreeModal('${curTab}')">🗂️ View Full Tree</button>`;
+  let html = `<button class="tech-tree-btn" onclick="openTechTreeModal('${curTab}')">\u{1F333} View Tree</button>`;
   html += visible.map(({ tech, depth }) => {
     const indent = depth * 14;
-    const connector = depth > 0 ? '<span class="tn-connector">└─ </span>' : '';
+    const connector = depth > 0 ? '<span class="tn-connector">\u2514\u2500 </span>' : '';
     const researched = state.research.has(tech.id);
     const prereqMet = tech.req.every(r => state.research.has(r));
     const affordable = canAfford(tech.cost);
@@ -2386,8 +2668,8 @@ function renderLeftPanel() {
       <div class="tn-head">${connector}<span class="tn-icon">${tech.icon}</span><span class="tn-name">${tech.name}</span></div>
       <div class="tn-cost">${costStr}</div>
       <div class="tn-desc">${tech.desc}</div>
-      ${locked ? `<div style="font-size:9px;color:var(--red);margin-top:2px">🔒 Needs: ${tech.req.filter(r=>!state.research.has(r)).map(r=>{const t=TECH_DEFS.find(td=>td.id===r);return t?t.name:r;}).join(' + ')}</div>` : ''}
-      <div class="tn-status">${researched ? '✅ Researched' : locked ? '🔒 Locked' : affordable ? '🔬 Research' : '⏳ Insufficient resources'}</div>
+      ${locked ? `<div style="font-size:9px;color:var(--red);margin-top:2px">\u{1F512} Needs: ${tech.req.filter(r=>!state.research.has(r)).map(r=>{const t=TECH_DEFS.find(td=>td.id===r);return t?t.name:r;}).join(' + ')}</div>` : ''}
+      <div class="tn-status">${researched ? '\u2705 Researched' : locked ? '\u{1F512} Locked' : affordable ? '\u{1F52C} Research' : '\u23F3 Insufficient resources'}</div>
     </div>`;
   }).join('');
   body.innerHTML = html;
@@ -2395,30 +2677,29 @@ function renderLeftPanel() {
 
 function openTechTreeModal(branch) {
   const modal = document.getElementById('tech-tree-modal');
+  const modalBox = modal.querySelector('.modal-box');
   const body = document.getElementById('tech-tree-modal-body');
-  const branches = branch ? [branch] : ['economy', 'science', 'military'];
-  let html = '';
-  branches.forEach(b => {
-    const techs = TECH_DEFS.filter(t => t.branch === b);
-    html += `<div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--blue);margin:10px 0 6px;text-transform:capitalize;border-bottom:1px solid var(--border);padding-bottom:4px">${b.charAt(0).toUpperCase()+b.slice(1)} Branch</div>`;
-    const ordered = buildTechTreeOrder(techs);
-    ordered.forEach(({ tech, depth }) => {
-      const researched = state.research.has(tech.id);
-      const prereqMet = tech.req.every(r => state.research.has(r));
-      const locked = !prereqMet && !researched;
-      const indent = depth * 20;
-      const connector = depth > 0 ? '└─ ' : '';
-      html += `<div style="margin-left:${indent}px;padding:5px 8px;margin-bottom:3px;border-radius:6px;border:1px solid ${researched?'var(--green)':locked?'rgba(255,255,255,0.05)':'var(--border)'};background:${researched?'rgba(67,170,139,0.1)':'rgba(255,255,255,0.03)'};opacity:${locked?0.5:1}">
-        <span style="color:var(--muted);font-size:10px">${connector}</span>
-        <span style="font-size:14px">${tech.icon}</span>
-        <b style="font-size:11px;margin:0 4px">${tech.name}</b>
-        <span style="font-size:10px;color:var(--muted)">${tech.desc}</span>
-        ${researched ? '<span style="color:var(--green);font-size:10px;margin-left:4px">✅</span>' : locked ? '<span style="color:var(--muted);font-size:10px;margin-left:4px">🔒</span>' : '<span style="color:var(--blue);font-size:10px;margin-left:4px">🔬</span>'}
-        ${tech.req.length > 0 ? `<div style="font-size:9px;color:var(--muted);margin-top:2px">Req: ${tech.req.map(r=>{const t=TECH_DEFS.find(td=>td.id===r);return t?t.name:r;}).join(' + ')}</div>` : ''}
-      </div>`;
-    });
-  });
+  const BRANCH_COLOR = { economy:'#f9c74f', science:'#3d9cd4', military:'#e63946' };
+
+  modalBox.style.width = '92vw';
+  modalBox.style.maxWidth = '1200px';
+
+  const activeBranch = branch || 'economy';
+
+  let html = `<div style="display:flex;gap:6px;margin-bottom:14px">
+    ${['economy','science','military'].map(b => {
+      const active = b === activeBranch;
+      const col = BRANCH_COLOR[b];
+      return `<button onclick="openTechTreeModal('${b}')" style="flex:1;padding:7px;border:1px solid ${active?col:'var(--border)'};border-radius:7px;background:${active?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.03)'};color:${active?col:'var(--muted)'};font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;transition:.15s">${b.charAt(0).toUpperCase()+b.slice(1)}</button>`;
+    }).join('')}
+  </div>
+  <div id="tech-modal-svg-${activeBranch}" style="overflow:auto;display:flex;justify-content:center;padding:8px 0"></div>`;
+
   body.innerHTML = html;
+
+  const techs = TECH_DEFS.filter(t => t.branch === activeBranch);
+  renderTechTreeSVG(techs, `tech-modal-svg-${activeBranch}`, { nodeSize: 68, gapX: 20, gapY: 48 });
+
   modal.classList.remove('hidden');
 }
 
