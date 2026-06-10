@@ -175,12 +175,21 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
 .modal.hidden{display:none;}
 .modal-box{background:rgba(12,22,42,0.98);border:1px solid var(--red);border-radius:14px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;padding:20px;}
 .modal-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--red);margin-bottom:12px;}
-.hp-bars{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.hp-bar-wrap{display:flex;align-items:center;gap:8px;}
-.hp-label{font-size:11px;width:80px;text-align:right;}
-.hp-track{flex:1;height:14px;background:rgba(255,255,255,0.08);border-radius:7px;overflow:hidden;}
-.hp-fill{height:100%;border-radius:7px;transition:width .3s;}
-.hp-val{font-size:11px;width:55px;}
+.hp-bars{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.hp-bar-row{display:flex;align-items:center;gap:7px;}
+.hp-bar-label{font-size:11px;width:70px;flex-shrink:0;}
+.hp-bar-label.player{color:var(--green);text-align:right;}
+.hp-bar-label.enemy{color:var(--red);text-align:left;}
+.hp-bar-val{font-size:11px;width:60px;flex-shrink:0;font-weight:700;}
+.hp-bar-val.player{color:var(--green);text-align:right;}
+.hp-bar-val.enemy{color:var(--red);text-align:left;}
+/* single shared track — player fills from left, enemy from right */
+.hp-shared-track{flex:1;height:16px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;position:relative;display:flex;}
+.hp-shared-track .hp-p{height:100%;background:var(--green);border-radius:8px 0 0 8px;transition:width .35s;}
+.hp-shared-track .hp-e{height:100%;background:var(--red);border-radius:0 8px 8px 0;transition:width .35s;margin-left:auto;}
+.hp-shared-track .hp-divider{position:absolute;left:50%;top:0;width:2px;height:100%;background:rgba(255,255,255,0.18);transform:translateX(-50%);pointer-events:none;}
+/* labels above */
+.hp-above{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;}
 .combat-log{height:110px;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:7px;padding:7px;margin-bottom:12px;font-size:11px;line-height:1.7;}
 .combat-log p{margin:0;}
 .log-player{color:var(--green);}
@@ -188,9 +197,15 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
 .log-sys{color:var(--muted);}
 .modal-btns{display:flex;gap:8px;}
 .modal-btns button{flex:1;padding:9px;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:.2s;}
-#strike-btn{background:var(--red);color:#fff;}
+#strike-btn{background:var(--red);color:#fff;position:relative;overflow:hidden;}
 #strike-btn:hover{filter:brightness(1.2);}
 #strike-btn:disabled{opacity:.4;cursor:not-allowed;}
+#strike-btn.striking{animation:strike-pulse 0.18s ease-out;}
+@keyframes strike-pulse{0%{transform:scale(1);}50%{transform:scale(0.88);filter:brightness(1.8);}100%{transform:scale(1);}}
+.combat-hit-flash{animation:combat-flash 0.22s ease-out;}
+@keyframes combat-flash{0%{box-shadow:0 0 0 0 rgba(230,57,70,0.0);}40%{box-shadow:inset 0 0 30px 8px rgba(230,57,70,0.45);}100%{box-shadow:0 0 0 0 rgba(230,57,70,0.0);}}
+.strike-float{position:fixed;pointer-events:none;font-weight:900;font-size:16px;color:#ff6b6b;text-shadow:0 0 8px rgba(255,80,80,0.9);z-index:600;animation:strike-float-up 0.9s ease-out forwards;}
+@keyframes strike-float-up{0%{opacity:1;transform:translate(-50%,0) scale(1.2);}60%{opacity:1;transform:translate(-50%,-28px) scale(1);}100%{opacity:0;transform:translate(-50%,-52px) scale(0.8);}}
 #retreat-btn{background:rgba(255,255,255,0.1);color:var(--white);border:1px solid var(--border);}
 #retreat-btn:hover{background:rgba(255,255,255,0.15);}
 /* ===== EVENT BANNER ===== */
@@ -484,15 +499,18 @@ header{height:var(--head-h);background:rgba(10,20,40,0.97);border-bottom:1px sol
     </div>
     <div id="combat-summary" style="display:none;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;line-height:2"></div>
     <div class="hp-bars">
-      <div class="hp-bar-wrap">
-        <div class="hp-label" style="color:var(--green)">Your Force</div>
-        <div class="hp-track"><div class="hp-fill" id="player-hp-fill" style="background:var(--green);width:100%"></div></div>
-        <div class="hp-val" id="player-hp-val" style="color:var(--green)"></div>
+      <div class="hp-above">
+        <span id="player-hp-val" style="color:var(--green);font-weight:700"></span>
+        <span id="enemy-hp-val" style="color:var(--red);font-weight:700"></span>
       </div>
-      <div class="hp-bar-wrap">
-        <div class="hp-label" style="color:var(--red)">Enemy</div>
-        <div class="hp-track"><div class="hp-fill" id="enemy-hp-fill" style="background:var(--red);width:100%"></div></div>
-        <div class="hp-val" id="enemy-hp-val" style="color:var(--red)"></div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span class="hp-bar-label player">Your Force</span>
+        <div class="hp-shared-track">
+          <div id="player-hp-fill" class="hp-p" style="width:50%"></div>
+          <div class="hp-divider"></div>
+          <div id="enemy-hp-fill" class="hp-e" style="width:50%"></div>
+        </div>
+        <span class="hp-bar-label enemy">Enemy</span>
       </div>
     </div>
     <div class="combat-log" id="combat-log"></div>
@@ -540,7 +558,7 @@ const REGIONS = [
   { id:'northern_europe', name:'N. Europe', x:581, y:95,
     pts:'550,85 574,85 596,80 623,80 623,103 593,112 574,112 550,112 550,85',
     terrain:'plains', specialRes:['iron'],
-    baseDefense:130, neighbors:['western_europe','scandinavia','eastern_europe','british_isles']},
+    baseDefense:130, neighbors:['western_europe','scandinavia','eastern_europe','british_isles','balkans']},
 
   { id:'western_europe', name:'W. Europe', x:522, y:126,
     pts:'495,138 513,138 526,138 544,138 562,138 562,112 544,112 526,112 513,112 495,112 489,125 495,138',
@@ -560,7 +578,7 @@ const REGIONS = [
   { id:'balkans', name:'Balkans', x:584, y:149,
     pts:'562,138 587,138 605,138 611,156 599,165 581,165 562,156 562,138',
     terrain:'mountains', specialRes:['copper','iron'],
-    baseDefense:130, neighbors:['eastern_europe','middle_east','caucasus']},
+    baseDefense:130, neighbors:['eastern_europe','northern_europe','middle_east','caucasus']},
 
   // ══ RUSSIA / NORTH ASIA ════════════════════════════════════════════════
   { id:'russia', name:'Russia', x:656, y:62,
@@ -1722,13 +1740,46 @@ function autoCombatRound() {
 function strikeEnemy() {
   if (!state.combat || state.combat.done) return;
   const c = state.combat;
-  const clickDmg = 0.1;
+  const clickDmg = 0.02;
   c.clickDmgAccum = (c.clickDmgAccum || 0) + clickDmg;
   state.stats.clicks++;
-  // Küçük görsel feedback — log'a her click yazmasın, sadece HP bar titresin
-  document.getElementById('enemy-hp-fill').style.transition = 'none';
-  setTimeout(() => { document.getElementById('enemy-hp-fill').style.transition = ''; }, 100);
-  showFloat(0, 0, `+${clickDmg}`, 'var(--gold)');
+
+  // HP bar shake
+  const enemyFill = document.getElementById('enemy-hp-fill');
+  enemyFill.style.transition = 'none';
+  setTimeout(() => { enemyFill.style.transition = ''; }, 100);
+
+  // Strike button pulse
+  const strikeBtn = document.getElementById('strike-btn');
+  strikeBtn.classList.remove('striking');
+  void strikeBtn.offsetWidth; // reflow to restart animation
+  strikeBtn.classList.add('striking');
+  setTimeout(() => strikeBtn.classList.remove('striking'), 220);
+
+  // Modal flash
+  const modalBox = document.querySelector('#combat-modal .modal-box');
+  if (modalBox) {
+    modalBox.classList.remove('combat-hit-flash');
+    void modalBox.offsetWidth;
+    modalBox.classList.add('combat-hit-flash');
+    setTimeout(() => modalBox.classList.remove('combat-hit-flash'), 280);
+  }
+
+  // Floating damage number near enemy HP bar
+  const enemyHpWrap = document.getElementById('enemy-hp-fill');
+  if (enemyHpWrap) {
+    const rect = enemyHpWrap.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'strike-float';
+    const labels = ['⚔️ HIT!', '💥 STRIKE!', '⚡ BLOW!'];
+    const isSpecial = (state.stats.clicks % 5 === 0);
+    el.textContent = isSpecial ? '🔥 CRITICAL!' : labels[Math.floor(Math.random() * labels.length)];
+    if (isSpecial) { el.style.fontSize = '18px'; el.style.color = '#ffd700'; el.style.textShadow = '0 0 12px rgba(255,200,0,0.9)'; }
+    el.style.left = (rect.left + rect.width / 2 + (Math.random() * 40 - 20)) + 'px';
+    el.style.top = (rect.bottom + 28) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
 }
 
 function loseUnits(count) {
@@ -1969,12 +2020,14 @@ function addCombatLog(msg, type) {
 function updateCombatUI() {
   if (!state.combat) return;
   const c = state.combat;
-  const php = c.playerMaxHP > 0 ? Math.max(0, Math.round((c.playerHP / c.playerMaxHP) * 100)) : 0;
-  const ehp = c.enemyMaxHP  > 0 ? Math.max(0, Math.round((c.enemyHP  / c.enemyMaxHP)  * 100)) : 0;
+  const total = c.playerMaxHP + c.enemyMaxHP;
+  // Each side's share of the track = its current HP / total starting HP
+  const php = total > 0 ? Math.max(0, (c.playerHP / total) * 100) : 0;
+  const ehp = total > 0 ? Math.max(0, (c.enemyHP  / total) * 100) : 0;
   document.getElementById('player-hp-fill').style.width = php + '%';
   document.getElementById('enemy-hp-fill').style.width = ehp + '%';
-  document.getElementById('player-hp-val').textContent = `${c.playerHP}/${c.playerMaxHP}`;
-  document.getElementById('enemy-hp-val').textContent = `${c.enemyHP}/${c.enemyMaxHP}`;
+  document.getElementById('player-hp-val').textContent = `🟢 ${c.playerHP}/${c.playerMaxHP}`;
+  document.getElementById('enemy-hp-val').textContent = `${c.enemyHP}/${c.enemyMaxHP} 🔴`;
 }
 
 // =====================================================================
