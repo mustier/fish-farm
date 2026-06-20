@@ -208,6 +208,7 @@
   }
   .tag-idle  { background:rgba(67,170,139,0.13); color:var(--green);  border:1px solid rgba(67,170,139,0.3); }
   .tag-new   { background:rgba(249,199,79,0.11);  color:var(--gold);   border:1px solid rgba(249,199,79,0.3); }
+  .tag-rpg   { background:rgba(126,107,217,0.14); color:#9d8cf0;       border:1px solid rgba(126,107,217,0.35); }
   .play-label {
     font-family: 'Fredoka One', cursive;
     font-size: 0.82rem;
@@ -355,6 +356,26 @@
         </div>
       </div>
 
+      <div class="game-card" onclick="openGame('last-wanderer')">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#0a0612 0%,#171221 55%,#241830 100%)">
+          <span class="thumb-icon" style="filter:drop-shadow(0 3px 20px rgba(126,107,217,0.6))">🗡️</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">The Last Wanderer</div>
+          <div class="card-desc">A dark fantasy idle RPG. Pick your path, hunt hidden runes, and break the seven seals.</div>
+          <div class="card-footer">
+            <div class="card-tags">
+              <span class="tag tag-rpg">RPG</span>
+              <span class="tag tag-new">New</span>
+            </div>
+            <div class="play-label">
+              <span style="font-size:0.9rem">✦</span>
+              Play
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -373,8 +394,8 @@
 </div>
 
 <script>
-  const GAME_MSG_SHARE = { 'fish-farm': 'ff_do_share',  'mine-rush': 'mr_do_share',  'world-conquest': '' };
-  const GAME_MSG_RESET = { 'fish-farm': 'ff_do_reset',  'mine-rush': 'mr_do_reset',  'world-conquest': '' };
+  const GAME_MSG_SHARE = { 'fish-farm': 'ff_do_share',  'mine-rush': 'mr_do_share',  'world-conquest': '', 'last-wanderer': '' };
+  const GAME_MSG_RESET = { 'fish-farm': 'ff_do_reset',  'mine-rush': 'mr_do_reset',  'world-conquest': '', 'last-wanderer': '' };
   let activeSlug = '';
 
   function gameAction(msgMap) {
@@ -420,6 +441,19 @@
         '--hdr-hover-bg':     'rgba(230,57,70,0.1)',
         '--hdr-hover-border': 'rgba(230,57,70,0.5)',
         '--hdr-share-border': 'rgba(230,57,70,0.3)',
+      }
+    },
+    'last-wanderer': {
+      src: 'last-wanderer/index.html',
+      title: 'The Last Wanderer',
+      theme: {
+        '--hdr-bg':           'rgba(10, 6, 18, 0.98)',
+        '--hdr-border':       'rgba(126,107,217,0.3)',
+        '--hdr-logo':         '#9d8cf0',
+        '--hdr-accent':       '#d9a441',
+        '--hdr-hover-bg':     'rgba(126,107,217,0.12)',
+        '--hdr-hover-border': 'rgba(126,107,217,0.5)',
+        '--hdr-share-border': 'rgba(126,107,217,0.35)',
       }
     }
   };
