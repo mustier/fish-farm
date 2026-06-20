@@ -1,1342 +1,513 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DEVLET // Ekonomi & Diplomasi Simülasyonu</title>
+<title>ClickingGame — Free Browser Clicker Games</title>
+<meta name="description" content="Play free idle clicker games in your browser. No download required.">
+<link rel="canonical" href="https://clickingame.com/">
+<meta property="og:title" content="ClickingGame — Free Browser Clicker Games">
+<meta property="og:description" content="Play free idle clicker games in your browser. No download required!">
+<meta property="og:url" content="https://clickingame.com/">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0a0e14; --panel:#111722; --panel2:#0d131c; --line:#1d2735;
-  --ink:#c9d6e3; --dim:#5d7088; --dimmer:#384557;
-  --green:#3fd07d; --red:#ff5c6c; --amber:#ffb84d; --cyan:#4dd9e8;
-  --gold:#e8c45a; --violet:#9d7cff; --accent:#ff7847;
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+--bg: #07111f;
+--mid: #0d2444;
+--wave: #3d9cd4;
+--light: #7dd3f8;
+--white: #e8f4fd;
+--gold: #f9c74f;
+--green: #43aa8b;
+--panel: rgba(13,36,68,0.9);
+--border: rgba(61,156,212,0.2);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  background:var(--bg); color:var(--ink);
-  font-family:'SF Mono',ui-monospace,'Cascadia Code','Roboto Mono',Menlo,Consolas,monospace;
-  font-size:13px; line-height:1.5; overflow:hidden;
+body {
+background: var(--bg);
+font-family: 'Nunito', sans-serif;
+color: var(--white);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
 }
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:var(--panel2)}
-::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
-
-.app{display:flex;flex-direction:column;height:100vh}
-
-/* ===== TOP BAR ===== */
-.topbar{
-  display:flex;align-items:center;gap:0;
-  background:var(--panel);border-bottom:1px solid var(--line);
-  height:54px;flex-shrink:0;
+body::before {
+content:'';
+position:fixed; inset:0;
+background:
+radial-gradient(ellipse at 15% 85%, rgba(61,156,212,0.1) 0%, transparent 55%),
+radial-gradient(ellipse at 85% 15%, rgba(67,170,139,0.07) 0%, transparent 55%),
+linear-gradient(180deg, #071020 0%, #0a1628 60%, #07111f 100%);
+z-index:0; pointer-events:none;
 }
-.brand{padding:0 18px;display:flex;flex-direction:column;border-right:1px solid var(--line);height:100%;justify-content:center}
-.brand .logo{font-weight:700;letter-spacing:3px;font-size:15px;color:var(--ink)}
-.brand .logo b{color:var(--accent)}
-.brand .sub{font-size:9px;letter-spacing:1px;color:var(--dim);text-transform:uppercase}
-
-.tickerbar{flex:1;display:flex;align-items:center;gap:22px;padding:0 18px;overflow:hidden;white-space:nowrap}
-.tk{display:flex;flex-direction:column;line-height:1.25}
-.tk .l{font-size:9px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
-.tk .v{font-size:14px;font-weight:600}
-
-.clock{padding:0 16px;border-left:1px solid var(--line);height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;min-width:120px}
-.clock .date{font-size:15px;font-weight:600;color:var(--gold)}
-.clock .spd{font-size:9px;color:var(--dim);letter-spacing:.5px}
-
-.ctrls{display:flex;height:100%}
-.ctrls button{
-  background:var(--panel2);border:none;border-left:1px solid var(--line);
-  color:var(--dim);width:46px;cursor:pointer;font-family:inherit;font-size:15px;
-  transition:.12s;
+/* HEADER */
+header {
+position: relative; z-index: 10;
+display: flex; align-items: center; justify-content: space-between;
+padding: 16px 40px;
+border-bottom: 1px solid var(--hdr-border, var(--border));
+background: var(--hdr-bg, rgba(7,16,32,0.95));
+backdrop-filter: blur(10px);
+transition: background 0.4s, border-color 0.4s;
 }
-.ctrls button:hover{background:var(--line);color:var(--ink)}
-.ctrls button.on{color:var(--bg);background:var(--green)}
-.ctrls button.pausebtn.on{background:var(--amber)}
-
-/* ===== BODY LAYOUT ===== */
-.body{display:flex;flex:1;min-height:0}
-
-/* Left nav */
-.nav{width:62px;background:var(--panel2);border-right:1px solid var(--line);flex-shrink:0;display:flex;flex-direction:column;padding-top:6px}
-.nav button{
-  background:none;border:none;color:var(--dimmer);cursor:pointer;font-family:inherit;
-  padding:11px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;
-  border-left:2px solid transparent;transition:.12s;
+.logo {
+font-family: 'Fredoka One', cursive;
+font-size: 1.5rem;
+color: var(--hdr-logo, var(--light));
+text-decoration: none;
+cursor: pointer;
+transition: color 0.4s;
 }
-.nav button .ic{font-size:18px;line-height:1}
-.nav button .nm{font-size:8px;letter-spacing:.3px;text-transform:uppercase}
-.nav button:hover{color:var(--dim);background:#0f1620}
-.nav button.active{color:var(--ink);border-left-color:var(--accent);background:#0f1620}
-
-/* Main content */
-.main{flex:1;overflow-y:auto;padding:16px 18px 40px;min-width:0}
-
-/* Right rail */
-.rail{width:300px;background:var(--panel2);border-left:1px solid var(--line);flex-shrink:0;overflow-y:auto;padding:14px}
-
-/* ===== reusable ===== */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:5px;margin-bottom:14px}
-.card-h{padding:9px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-.card-h h3{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);font-weight:600}
-.card-b{padding:13px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
-.row+.row{border-top:1px solid var(--panel2)}
-.k{color:var(--dim);font-size:11px}
-.v{font-weight:600}
-.pos{color:var(--green)} .neg{color:var(--red)} .neu{color:var(--amber)}
-.muted{color:var(--dim)} .tiny{font-size:10px}
-.eyebrow{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
-h2.page-title{font-size:19px;font-weight:700;letter-spacing:.5px;margin-bottom:2px}
-.page-sub{color:var(--dim);font-size:11px;margin-bottom:16px}
-
-.btn{
-  background:var(--line);border:1px solid var(--dimmer);color:var(--ink);
-  font-family:inherit;font-size:11px;padding:7px 13px;border-radius:4px;cursor:pointer;
-  letter-spacing:.5px;transition:.12s;font-weight:600;
+.logo span { color: var(--hdr-accent, var(--gold)); transition: color 0.4s; }
+.back-btn {
+display: none;
+font-family: 'Fredoka One', cursive;
+font-size: 0.85rem;
+color: var(--hdr-logo, var(--light));
+background: transparent;
+border: 1px solid var(--hdr-border, var(--border));
+border-radius: 20px;
+padding: 5px 16px;
+cursor: pointer;
+transition: background 0.15s, border-color 0.15s, color 0.4s;
+align-items: center; gap: 5px;
 }
-.btn:hover:not(:disabled){background:var(--dimmer);border-color:var(--dim)}
-.btn:disabled{opacity:.35;cursor:not-allowed}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#1a0e08}
-.btn.primary:hover:not(:disabled){filter:brightness(1.12)}
-.btn.ghost{background:none}
-.btn.sm{padding:4px 9px;font-size:10px}
-.btn.danger{border-color:var(--red);color:var(--red)}
-.btn.danger:hover:not(:disabled){background:var(--red);color:#1a0808}
-
-.grid{display:grid;gap:14px}
-.grid.c2{grid-template-columns:1fr 1fr}
-.grid.c3{grid-template-columns:repeat(3,1fr)}
-.grid.c4{grid-template-columns:repeat(4,1fr)}
-
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:12px 14px}
-.stat .lab{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
-.stat .num{font-size:22px;font-weight:700;letter-spacing:.5px;line-height:1}
-.stat .chg{font-size:10px;margin-top:5px}
-
-.bar{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-top:6px}
-.bar > i{display:block;height:100%;border-radius:3px;transition:width .4s}
-
-table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;color:var(--dim);font-weight:600;font-size:9px;letter-spacing:.8px;text-transform:uppercase;padding:7px 9px;border-bottom:1px solid var(--line)}
-td{padding:8px 9px;border-bottom:1px solid var(--panel2)}
-tr.clk{cursor:pointer;transition:.1s}
-tr.clk:hover td{background:#0f1620}
-.flag{font-size:15px;margin-right:7px;vertical-align:-1px}
-
-.pill{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;letter-spacing:.5px;text-transform:uppercase;font-weight:600}
-.pill.ally{background:rgba(63,208,125,.14);color:var(--green)}
-.pill.war{background:rgba(255,92,108,.14);color:var(--red)}
-.pill.tense{background:rgba(255,184,77,.14);color:var(--amber)}
-.pill.neutral{background:rgba(93,112,136,.14);color:var(--dim)}
-.pill.trade{background:rgba(77,217,232,.14);color:var(--cyan)}
-
-.feed{font-size:11px}
-.feed .ev{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--panel2)}
-.feed .ev .dt{color:var(--dimmer);font-size:9px;flex-shrink:0;width:42px;padding-top:1px}
-.feed .ev .tx{flex:1}
-.feed .ev .ic{flex-shrink:0}
-
-.policy{border:1px solid var(--line);border-radius:5px;padding:11px 13px;margin-bottom:10px;background:var(--panel)}
-.policy.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,120,71,.2)}
-.policy .pt{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.policy .pname{font-weight:600;font-size:12px}
-.policy .pdesc{color:var(--dim);font-size:10px;line-height:1.45;margin-bottom:8px}
-
-.slider-row{display:flex;align-items:center;gap:10px;margin:9px 0}
-.slider-row label{font-size:11px;color:var(--dim);width:130px;flex-shrink:0}
-.slider-row input[type=range]{flex:1;accent-color:var(--accent)}
-.slider-row .val{width:48px;text-align:right;font-weight:600;font-size:11px}
-
-.modal-bg{position:fixed;inset:0;background:rgba(4,7,11,.78);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(3px)}
-.modal-bg.show{display:flex}
-.modal{background:var(--panel);border:1px solid var(--line);border-radius:8px;width:min(560px,92vw);max-height:88vh;overflow-y:auto}
-.modal-h{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-.modal-h h3{font-size:14px;letter-spacing:.5px}
-.modal-h .x{cursor:pointer;color:var(--dim);font-size:20px;line-height:1}
-.modal-h .x:hover{color:var(--ink)}
-.modal-b{padding:18px}
-
-.toast-wrap{position:fixed;bottom:18px;right:18px;z-index:60;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:5px;padding:10px 14px;font-size:11px;min-width:240px;max-width:340px;animation:slideIn .25s}
-.toast.good{border-left-color:var(--green)} .toast.bad{border-left-color:var(--red)} .toast.warn{border-left-color:var(--amber)}
-@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
-
-.spark{display:block;width:100%;height:34px}
-
-/* country select screen */
-.selectScreen{position:fixed;inset:0;background:var(--bg);z-index:80;display:flex;flex-direction:column;padding:0;overflow:hidden}
-.selHero{padding:34px 40px 20px;border-bottom:1px solid var(--line)}
-.selHero .eyebrow{font-size:11px}
-.selHero h1{font-size:38px;font-weight:800;letter-spacing:6px;margin:6px 0 4px}
-.selHero h1 b{color:var(--accent)}
-.selHero p{color:var(--dim);max-width:640px;font-size:12px;line-height:1.6}
-.selGrid{flex:1;overflow-y:auto;padding:24px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:13px;align-content:start}
-.cc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;cursor:pointer;transition:.14s;position:relative;overflow:hidden}
-.cc:hover{border-color:var(--accent);transform:translateY(-2px)}
-.cc .ch{display:flex;align-items:center;gap:9px;margin-bottom:9px}
-.cc .ch .fl{font-size:26px}
-.cc .ch .nm{font-weight:700;font-size:14px}
-.cc .ch .tag{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
-.cc .crow{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
-.cc .crow .k{color:var(--dim)}
-.cc .diff{position:absolute;top:11px;right:12px;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:8px}
-.diff.easy{background:rgba(63,208,125,.14);color:var(--green)}
-.diff.med{background:rgba(255,184,77,.14);color:var(--amber)}
-.diff.hard{background:rgba(255,92,108,.14);color:var(--red)}
-
-.hidden{display:none!important}
-.flex{display:flex} .between{justify-content:space-between} .center{align-items:center} .gap{gap:10px} .wrap{flex-wrap:wrap}
-.mt{margin-top:12px}.mb{margin-bottom:12px}
-.scrollx{overflow-x:auto}
-.help{color:var(--dimmer);font-size:10px;font-style:italic}
+.back-btn:hover { background: var(--hdr-hover-bg, rgba(61,156,212,0.1)); border-color: var(--hdr-hover-border, rgba(61,156,212,0.4)); }
+body.in-game .back-btn { display: flex; }
+.header-game-actions {
+display: none;
+align-items: center;
+gap: 10px;
+}
+body.in-game .header-game-actions { display: flex; }
+.hdr-share-btn {
+font-family: 'Fredoka One', cursive; font-size: 0.82rem;
+color: var(--hdr-logo, var(--light)); background: transparent;
+border: 1px solid var(--hdr-share-border, rgba(61,156,212,0.35)); border-radius: 20px;
+padding: 5px 14px; cursor: pointer; letter-spacing: 1px;
+transition: background 0.15s, border-color 0.15s, color 0.4s;
+}
+.hdr-share-btn:hover { background: var(--hdr-hover-bg, rgba(61,156,212,0.15)); border-color: var(--hdr-logo, rgba(61,156,212,0.6)); }
+.hdr-reset-btn {
+font-family: 'Fredoka One', cursive; font-size: 0.82rem;
+color: #f94144; background: transparent; border: none;
+padding: 5px 8px; cursor: pointer; letter-spacing: 1px;
+transition: color 0.15s;
+}
+.hdr-reset-btn:hover { color: #ff6b6e; }
+/* HOMEPAGE */
+#homepage {
+position: relative; z-index: 1;
+flex: 1;
+display: flex;
+flex-direction: column;
+}
+.hero {
+text-align: center;
+padding: 70px 20px 50px;
+}
+.hero h1 {
+font-family: 'Fredoka One', cursive;
+font-size: clamp(2rem, 5vw, 3.4rem);
+line-height: 1.15;
+margin-bottom: 14px;
+background: linear-gradient(135deg, var(--light) 0%, var(--gold) 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+.hero p {
+font-size: 1rem;
+color: rgba(232,244,253,0.55);
+max-width: 420px;
+margin: 0 auto;
+line-height: 1.7;
+}
+.games-section {
+max-width: 1000px;
+margin: 0 auto;
+padding: 0 24px 80px;
+width: 100%;
+flex: 1;
+}
+.section-label {
+font-family: 'Fredoka One', cursive;
+font-size: 1.1rem;
+color: rgba(125,211,248,0.5);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin-bottom: 20px;
+}
+.games-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+gap: 16px;
+}
+.game-card {
+background: var(--panel);
+border: 1px solid var(--border);
+border-radius: 16px;
+overflow: hidden;
+cursor: pointer;
+transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+user-select: none;
+}
+.game-card:hover {
+transform: translateY(-3px);
+border-color: rgba(61,156,212,0.45);
+box-shadow: 0 10px 32px rgba(61,156,212,0.12);
+}
+.game-card:active { transform: translateY(0); }
+.card-thumb {
+width: 100%;
+aspect-ratio: 16/9;
+display: flex; align-items: center; justify-content: center;
+font-size: 3.5rem;
+background: linear-gradient(135deg, #071020 0%, #0d2444 60%, #1a3a6b 100%);
+position: relative;
+overflow: hidden;
+}
+.card-thumb::after {
+content:'';
+position:absolute; inset:0;
+background: linear-gradient(to bottom, transparent 55%, rgba(7,16,32,0.55) 100%);
+}
+.thumb-icon {
+filter: drop-shadow(0 3px 16px rgba(61,156,212,0.5));
+animation: float 3.5s ease-in-out infinite;
+position: relative; z-index: 1;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.card-body { padding: 14px 16px 16px; }
+.card-title {
+font-family: 'Fredoka One', cursive;
+font-size: 1.15rem;
+margin-bottom: 5px;
+}
+.card-desc {
+font-size: 0.82rem;
+color: rgba(232,244,253,0.5);
+line-height: 1.5;
+margin-bottom: 12px;
+}
+.card-footer {
+display: flex; align-items: center; justify-content: space-between;
+}
+.card-tags { display: flex; gap: 5px; }
+.tag {
+font-size: 0.68rem; font-weight: 800;
+padding: 2px 9px; border-radius: 8px; letter-spacing: 0.3px;
+}
+.tag-idle { background:rgba(67,170,139,0.13); color:var(--green); border:1px solid rgba(67,170,139,0.3); }
+.tag-new { background:rgba(249,199,79,0.11); color:var(--gold); border:1px solid rgba(249,199,79,0.3); }
+.tag-rpg { background:rgba(126,107,217,0.14); color:#9d8cf0; border:1px solid rgba(126,107,217,0.35); }
+.play-label {
+font-family: 'Fredoka One', cursive;
+font-size: 0.82rem;
+color: var(--light);
+display: flex; align-items: center; gap: 4px;
+}
+.play-label span { line-height:1; }
+.card-coming {
+opacity: 0.38;
+cursor: default;
+pointer-events: none;
+}
+.coming-pill {
+font-size: 0.68rem; font-weight: 800;
+padding: 2px 9px; border-radius: 8px;
+background: rgba(232,244,253,0.07);
+color: rgba(232,244,253,0.4);
+border: 1px solid rgba(232,244,253,0.12);
+letter-spacing: 0.5px;
+}
+/* GAME VIEWER */
+#game-view {
+display: none;
+position: relative; z-index: 1;
+flex: 1;
+flex-direction: column;
+}
+#game-view.active { display: flex; }
+#game-frame {
+flex: 1;
+width: 100%;
+border: none;
+display: block;
+}
+/* FOOTER */
+footer {
+position: relative; z-index: 1;
+border-top: 1px solid var(--border);
+padding: 20px 40px;
+display: flex; align-items: center; justify-content: space-between;
+flex-wrap: wrap; gap: 10px;
+color: rgba(232,244,253,0.25);
+font-size: 0.78rem;
+}
+footer a { color: rgba(125,211,248,0.35); text-decoration: none; }
+footer a:hover { color: var(--light); }
+.footer-links { display: flex; gap: 18px; }
+@media (max-width: 580px) {
+header { padding: 12px 16px; }
+.hero { padding: 46px 16px 36px; }
+.games-section { padding: 0 14px 60px; }
+footer { padding: 18px 16px; flex-direction: column; align-items: flex-start; }
+}
 </style>
 </head>
 <body>
-<div class="app" id="app" style="display:none">
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo">DEV<b>LET</b></div>
-      <div class="sub" id="brandSub">— Yönetim Konsolu</div>
-    </div>
-    <div class="tickerbar" id="ticker"></div>
-    <div class="clock">
-      <div class="date" id="gdate">—</div>
-      <div class="spd" id="gspeed">DURDU</div>
-    </div>
-    <div class="ctrls">
-      <button class="pausebtn" id="btnPause" title="Durdur / Başlat">▶</button>
-      <button id="spd1" title="Normal hız">1×</button>
-      <button id="spd2" title="Hızlı">2×</button>
-      <button id="spd3" title="Çok hızlı">4×</button>
-    </div>
-  </div>
-  <!-- BODY -->
-  <div class="body">
-    <div class="nav" id="nav"></div>
-    <div class="main" id="main"></div>
-    <div class="rail" id="rail"></div>
-  </div>
+<header>
+<div style="display:flex;align-items:center;gap:14px;">
+<a class="logo" onclick="showHome()">Clicking<span>Game</span></a>
+<button class="back-btn" onclick="showHome()">
+<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+Games
+</button>
+</div>
+<div class="header-game-actions">
+<button class="hdr-share-btn" onclick="gameAction(GAME_MSG_SHARE)">SHARE GAME</button>
+<button class="hdr-reset-btn" onclick="gameAction(GAME_MSG_RESET)">RESET GAME</button>
+</div>
+</header>
+
+<!-- HOMEPAGE -->
+<div id="homepage">
+<div class="hero">
+<h1>Click. Build. Conquer.</h1>
+<p>Free idle clicker games, right in your browser.</p>
+</div>
+<div class="games-section">
+<div class="section-label">Games</div>
+<div class="games-grid">
+<div class="game-card" onclick="openGame('fish-farm')">
+<div class="card-thumb">
+<span class="thumb-icon">🐟</span>
+</div>
+<div class="card-body">
+<div class="card-title">Fish Farm</div>
+<div class="card-desc">Build your underwater empire. Breed fish, upgrade tanks, and harvest gold.</div>
+<div class="card-footer">
+<div class="card-tags">
+<span class="tag tag-idle">Idle</span>
+<span class="tag tag-new">New</span>
+</div>
+<div class="play-label">
+<span style="font-size:0.9rem">🧜</span>
+Play
+</div>
+</div>
+</div>
+</div>
+<div class="game-card" onclick="openGame('mine-rush')">
+<div class="card-thumb" style="background:linear-gradient(135deg,#0e0a04 0%,#2a1a08 60%,#3d2b12 100%)">
+<span class="thumb-icon" style="filter:drop-shadow(0 3px 16px rgba(201,124,26,0.6))">⛏️</span>
+</div>
+<div class="card-body">
+<div class="card-title">Mine Rush</div>
+<div class="card-desc">Dig deep, collect rare ores, and automate your mining operation.</div>
+<div class="card-footer">
+<div class="card-tags">
+<span class="tag tag-idle">Idle</span>
+<span class="tag tag-new">New</span>
+</div>
+<div class="play-label">
+<span style="font-size:0.9rem">⚒️</span>
+Play
+</div>
+</div>
+</div>
+</div>
+<div class="game-card" onclick="openGame('world-conquest')">
+<div class="card-thumb" style="background:linear-gradient(135deg,#050a14 0%,#0a1628 55%,#0f2040 100%)">
+<span class="thumb-icon" style="filter:drop-shadow(0 3px 20px rgba(230,57,70,0.55))">🌍</span>
+</div>
+<div class="card-body">
+<div class="card-title">World Conquest</div>
+<div class="card-desc">Build an empire, command armies, and conquer the world — then face the alien invasion.</div>
+<div class="card-footer">
+<div class="card-tags">
+<span class="tag tag-idle">Strategy</span>
+<span class="tag tag-new">New</span>
+</div>
+<div class="play-label">
+<span style="font-size:0.9rem">⚔️</span>
+Play
+</div>
+</div>
+</div>
+</div>
+<div class="game-card" onclick="openGame('last-wanderer')">
+<div class="card-thumb" style="background:linear-gradient(135deg,#0a0612 0%,#171221 55%,#241830 100%)">
+<span class="thumb-icon" style="filter:drop-shadow(0 3px 20px rgba(126,107,217,0.6))">🗡️</span>
+</div>
+<div class="card-body">
+<div class="card-title">The Last Wanderer</div>
+<div class="card-desc">A dark fantasy idle RPG. Pick your path, hunt hidden runes, and break the seven seals.</div>
+<div class="card-footer">
+<div class="card-tags">
+<span class="tag tag-rpg">RPG</span>
+<span class="tag tag-new">New</span>
+</div>
+<div class="play-label">
+<span style="font-size:0.9rem">✦</span>
+Play
+</div>
+</div>
+</div>
+</div>
+<div class="game-card" onclick="openGame('world-economy')">
+<div class="card-thumb" style="background:linear-gradient(135deg,#060a10 0%,#0d1722 55%,#14202e 100%)">
+<span class="thumb-icon" style="filter:drop-shadow(0 3px 20px rgba(255,120,71,0.55))">📊</span>
+</div>
+<div class="card-body">
+<div class="card-title">World Economy</div>
+<div class="card-desc">Run a real nation. Grow your economy, forge trade deals and alliances, and climb to the top — war is a costly last resort.</div>
+<div class="card-footer">
+<div class="card-tags">
+<span class="tag tag-idle">Strategy</span>
+<span class="tag tag-new">New</span>
+</div>
+<div class="play-label">
+<span style="font-size:0.9rem">🌐</span>
+Play
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer>
+<span>© 2026 ClickingGame.com</span>
+<div class="footer-links">
+<a href="privacy-policy.html">Privacy Policy</a>
+<a href="mailto:mustafa.eryilmaz.eee@gmail.com">Contact</a>
+</div>
+</footer>
 </div>
 
-<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
-<div class="toast-wrap" id="toasts"></div>
-
-<!-- COUNTRY SELECT -->
-<div class="selectScreen" id="selectScreen">
-  <div class="selHero">
-    <div class="eyebrow">EKONOMİ · TİCARET · DİPLOMASİ SİMÜLASYONU</div>
-    <h1>DEV<b>LET</b></h1>
-    <p>Bir ulus seç ve yönetimini devral. Gerçek dünya verilerine yakın bir başlangıçtan yola çık; sanayini büyüt, ticaret ağları kur, ittifaklar ve yaptırımlarla dünya ekonomisini şekillendir. Savaş pahalı ve risklidir — asıl güç bilançoda saklıdır.</p>
-  </div>
-  <div class="selGrid" id="selGrid"></div>
+<!-- GAME VIEWER -->
+<div id="game-view">
+<iframe id="game-frame" src="" allowfullscreen></iframe>
 </div>
 
 <script>
-/* ============================================================
-   DEVLET — Ekonomi & Diplomasi Simülasyonu
-   Tek dosya, bağımsız. clickingame.com için.
-   ============================================================ */
-
-/* ---------- yardımcılar ---------- */
-const $=s=>document.querySelector(s);
-const $$=s=>document.querySelectorAll(s);
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-const rnd=(a,b)=>a+Math.random()*(b-a);
-const pick=a=>a[Math.floor(Math.random()*a.length)];
-function fmt(n){
-  if(n===null||n===undefined||isNaN(n))return '—';
-  const a=Math.abs(n);
-  if(a>=1e12)return (n/1e12).toFixed(2)+' T';
-  if(a>=1e9)return (n/1e9).toFixed(1)+' Mr';
-  if(a>=1e6)return (n/1e6).toFixed(1)+' M';
-  if(a>=1e3)return (n/1e3).toFixed(1)+' B';
-  return n.toFixed(0);
+const GAME_MSG_SHARE = { 'fish-farm': 'ff_do_share', 'mine-rush': 'mr_do_share', 'world-conquest': '', 'last-wanderer': '', 'world-economy': '' };
+const GAME_MSG_RESET = { 'fish-farm': 'ff_do_reset', 'mine-rush': 'mr_do_reset', 'world-conquest': '', 'last-wanderer': '', 'world-economy': '' };
+let activeSlug = '';
+function gameAction(msgMap) {
+const type = msgMap[activeSlug];
+if (type) document.getElementById('game-frame').contentWindow.postMessage({ type }, '*');
 }
-function money(n){return '$'+fmt(n);}
-function pct(n,d=1){return (n>=0?'+':'')+n.toFixed(d)+'%';}
-function sign(n){return n>=0?'pos':'neg';}
-
-/* ---------- sektörler (üretim zinciri) ---------- */
-// her sektör: hammadde mi, ara mal mı, ileri teknoloji mi
-const SECTORS={
-  agri:   {name:'Tarım',        ic:'🌾', tier:0, base:'land'},
-  energy: {name:'Enerji',       ic:'⛽', tier:0, base:'resource'},
-  mining: {name:'Madencilik',   ic:'⛏️', tier:0, base:'resource'},
-  manuf:  {name:'İmalat',       ic:'🏭', tier:1, needs:['energy','mining']},
-  consumer:{name:'Tüketim Malı', ic:'📦', tier:1, needs:['agri','manuf']},
-  tech:   {name:'Teknoloji',    ic:'💻', tier:2, needs:['manuf','services']},
-  finance:{name:'Finans',       ic:'🏦', tier:2, needs:['services']},
-  services:{name:'Hizmet',      ic:'🛎️', tier:1, needs:['consumer']},
-  defense:{name:'Savunma San.', ic:'🛡️', tier:2, needs:['manuf','tech']},
+const GAMES = {
+'fish-farm': {
+src: 'fish-farm/index.html?embed=1',
+title: 'Fish Farm',
+theme: {
+'--hdr-bg': 'rgba(4, 18, 38, 0.97)',
+'--hdr-border': 'rgba(61,156,212,0.3)',
+'--hdr-logo': '#7dd3f8',
+'--hdr-accent': '#f9c74f',
+'--hdr-hover-bg': 'rgba(61,156,212,0.12)',
+'--hdr-hover-border': 'rgba(61,156,212,0.5)',
+'--hdr-share-border': 'rgba(61,156,212,0.35)',
+}
+},
+'mine-rush': {
+src: 'mine-rush/index.html?embed=1',
+title: 'Mine Rush',
+theme: {
+'--hdr-bg': 'rgba(18, 10, 3, 0.97)',
+'--hdr-border': 'rgba(201,124,26,0.3)',
+'--hdr-logo': '#e8a94a',
+'--hdr-accent': '#c97c1a',
+'--hdr-hover-bg': 'rgba(201,124,26,0.12)',
+'--hdr-hover-border': 'rgba(201,124,26,0.5)',
+'--hdr-share-border': 'rgba(201,124,26,0.35)',
+}
+},
+'world-conquest': {
+src: 'world-conquest/index.html',
+title: 'World Conquest',
+theme: {
+'--hdr-bg': 'rgba(5, 8, 18, 0.98)',
+'--hdr-border': 'rgba(230,57,70,0.3)',
+'--hdr-logo': '#f9c74f',
+'--hdr-accent': '#e63946',
+'--hdr-hover-bg': 'rgba(230,57,70,0.1)',
+'--hdr-hover-border': 'rgba(230,57,70,0.5)',
+'--hdr-share-border': 'rgba(230,57,70,0.3)',
+}
+},
+'last-wanderer': {
+src: 'last-wanderer/index.html',
+title: 'The Last Wanderer',
+theme: {
+'--hdr-bg': 'rgba(10, 6, 18, 0.98)',
+'--hdr-border': 'rgba(126,107,217,0.3)',
+'--hdr-logo': '#9d8cf0',
+'--hdr-accent': '#d9a441',
+'--hdr-hover-bg': 'rgba(126,107,217,0.12)',
+'--hdr-hover-border': 'rgba(126,107,217,0.5)',
+'--hdr-share-border': 'rgba(126,107,217,0.35)',
+}
+},
+'world-economy': {
+src: 'world-economy/index.html',
+title: 'World Economy',
+theme: {
+'--hdr-bg': 'rgba(10, 14, 20, 0.98)',
+'--hdr-border': 'rgba(255,120,71,0.3)',
+'--hdr-logo': '#ff9a6c',
+'--hdr-accent': '#ff7847',
+'--hdr-hover-bg': 'rgba(255,120,71,0.12)',
+'--hdr-hover-border': 'rgba(255,120,71,0.5)',
+'--hdr-share-border': 'rgba(255,120,71,0.35)',
+}
+}
 };
-const SECTOR_KEYS=Object.keys(SECTORS);
-
-/* ---------- ülke verileri (2025'e yakın, oyunlaştırılmış) ----------
-   gdp: trilyon $ ; pop: milyon ; her ülkenin sektör güç dağılımı 0..100
-   diff: oynama zorluğu                                                */
-const COUNTRY_DATA=[
- {id:'usa',name:'ABD',fl:'🇺🇸',gdp:27.7,pop:340,debt:122,mil:88,tech:95,stab:72,diff:'easy',
-  sectors:{agri:60,energy:85,mining:55,manuf:70,consumer:80,tech:98,finance:99,services:92,defense:99},
-  res:{oil:70,metal:55,food:80},gov:'Başkanlık'},
- {id:'chn',name:'Çin',fl:'🇨🇳',gdp:18.5,pop:1410,debt:84,mil:82,tech:80,stab:68,diff:'easy',
-  sectors:{agri:75,energy:78,mining:80,manuf:99,consumer:88,tech:78,finance:70,services:65,defense:84},
-  res:{oil:45,metal:90,food:70},gov:'Tek Parti'},
- {id:'deu',name:'Almanya',fl:'🇩🇪',gdp:4.5,pop:84,debt:64,mil:55,tech:88,stab:78,diff:'med',
-  sectors:{agri:50,energy:45,mining:35,manuf:90,consumer:75,tech:85,finance:80,services:82,defense:72},
-  res:{oil:15,metal:40,food:55},gov:'Parlamenter'},
- {id:'jpn',name:'Japonya',fl:'🇯🇵',gdp:4.2,pop:124,debt:255,mil:50,tech:90,stab:76,diff:'med',
-  sectors:{agri:35,energy:25,mining:20,manuf:88,consumer:78,tech:92,finance:78,services:80,defense:60},
-  res:{oil:5,metal:20,food:35},gov:'Parlamenter'},
- {id:'ind',name:'Hindistan',fl:'🇮🇳',gdp:3.9,pop:1430,debt:82,mil:70,tech:62,stab:60,diff:'med',
-  sectors:{agri:80,energy:55,mining:65,manuf:62,consumer:70,tech:70,finance:55,services:78,defense:58},
-  res:{oil:25,metal:60,food:85},gov:'Parlamenter'},
- {id:'gbr',name:'Birleşik Krallık',fl:'🇬🇧',gdp:3.4,pop:68,debt:101,mil:58,tech:82,stab:74,diff:'med',
-  sectors:{agri:38,energy:50,mining:25,manuf:60,consumer:68,tech:80,finance:92,services:88,defense:70},
-  res:{oil:35,metal:20,food:45},gov:'Parlamenter'},
- {id:'fra',name:'Fransa',fl:'🇫🇷',gdp:3.1,pop:65,debt:111,mil:60,tech:80,stab:70,diff:'med',
-  sectors:{agri:58,energy:60,mining:30,manuf:70,consumer:72,tech:78,finance:76,services:82,defense:78},
-  res:{oil:10,metal:30,food:65},gov:'Yarı-Başkanlık'},
- {id:'rus',name:'Rusya',fl:'🇷🇺',gdp:2.0,pop:144,debt:20,mil:80,tech:60,stab:55,diff:'hard',
-  sectors:{agri:65,energy:95,mining:88,manuf:58,consumer:50,tech:55,finance:45,services:55,defense:88},
-  res:{oil:98,metal:85,food:75},gov:'Başkanlık'},
- {id:'bra',name:'Brezilya',fl:'🇧🇷',gdp:2.2,pop:216,debt:84,mil:48,tech:50,stab:58,diff:'med',
-  sectors:{agri:90,energy:65,mining:78,manuf:55,consumer:60,tech:48,finance:55,services:62,defense:42},
-  res:{oil:55,metal:80,food:95},gov:'Başkanlık'},
- {id:'tur',name:'Türkiye',fl:'🇹🇷',gdp:1.1,pop:85,debt:34,mil:65,tech:55,stab:54,diff:'med',
-  sectors:{agri:70,energy:30,mining:50,manuf:72,consumer:66,tech:52,finance:50,services:68,defense:74},
-  res:{oil:12,metal:45,food:72},gov:'Başkanlık'},
- {id:'sau',name:'Suudi Arabistan',fl:'🇸🇦',gdp:1.1,pop:37,debt:24,mil:62,tech:48,stab:62,diff:'med',
-  sectors:{agri:20,energy:99,mining:40,manuf:35,consumer:45,tech:45,finance:58,services:55,defense:55},
-  res:{oil:99,metal:35,food:15},gov:'Monarşi'},
- {id:'kor',name:'Güney Kore',fl:'🇰🇷',gdp:1.7,pop:52,debt:55,mil:66,tech:93,stab:70,diff:'med',
-  sectors:{agri:28,energy:25,mining:18,manuf:92,consumer:74,tech:95,finance:68,services:74,defense:72},
-  res:{oil:3,metal:18,food:30},gov:'Başkanlık'},
- {id:'idn',name:'Endonezya',fl:'🇮🇩',gdp:1.4,pop:278,debt:39,mil:50,tech:42,stab:56,diff:'med',
-  sectors:{agri:78,energy:70,mining:82,manuf:58,consumer:60,tech:40,finance:48,services:58,defense:44},
-  res:{oil:50,metal:88,food:80},gov:'Başkanlık'},
- {id:'mex',name:'Meksika',fl:'🇲🇽',gdp:1.8,pop:129,debt:50,mil:42,tech:48,stab:52,diff:'med',
-  sectors:{agri:62,energy:58,mining:60,manuf:74,consumer:64,tech:50,finance:52,services:62,defense:38},
-  res:{oil:55,metal:65,food:68},gov:'Başkanlık'},
- {id:'zaf',name:'Güney Afrika',fl:'🇿🇦',gdp:0.42,pop:60,debt:74,mil:38,tech:48,stab:48,diff:'hard',
-  sectors:{agri:55,energy:48,mining:92,manuf:50,consumer:52,tech:46,finance:60,services:58,defense:40},
-  res:{oil:20,metal:95,food:58},gov:'Parlamenter'},
- {id:'nga',name:'Nijerya',fl:'🇳🇬',gdp:0.39,pop:223,debt:46,mil:36,tech:32,stab:42,diff:'hard',
-  sectors:{agri:72,energy:80,mining:55,manuf:40,consumer:48,tech:35,finance:42,services:50,defense:34},
-  res:{oil:85,metal:50,food:60},gov:'Başkanlık'},
-];
-
-/* ---------- emtia / dünya pazarı ---------- */
-const COMMODITIES={
-  oil:  {name:'Petrol',     ic:'🛢️', price:78,  unit:'varil'},
-  metal:{name:'Metaller',   ic:'🪙', price:240, unit:'ton'},
-  food: {name:'Gıda',       ic:'🌽', price:55,  unit:'ton'},
-  chips:{name:'Yarı İletken',ic:'🔲', price:430, unit:'birim'},
-};
-
-/* ============================================================
-   DURUM (STATE)
-   ============================================================ */
-let G=null; // ana oyun durumu
-
-function newState(playerId){
-  // ülkeleri derin kopyala + dinamik alanlar ekle
-  const countries={};
-  COUNTRY_DATA.forEach(c=>{
-    countries[c.id]={
-      ...c,
-      sectors:{...c.sectors},
-      res:{...c.res},
-      // dinamik ekonomik durum
-      gdpGrowth: rnd(-0.5,3.5),
-      inflation: c.id==='tur'?38: c.id==='rus'?9: c.id==='usa'?3: rnd(1.5,6),
-      unemploy: rnd(3.5,11),
-      treasury: c.gdp*1000*rnd(0.04,0.09), // milyar $ kasada
-      taxRate: 22,
-      // diplomasi: oyuncuya karşı tutum -100..100
-      relation: 0,
-      tradeVol: 0,
-      sentiment: rnd(-10,10),
-    };
-  });
-
-  const p=countries[playerId];
-  return {
-    playerId,
-    countries,
-    // zaman
-    year:2025, month:1, tick:0,
-    running:false, speed:1, // 1,2,4
-    // emtia fiyatları
-    market:JSON.parse(JSON.stringify(COMMODITIES)),
-    // oyuncu politikaları
-    policy:{
-      taxRate:22, interestRate:8, militarySpend:12, // % bütçe
-      tariff:8, // ortalama gümrük %
-      welfare:18, rnd:6, infraSpend:10,
-      tradeOpen:60, // açıklık
-    },
-    // sektör yatırım seviyeleri (oyuncunun aktif yatırımı)
-    invest:{},
-    // anlaşmalar
-    treaties:[], // {with, type, since}
-    blocs:[],    // ittifak blokları
-    sanctions:[],// {by/on, reason}
-    // tarihçe (grafik için)
-    hist:{gdp:[],treasury:[],approval:[]},
-    approval:55, // halk desteği
-    // olay akışı
-    feed:[],
-    // birikmiş
-    totalEarned:0,
-    page:'overview',
-    selectedCountry:null,
-  };
+function applyHeaderTheme(theme) {
+const hdr = document.querySelector('header');
+Object.entries(theme).forEach(([k, v]) => hdr.style.setProperty(k, v));
 }
-
-/* ============================================================
-   EKONOMİ MOTORU
-   ============================================================ */
-function player(){return G.countries[G.playerId];}
-
-// bir ülkenin sektör çıktısını (yıllık katma değer, milyar$) hesapla
-function sectorOutput(c){
-  const out={};
-  let total=0;
-  SECTOR_KEYS.forEach(k=>{
-    const lvl=c.sectors[k]||0;
-    // tedarik zinciri darboğazı: gereken alt sektör zayıfsa ceza
-    let supply=1;
-    const def=SECTORS[k];
-    if(def.needs){
-      let s=0; def.needs.forEach(n=>s+=(c.sectors[n]||0));
-      s/=def.needs.length;
-      supply=clamp(0.45+s/130,0.45,1.15);
-    }
-    const v=(c.gdp*1000)*(lvl/100)*0.16*supply;
-    out[k]=v; total+=v;
-  });
-  return {out,total};
+function resetHeaderTheme() {
+const hdr = document.querySelector('header');
+['--hdr-bg','--hdr-border','--hdr-logo','--hdr-accent','--hdr-hover-bg','--hdr-hover-border','--hdr-share-border']
+.forEach(k => hdr.style.removeProperty(k));
 }
-
-// oyuncunun aylık ekonomik tikini işle
-function economicTick(){
-  const p=player();
-  const pol=G.policy;
-
-  // ---- gelir ----
-  const {total:gdpv}=sectorOutput(p);
-  const annualGDP=p.gdp*1000; // milyar
-  // vergi geliri (aylık)
-  let taxRev=(annualGDP * (pol.taxRate/100) * 0.45)/12;
-  // gümrük geliri
-  const tradeIncome=(p.tradeVol||0)*(pol.tariff/100)*0.5;
-  // emtia ihracat geliri (kaynak zengini ülkeler)
-  let resourceRev=0;
-  resourceRev+=(p.res.oil/100)*G.market.oil.price*0.9;
-  resourceRev+=(p.res.metal/100)*G.market.metal.price*0.6;
-  resourceRev+=(p.res.food/100)*G.market.food.price*0.7;
-  resourceRev*=(pol.tradeOpen/60);
-
-  const income=taxRev+tradeIncome+resourceRev;
-
-  // ---- gider ----
-  const spendBase=annualGDP/12*0.36;
-  const milCost=spendBase*(pol.militarySpend/100)*1.1;
-  const welfareCost=spendBase*(pol.welfare/100)*1.2;
-  const infraCost=spendBase*(pol.infraSpend/100);
-  const rndCost=spendBase*(pol.rnd/100);
-  // borç faizi (çok yüksek borçta faiz yükü kısmen sınırlanır)
-  const debtCost=(annualGDP*(Math.min(p.debt,95)/100))*(pol.interestRate/100)/12;
-  const expenses=milCost+welfareCost+infraCost+rndCost+debtCost + spendBase*0.22;
-
-  const net=income-expenses;
-  p.treasury+=net;
-  G.totalEarned+=Math.max(0,net);
-
-  // ---- makro dinamikler ----
-  // büyüme: temel trend + politika sapmaları
-  let g=1.6; // temel büyüme eğilimi
-  g+=(pol.infraSpend-10)*0.05;
-  g+=(pol.rnd-6)*0.06;
-  g+=(pol.tradeOpen-60)*0.012;
-  g-=(pol.taxRate-22)*0.02;
-  g-=Math.max(0,p.inflation-8)*0.03;      // sadece %8 üstü enflasyon cezalandırır
-  g-=Math.max(0,(p.debt-110))*0.004;      // sadece %110 üstü borç
-  g+=(p.stab-55)*0.008;
-  // sektör yatırımları büyümeyi besler
-  let invSum=0; Object.values(G.invest).forEach(v=>invSum+=v);
-  g+=invSum*0.0008;
-  g+=rnd(-0.3,0.3);
-  p.gdpGrowth=clamp(p.gdpGrowth*0.75+g*0.25, -8, 12);
-  p.gdp*=(1+p.gdpGrowth/100/12);
-
-  // enflasyon: hedefe doğru çekilir, faiz baskılar, harcama körükler
-  let infl=p.inflation;
-  infl+=(4-infl)*0.02;                    // uzun vadeli hedefe çekim
-  infl+=(8-pol.interestRate)*0.04;
-  infl+=(pol.welfare-18)*0.015;
-  infl-=(pol.taxRate-22)*0.008;
-  infl+=rnd(-0.3,0.3);
-  p.inflation=clamp(infl,0.5,120);
-
-  // işsizlik
-  p.unemploy=clamp(p.unemploy - (p.gdpGrowth-1.5)*0.06 + rnd(-0.15,0.15),2,28);
-
-  // borç: açık verince artar
-  if(net<0) p.debt+=Math.abs(net)/annualGDP*100*0.4;
-  else p.debt=Math.max(0,p.debt-net/annualGDP*100*0.15);
-
-  // ---- halk desteği ----
-  let ap=G.approval;
-  ap+=(G.approval<52?0.10:-0.03);         // hafif merkeze dönüş
-  ap+=(p.gdpGrowth-1.5)*0.10;
-  ap-=Math.max(0,p.inflation-6)*0.04;
-  ap-=Math.max(0,p.unemploy-7)*0.04;
-  ap+=(pol.welfare-18)*0.02;
-  ap-=(pol.taxRate-22)*0.018;
-  ap-=(pol.militarySpend-12)*0.012;
-  ap+=rnd(-0.25,0.25);
-  G.approval=clamp(ap,3,97);
-
-  // istikrar
-  p.stab=clamp(p.stab + (G.approval-50)*0.008 - Math.max(0,p.inflation-15)*0.015, 5,95);
-
-  return {income,expenses,net,taxRev,tradeIncome,resourceRev,milCost,welfareCost,infraCost,rndCost,debtCost};
+function openGame(slug) {
+const game = GAMES[slug];
+if (!game) return;
+activeSlug = slug;
+document.getElementById('game-frame').src = game.src;
+document.getElementById('homepage').style.display = 'none';
+document.getElementById('game-view').classList.add('active');
+document.body.classList.add('in-game');
+applyHeaderTheme(game.theme);
+location.hash = slug;
+document.title = game.title + ' — ClickingGame';
 }
-
-/* ============================================================
-   AI ÜLKELER + DÜNYA + DİPLOMASİ
-   ============================================================ */
-function worldTick(){
-  const p=player();
-  // diğer ülkeler de büyür/gelişir
-  Object.values(G.countries).forEach(c=>{
-    if(c.id===G.playerId)return;
-    // basit AI büyüme
-    let g=c.gdpGrowth*0.8 + rnd(-0.6,0.7);
-    g+=(c.stab-55)*0.008;
-    c.gdpGrowth=clamp(g,-6,11);
-    c.gdp*=(1+c.gdpGrowth/100/12);
-    c.inflation=clamp(c.inflation+rnd(-0.5,0.5),0.5,120);
-    c.treasury+=c.gdp*1000*rnd(0.001,0.004);
-    // AI ülke kendi sektörlerini yavaşça geliştirir
-    if(Math.random()<0.04){
-      const k=pick(SECTOR_KEYS);
-      c.sectors[k]=clamp(c.sectors[k]+rnd(0.3,1.2),0,100);
-    }
-    // oyuncuya tutum yavaşça nötre kayar / ticarete göre değişir
-    c.relation=clamp(c.relation*0.998 + c.sentiment*0.01, -100,100);
-    c.sentiment*=0.97;
-  });
-
-  // emtia fiyatları dalgalanır
-  Object.values(G.market).forEach(m=>{
-    m.price=clamp(m.price*(1+rnd(-0.025,0.025)),m.price*0.4,m.price*2.5);
-  });
-
-  // küresel ticaret hacmi oyuncu için
-  let tv=0;
-  G.treaties.forEach(t=>{
-    if(t.type==='trade'||t.type==='fta'){
-      const o=G.countries[t.with];
-      tv+=o.gdp*1000*0.003*(G.policy.tradeOpen/60);
-    }
-  });
-  // açıklık temel ticaret
-  tv+=p.gdp*1000*0.0015*(G.policy.tradeOpen/100);
-  p.tradeVol=tv;
+function showHome() {
+activeSlug = '';
+document.getElementById('game-frame').src = '';
+document.getElementById('game-view').classList.remove('active');
+document.getElementById('homepage').style.display = 'flex';
+document.body.classList.remove('in-game');
+resetHeaderTheme();
+history.pushState('', '', location.pathname);
+document.title = 'ClickingGame — Free Browser Clicker Games';
 }
-
-// ilişki değiştir
-function changeRelation(id,amt,reason){
-  const c=G.countries[id];
-  c.relation=clamp(c.relation+amt,-100,100);
-  if(reason) c.sentiment+=amt*0.3;
-}
-
-function relationLabel(r){
-  if(r>=60)return {t:'Müttefik',cls:'ally'};
-  if(r>=20)return {t:'Dostane',cls:'trade'};
-  if(r>-20)return {t:'Tarafsız',cls:'neutral'};
-  if(r>-55)return {t:'Gergin',cls:'tense'};
-  return {t:'Düşman',cls:'war'};
-}
-
-function hasTreaty(id,type){
-  return G.treaties.some(t=>t.with===id && (type?t.type===type:true));
-}
-
-/* ============================================================
-   OLAYLAR (EVENTS)
-   ============================================================ */
-const EVENT_POOL=[
- {id:'oil_spike',w:3,cond:()=>true,fire:()=>{
-   G.market.oil.price*=rnd(1.15,1.35);
-   addFeed('🛢️','Ortadoğu\'da gerginlik petrol fiyatlarını fırlattı.','warn');
- }},
- {id:'oil_drop',w:3,cond:()=>true,fire:()=>{
-   G.market.oil.price*=rnd(0.7,0.88);
-   addFeed('🛢️','Talep düşüşü petrol fiyatlarını geriletti.','');
- }},
- {id:'tech_boom',w:2,cond:()=>player().sectors.tech>50,fire:()=>{
-   const p=player(); p.sectors.tech=clamp(p.sectors.tech+rnd(2,5),0,100);
-   addFeed('💻','Teknoloji sektöründe atılım: verimlilik arttı.','good');
- }},
- {id:'recession',w:1.5,cond:()=>true,fire:()=>{
-   Object.values(G.countries).forEach(c=>c.gdpGrowth-=rnd(1,3));
-   addFeed('📉','Küresel resesyon dalgası tüm ekonomileri vurdu.','bad');
- }},
- {id:'protest',w:2,cond:()=>G.approval<40,fire:()=>{
-   player().stab=clamp(player().stab-rnd(3,8),5,95); G.approval-=rnd(2,6);
-   addFeed('🪧','Halk sokağa döküldü — istikrar zedelendi.','bad');
- }},
- {id:'invest_in',w:2,cond:()=>player().stab>55,fire:()=>{
-   const p=player(); p.treasury+=p.gdp*1000*rnd(0.004,0.01);
-   addFeed('💰','Yabancı yatırımcılar ülkene akın etti.','good');
- }},
- {id:'trade_offer',w:2.5,cond:()=>true,fire:()=>{
-   const cands=Object.values(G.countries).filter(c=>c.id!==G.playerId && !hasTreaty(c.id,'trade') && c.relation>-30);
-   if(!cands.length)return;
-   const c=pick(cands);
-   pushDecision({
-     title:`${c.fl} ${c.name} ticaret anlaşması öneriyor`,
-     body:`${c.name}, karşılıklı gümrük indirimi içeren bir ticaret anlaşması öneriyor. Kabul edersen ticaret hacmin artar ve ilişkiler güçlenir.`,
-     opts:[
-       {t:'Kabul et',cls:'primary',fn:()=>{G.treaties.push({with:c.id,type:'trade',since:dateStr()});changeRelation(c.id,25,'trade');toast('Ticaret anlaşması imzalandı','good');}},
-       {t:'Reddet',cls:'',fn:()=>{changeRelation(c.id,-8);}},
-     ]
-   });
- }},
- {id:'border_tension',w:1.5,cond:()=>true,fire:()=>{
-   const cands=Object.values(G.countries).filter(c=>c.id!==G.playerId);
-   const c=pick(cands);
-   changeRelation(c.id,-rnd(8,18),'tension');
-   addFeed('⚠️',`${c.fl} ${c.name} ile sınırda gerginlik yükseldi.`,'warn');
- }},
- {id:'natural_disaster',w:1,cond:()=>true,fire:()=>{
-   const p=player(); p.treasury-=p.gdp*1000*rnd(0.003,0.008); p.gdpGrowth-=rnd(0.5,1.5);
-   addFeed('🌊','Doğal afet altyapına zarar verdi, kurtarma maliyetli.','bad');
- }},
- {id:'commodity_find',w:1.2,cond:()=>true,fire:()=>{
-   const p=player(); const k=pick(['oil','metal','food']);
-   p.res[k]=clamp(p.res[k]+rnd(5,12),0,100);
-   addFeed('⛏️',`Yeni ${COMMODITIES[k==='oil'?'oil':k==='metal'?'metal':'food'].name} rezervi keşfedildi.`,'good');
- }},
-];
-
-function maybeEvent(){
-  if(Math.random()>0.14)return; // ~her ~7 ayda bir
-  const pool=EVENT_POOL.filter(e=>e.cond());
-  let tw=pool.reduce((s,e)=>s+e.w,0);
-  let r=Math.random()*tw;
-  for(const e of pool){ r-=e.w; if(r<=0){e.fire();break;} }
-}
-
-/* karar kuyruğu (modal) */
-let decisionQueue=[];
-function pushDecision(d){decisionQueue.push(d); if(decisionQueue.length===1 && !G.running===false){} processDecisions();}
-function processDecisions(){
-  if(!decisionQueue.length || $('#modalBg').classList.contains('show'))return;
-  const d=decisionQueue[0];
-  const wasRunning=G.running;
-  if(wasRunning) pauseGame();
-  openModal(d.title, `
-    <p style="color:var(--ink);line-height:1.6;font-size:12px">${d.body}</p>
-    <div class="flex gap mt" style="margin-top:16px;flex-wrap:wrap">
-      ${d.opts.map((o,i)=>`<button class="btn ${o.cls}" data-opt="${i}">${o.t}</button>`).join('')}
-    </div>
-  `);
-  $$('#modal [data-opt]').forEach(b=>b.onclick=()=>{
-    const o=d.opts[+b.dataset.opt]; o.fn&&o.fn();
-    decisionQueue.shift(); closeModal();
-    setTimeout(()=>{processDecisions(); if(wasRunning&&!decisionQueue.length)resumeGame(); render();},60);
-  });
-}
-
-/* ---------- feed ---------- */
-function addFeed(ic,tx,cls){
-  G.feed.unshift({ic,tx,cls,dt:dateStr()});
-  if(G.feed.length>60)G.feed.pop();
-}
-function dateStr(){
-  const mo=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-  return mo[G.month-1]+' '+G.year;
-}
-
-/* ============================================================
-   ZAMAN DÖNGÜSÜ
-   ============================================================ */
-let loopHandle=null;
-function tickOnce(){
-  G.tick++;
-  // 1 tick = 1 ay
-  const fin=economicTick();
-  worldTick();
-  maybeEvent();
-  // ay ilerlet
-  G.month++;
-  if(G.month>12){G.month=1;G.year++;}
-  // tarihçe
-  const p=player();
-  G.hist.gdp.push(p.gdp);
-  G.hist.treasury.push(p.treasury);
-  G.hist.approval.push(G.approval);
-  if(G.hist.gdp.length>120){G.hist.gdp.shift();G.hist.treasury.shift();G.hist.approval.shift();}
-  // çöküş kontrolü
-  if(G.approval<6 && p.stab<12){
-    pauseGame();
-    pushDecision({title:'⚠️ Rejim Krizi',body:'Halk desteği ve istikrar kritik seviyede. Hükümetin devrilmek üzere. Acil önlem almazsan oyun sona erebilir. Refah harcamalarını artırıp vergileri düşürmeyi düşün.',opts:[{t:'Anladım',cls:'primary',fn:()=>{}}]});
-  }
-  render();
-}
-function startLoop(){
-  stopLoop();
-  const interval=900/G.speed;
-  loopHandle=setInterval(()=>{ if(G.running)tickOnce(); },interval);
-}
-function stopLoop(){if(loopHandle){clearInterval(loopHandle);loopHandle=null;}}
-
-function pauseGame(){G.running=false;updateClockUI();}
-function resumeGame(){G.running=true;updateClockUI();}
-function toggleRun(){G.running=!G.running; if(G.running){startLoop();} updateClockUI();}
-function setSpeed(s){G.speed=s; if(G.running)startLoop(); updateClockUI();}
-
-function updateClockUI(){
-  $('#gdate').textContent=dateStr();
-  $('#gspeed').textContent=G.running?(G.speed+'× ÇALIŞIYOR'):'DURDU';
-  $('#btnPause').textContent=G.running?'⏸':'▶';
-  $('#btnPause').classList.toggle('on',G.running);
-  ['spd1','spd2','spd3'].forEach((id,i)=>{
-    $('#'+id).classList.toggle('on',G.speed===[1,2,4][i]);
-  });
-}
-
-/* ============================================================
-   UI — küçük yardımcılar
-   ============================================================ */
-function openModal(title,html){
-  $('#modal').innerHTML=`<div class="modal-h"><h3>${title}</h3><span class="x" onclick="closeModal()">×</span></div><div class="modal-b">${html}</div>`;
-  $('#modalBg').classList.add('show');
-}
-function closeModal(){$('#modalBg').classList.remove('show'); setTimeout(processDecisions,50);}
-$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg' && !decisionQueue.length)closeModal();});
-
-function toast(msg,cls=''){
-  const t=document.createElement('div');
-  t.className='toast '+cls; t.textContent=msg;
-  $('#toasts').appendChild(t);
-  setTimeout(()=>{t.style.transition='.3s';t.style.opacity='0';t.style.transform='translateX(20px)';setTimeout(()=>t.remove(),300);},3200);
-}
-
-function sparkline(data,color='#4dd9e8',w=260,h=34){
-  if(!data||data.length<2)return `<svg class="spark" viewBox="0 0 ${w} ${h}"></svg>`;
-  const mn=Math.min(...data),mx=Math.max(...data),rg=(mx-mn)||1;
-  const step=w/(data.length-1);
-  const pts=data.map((d,i)=>`${(i*step).toFixed(1)},${(h-((d-mn)/rg)*(h-4)-2).toFixed(1)}`).join(' ');
-  const last=data[data.length-1],first=data[0];
-  const c=last>=first?'#3fd07d':'#ff5c6c';
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-    <polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.5"/>
-  </svg>`;
-}
-
-function bar(val,color,max=100){
-  return `<div class="bar"><i style="width:${clamp(val/max*100,0,100)}%;background:${color}"></i></div>`;
-}
-
-/* ============================================================
-   NAVİGASYON & RENDER
-   ============================================================ */
-const PAGES=[
-  {id:'overview', ic:'📊', nm:'Genel'},
-  {id:'economy',  ic:'💹', nm:'Ekonomi'},
-  {id:'sectors',  ic:'🏭', nm:'Sektör'},
-  {id:'trade',    ic:'🚢', nm:'Ticaret'},
-  {id:'diplomacy',ic:'🤝', nm:'Diploma.'},
-  {id:'policy',   ic:'⚖️', nm:'Politika'},
-  {id:'world',    ic:'🌍', nm:'Dünya'},
-];
-
-function buildNav(){
-  $('#nav').innerHTML=PAGES.map(p=>
-    `<button data-pg="${p.id}" class="${G.page===p.id?'active':''}">
-      <span class="ic">${p.ic}</span><span class="nm">${p.nm}</span>
-    </button>`).join('');
-  $$('#nav [data-pg]').forEach(b=>b.onclick=()=>{G.page=b.dataset.pg;G.selectedCountry=null;render();});
-}
-
-function render(){
-  buildNav();
-  renderTicker();
-  updateClockUI();
-  $('#brandSub').textContent='— '+player().fl+' '+player().name;
-  const m=$('#main');
-  switch(G.page){
-    case 'overview': m.innerHTML=pageOverview(); break;
-    case 'economy': m.innerHTML=pageEconomy(); break;
-    case 'sectors': m.innerHTML=pageSectors(); bindSectors(); break;
-    case 'trade': m.innerHTML=pageTrade(); break;
-    case 'diplomacy': m.innerHTML=pageDiplomacy(); bindDiplomacy(); break;
-    case 'policy': m.innerHTML=pagePolicy(); bindPolicy(); break;
-    case 'world': m.innerHTML=pageWorld(); bindWorld(); break;
-  }
-  renderRail();
-}
-
-/* ---------- TICKER (üst şerit) ---------- */
-function renderTicker(){
-  const p=player();
-  const items=[
-    {l:'GSYİH',v:'$'+p.gdp.toFixed(2)+'T',c:sign(p.gdpGrowth)},
-    {l:'Büyüme',v:pct(p.gdpGrowth),c:sign(p.gdpGrowth)},
-    {l:'Enflasyon',v:p.inflation.toFixed(1)+'%',c:p.inflation>6?'neg':'pos'},
-    {l:'İşsizlik',v:p.unemploy.toFixed(1)+'%',c:p.unemploy>8?'neg':'neu'},
-    {l:'Hazine',v:money(p.treasury*1e9),c:p.treasury>0?'pos':'neg'},
-    {l:'Destek',v:G.approval.toFixed(0)+'%',c:G.approval>50?'pos':'neg'},
-    {l:'Petrol',v:'$'+G.market.oil.price.toFixed(0),c:'neu'},
-  ];
-  $('#ticker').innerHTML=items.map(i=>
-    `<div class="tk"><span class="l">${i.l}</span><span class="v ${i.c}">${i.v}</span></div>`
-  ).join('');
-}
-
-/* ---------- SAĞ PANEL ---------- */
-function renderRail(){
-  const p=player();
-  const allies=Object.values(G.countries).filter(c=>c.id!==G.playerId&&c.relation>=60).length;
-  const enemies=Object.values(G.countries).filter(c=>c.id!==G.playerId&&c.relation<=-55).length;
-  $('#rail').innerHTML=`
-    <div class="card">
-      <div class="card-h"><h3>Ulus Durumu</h3></div>
-      <div class="card-b">
-        <div class="row"><span class="k">Halk Desteği</span><span class="v ${G.approval>50?'pos':'neg'}">${G.approval.toFixed(0)}%</span></div>
-        ${bar(G.approval,G.approval>50?'var(--green)':'var(--red)')}
-        <div class="row"><span class="k">İstikrar</span><span class="v ${p.stab>50?'pos':'neg'}">${p.stab.toFixed(0)}%</span></div>
-        ${bar(p.stab,p.stab>50?'var(--cyan)':'var(--amber)')}
-        <div class="row"><span class="k">Borç / GSYİH</span><span class="v ${p.debt>90?'neg':'neu'}">${p.debt.toFixed(0)}%</span></div>
-        ${bar(p.debt,p.debt>90?'var(--red)':'var(--amber)',150)}
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>Diplomasi</h3></div>
-      <div class="card-b">
-        <div class="row"><span class="k">Müttefikler</span><span class="v pos">${allies}</span></div>
-        <div class="row"><span class="k">Düşmanlar</span><span class="v neg">${enemies}</span></div>
-        <div class="row"><span class="k">Anlaşmalar</span><span class="v">${G.treaties.length}</span></div>
-        <div class="row"><span class="k">Ticaret Hacmi</span><span class="v cyan">${money((p.tradeVol||0)*1e9)}</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>Haber Akışı</h3></div>
-      <div class="card-b feed">
-        ${G.feed.length?G.feed.slice(0,14).map(e=>`
-          <div class="ev"><span class="dt">${e.dt}</span><span class="ic">${e.ic}</span><span class="tx ${e.cls==='good'?'pos':e.cls==='bad'?'neg':e.cls==='warn'?'neu':''}">${e.tx}</span></div>
-        `).join(''):'<div class="help">Henüz haber yok. Oyunu başlat.</div>'}
-      </div>
-    </div>
-  `;
-}
-
-/* ============================================================
-   SAYFALAR
-   ============================================================ */
-
-/* ---------- GENEL BAKIŞ ---------- */
-function pageOverview(){
-  const p=player();
-  const fin=lastFin();
-  return `
-  <div class="eyebrow">DURUM RAPORU</div>
-  <h2 class="page-title">${p.fl} ${p.name} — Yönetim Özeti</h2>
-  <div class="page-sub">${dateStr()} · Yönetim biçimi: ${p.gov} · Nüfus: ${p.pop} milyon</div>
-
-  <div class="grid c4 mb">
-    ${statCard('GSYİH','$'+p.gdp.toFixed(2)+'T',pct(p.gdpGrowth),sign(p.gdpGrowth))}
-    ${statCard('Hazine',money(p.treasury*1e9),fin?(fin.net>=0?'+'+money(fin.net*1e9)+'/ay':money(fin.net*1e9)+'/ay'):'—',fin?sign(fin.net):'neu')}
-    ${statCard('Enflasyon',p.inflation.toFixed(1)+'%',p.inflation>6?'yüksek':'kontrollü',p.inflation>6?'neg':'pos')}
-    ${statCard('Halk Desteği',G.approval.toFixed(0)+'%',G.approval>50?'olumlu':'riskli',G.approval>50?'pos':'neg')}
-  </div>
-
-  <div class="grid c2">
-    <div class="card">
-      <div class="card-h"><h3>GSYİH Eğilimi</h3><span class="tiny muted">son ${G.hist.gdp.length} ay</span></div>
-      <div class="card-b">
-        ${sparkline(G.hist.gdp.length>1?G.hist.gdp:[p.gdp,p.gdp])}
-        <div class="row mt"><span class="k">Yıllık büyüme</span><span class="v ${sign(p.gdpGrowth)}">${pct(p.gdpGrowth)}</span></div>
-        <div class="row"><span class="k">İşsizlik</span><span class="v">${p.unemploy.toFixed(1)}%</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>Hazine Bakiyesi</h3><span class="tiny muted">milyar $</span></div>
-      <div class="card-b">
-        ${sparkline(G.hist.treasury.length>1?G.hist.treasury:[p.treasury,p.treasury],'#e8c45a')}
-        ${fin?`
-        <div class="row mt"><span class="k">Aylık gelir</span><span class="v pos">${money(fin.income*1e9)}</span></div>
-        <div class="row"><span class="k">Aylık gider</span><span class="v neg">${money(fin.expenses*1e9)}</span></div>
-        <div class="row"><span class="k">Net</span><span class="v ${sign(fin.net)}">${money(fin.net*1e9)}</span></div>
-        `:'<div class="help mt">Bütçe verisi için oyunu başlat.</div>'}
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h3>Hızlı Brifing</h3></div>
-    <div class="card-b">
-      <p style="font-size:12px;line-height:1.7;color:var(--ink)">${briefing()}</p>
-    </div>
-  </div>
-
-  ${!G.running&&G.tick===0?`<div class="card"><div class="card-b" style="text-align:center;padding:24px">
-    <p style="color:var(--dim);margin-bottom:14px">Simülasyon duraklatılmış. Yukarıdaki <b style="color:var(--accent)">▶</b> ile başlat. İstediğin an <b>⏸</b> ile durdurabilirsin.</p>
-    <button class="btn primary" onclick="toggleRun()">▶ Simülasyonu Başlat</button>
-  </div></div>`:''}
-  `;
-}
-function statCard(lab,num,chg,cls){
-  return `<div class="stat"><div class="lab">${lab}</div><div class="num">${num}</div><div class="chg ${cls}">${chg}</div></div>`;
-}
-let _lastFin=null;
-function lastFin(){return _lastFin;}
-// economicTick sonucunu sakla
-const _origEcoTick=economicTick;
-economicTick=function(){const r=_origEcoTick(); _lastFin=r; return r;};
-
-function briefing(){
-  const p=player();const lines=[];
-  if(p.gdpGrowth>3)lines.push('Ekonomi güçlü büyüyor.');
-  else if(p.gdpGrowth<0)lines.push('Ekonomi daralıyor — yatırımı ve açıklığı artırmayı düşün.');
-  else lines.push('Büyüme ılımlı seyrediyor.');
-  if(p.inflation>10)lines.push(`Enflasyon %${p.inflation.toFixed(0)} ile tehlikeli — faiz artırımı gerekebilir.`);
-  if(p.debt>100)lines.push(`Borç yükü GSYİH'nin %${p.debt.toFixed(0)}'i; bütçe açığına dikkat.`);
-  if(G.approval<40)lines.push('Halk desteği düşük; refah harcamalarını gözden geçir.');
-  if(p.treasury<0)lines.push('⚠️ Hazine açıkta! Harcamaları kıs veya geliri artır.');
-  const allies=Object.values(G.countries).filter(c=>c.id!==G.playerId&&c.relation>=60).length;
-  if(allies>0)lines.push(`${allies} müttefik ülkeyle güçlü ilişkilerin var.`);
-  return lines.join(' ');
-}
-
-/* ---------- EKONOMİ ---------- */
-function pageEconomy(){
-  const p=player();const fin=lastFin();
-  const {out}=sectorOutput(p);
-  return `
-  <div class="eyebrow">MAKROEKONOMİ</div>
-  <h2 class="page-title">Ekonomik Panel</h2>
-  <div class="page-sub">Gelir-gider dengesi, sektör katma değeri ve emtia piyasaları</div>
-
-  <div class="grid c2 mb">
-    <div class="card">
-      <div class="card-h"><h3>Bütçe (aylık)</h3></div>
-      <div class="card-b">
-        ${fin?`
-        <div class="row"><span class="k">Vergi geliri</span><span class="v pos">${money(fin.taxRev*1e9)}</span></div>
-        <div class="row"><span class="k">Gümrük geliri</span><span class="v pos">${money(fin.tradeIncome*1e9)}</span></div>
-        <div class="row"><span class="k">Emtia ihracatı</span><span class="v pos">${money(fin.resourceRev*1e9)}</span></div>
-        <div class="row" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><span class="k">Toplam gelir</span><span class="v pos">${money(fin.income*1e9)}</span></div>
-        <div class="row"><span class="k">Askeri</span><span class="v neg">${money(fin.milCost*1e9)}</span></div>
-        <div class="row"><span class="k">Refah/Sosyal</span><span class="v neg">${money(fin.welfareCost*1e9)}</span></div>
-        <div class="row"><span class="k">Altyapı</span><span class="v neg">${money(fin.infraCost*1e9)}</span></div>
-        <div class="row"><span class="k">Ar-Ge</span><span class="v neg">${money(fin.rndCost*1e9)}</span></div>
-        <div class="row"><span class="k">Borç faizi</span><span class="v neg">${money(fin.debtCost*1e9)}</span></div>
-        <div class="row" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><span class="k"><b>NET</b></span><span class="v ${sign(fin.net)}"><b>${money(fin.net*1e9)}</b></span></div>
-        `:'<div class="help">Oyunu başlatınca bütçe hesaplanır.</div>'}
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>Emtia Piyasası</h3></div>
-      <div class="card-b">
-        ${Object.entries(G.market).map(([k,m])=>`
-          <div class="row"><span class="k">${m.ic} ${m.name}</span><span class="v">$${m.price.toFixed(0)} <span class="tiny muted">/${m.unit}</span></span></div>
-        `).join('')}
-        <div class="help mt">Fiyatlar küresel arz-talep ve olaylarla dalgalanır. Kaynak zengini ülkeler için ihracat geliri buna bağlı.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h3>Sektörel Katma Değer (yıllık)</h3></div>
-    <div class="card-b">
-      ${SECTOR_KEYS.map(k=>{
-        const v=out[k];const maxv=Math.max(...Object.values(out));
-        return `<div class="row"><span class="k">${SECTORS[k].ic} ${SECTORS[k].name}</span><span class="v">${money(v*1e9)}</span></div>${bar(v,'var(--cyan)',maxv)}`;
-      }).join('')}
-    </div>
-  </div>
-  `;
-}
-
-/* ---------- SEKTÖRLER (yatırım) ---------- */
-function pageSectors(){
-  const p=player();
-  return `
-  <div class="eyebrow">SANAYİ POLİTİKASI</div>
-  <h2 class="page-title">Sektörel Yatırım</h2>
-  <div class="page-sub">Hazineden yatırım yaparak sektörlerini geliştir. Üst sektörler alt sektörlere bağımlıdır — tedarik zincirini güçlendir.</div>
-
-  <div class="grid c3" id="sectorGrid">
-    ${SECTOR_KEYS.map(k=>{
-      const s=SECTORS[k];const lvl=p.sectors[k];
-      const cost=sectorInvestCost(k);
-      const needsTxt=s.needs?`İhtiyaç: ${s.needs.map(n=>SECTORS[n].name).join(', ')}`:'Temel sektör';
-      const tierTxt=['Hammadde','Ara Mal','İleri Teknoloji'][s.tier];
-      return `<div class="card">
-        <div class="card-h"><h3>${s.ic} ${s.name}</h3><span class="tiny muted">${tierTxt}</span></div>
-        <div class="card-b">
-          <div class="row"><span class="k">Gelişmişlik</span><span class="v">${lvl.toFixed(0)}/100</span></div>
-          ${bar(lvl,lvl>70?'var(--green)':lvl>40?'var(--amber)':'var(--red)')}
-          <div class="help mt" style="margin-bottom:10px">${needsTxt}</div>
-          <button class="btn primary sm" data-invest="${k}" ${p.treasury<cost?'disabled':''}>
-            +5 Gelişim · ${money(cost*1e9)}
-          </button>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-  `;
-}
-function sectorInvestCost(k){
-  const p=player();const lvl=p.sectors[k];
-  // ileri sektör + yüksek seviye = pahalı
-  return p.gdp*1000*0.004*(1+SECTORS[k].tier*0.5)*(1+lvl/100);
-}
-function bindSectors(){
-  $$('#sectorGrid [data-invest]').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.invest;const p=player();const cost=sectorInvestCost(k);
-    if(p.treasury<cost){toast('Yetersiz hazine','bad');return;}
-    p.treasury-=cost;
-    p.sectors[k]=clamp(p.sectors[k]+5,0,100);
-    toast(`${SECTORS[k].name} +5 geliştirildi`,'good');
-    addFeed(SECTORS[k].ic,`${SECTORS[k].name} sektörüne yatırım yapıldı.`,'good');
-    render();
-  });
-}
-
-/* ---------- TİCARET ---------- */
-function pageTrade(){
-  const p=player();
-  const partners=G.treaties.filter(t=>t.type==='trade'||t.type==='fta');
-  const others=Object.values(G.countries).filter(c=>c.id!==G.playerId);
-  return `
-  <div class="eyebrow">DIŞ TİCARET</div>
-  <h2 class="page-title">Ticaret Ağı</h2>
-  <div class="page-sub">Ticaret anlaşmaları hacmi büyütür ve ilişkileri güçlendirir. Yaptırımlar bir baskı aracıdır ama misilleme riski taşır.</div>
-
-  <div class="grid c3 mb">
-    ${statCard('Ticaret Hacmi',money((p.tradeVol||0)*1e9),'yıllık','cyan')}
-    ${statCard('Aktif Anlaşma',partners.length+'',G.policy.tradeOpen+'% açıklık','neu')}
-    ${statCard('Ort. Gümrük','%'+G.policy.tariff,'tarife oranı','neu')}
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h3>Ülkeler & Ticaret Statüsü</h3></div>
-    <div class="card-b" style="padding:0">
-      <div class="scrollx"><table>
-        <tr><th>Ülke</th><th>GSYİH</th><th>İlişki</th><th>Statü</th><th></th></tr>
-        ${others.sort((a,b)=>b.gdp-a.gdp).map(c=>{
-          const rl=relationLabel(c.relation);
-          const trading=hasTreaty(c.id,'trade')||hasTreaty(c.id,'fta');
-          const sanctioned=G.sanctions.some(s=>s.on===c.id);
-          return `<tr class="clk" data-country="${c.id}">
-            <td><span class="flag">${c.fl}</span>${c.name}</td>
-            <td>$${c.gdp.toFixed(2)}T</td>
-            <td><span class="pill ${rl.cls}">${rl.t}</span></td>
-            <td>${trading?'<span class="pill trade">Ticaret</span>':sanctioned?'<span class="pill war">Yaptırım</span>':'<span class="muted tiny">—</span>'}</td>
-            <td style="text-align:right"><button class="btn sm ghost" data-open="${c.id}">İncele →</button></td>
-          </tr>`;
-        }).join('')}
-      </table></div>
-    </div>
-  </div>
-  `;
-}
-
-/* ---------- DİPLOMASİ ---------- */
-function pageDiplomacy(){
-  const others=Object.values(G.countries).filter(c=>c.id!==G.playerId);
-  return `
-  <div class="eyebrow">DIŞ İLİŞKİLER</div>
-  <h2 class="page-title">Diplomasi Masası</h2>
-  <div class="page-sub">İttifaklar kur, anlaşmalar imzala, baskı uygula. Bir ülkeye tıklayarak detaylı seçenekleri aç.</div>
-
-  <div class="card">
-    <div class="card-h"><h3>Tüm Uluslar</h3><span class="tiny muted">${others.length} ülke</span></div>
-    <div class="card-b" style="padding:0">
-      <div class="scrollx"><table>
-        <tr><th>Ülke</th><th>İlişki</th><th>Tutum</th><th>Anlaşmalar</th><th></th></tr>
-        ${others.sort((a,b)=>b.relation-a.relation).map(c=>{
-          const rl=relationLabel(c.relation);
-          const ts=G.treaties.filter(t=>t.with===c.id);
-          return `<tr class="clk" data-open="${c.id}">
-            <td><span class="flag">${c.fl}</span>${c.name}</td>
-            <td><span class="v ${c.relation>=0?'pos':'neg'}">${c.relation>0?'+':''}${c.relation.toFixed(0)}</span></td>
-            <td><span class="pill ${rl.cls}">${rl.t}</span></td>
-            <td>${ts.length?ts.map(t=>`<span class="pill trade">${treatyName(t.type)}</span>`).join(' '):'<span class="muted tiny">yok</span>'}</td>
-            <td style="text-align:right"><button class="btn sm" data-open="${c.id}">Aç →</button></td>
-          </tr>`;
-        }).join('')}
-      </table></div>
-    </div>
-  </div>
-  `;
-}
-function treatyName(t){return {trade:'Ticaret',fta:'Serbest Tic.',alliance:'İttifak',nonaggr:'Saldırmazlık',defense:'Savunma'}[t]||t;}
-
-// [data-open] / [data-country] bağlamaları aşağıdaki global render sarmalayıcısında yapılır
-function bindDiplomacy(){}
-function bindWorld(){}
-
-// trade sayfasındaki tıklamaları da bağla
-const _origRender=render;
-render=function(){_origRender(); 
-  $$('#main [data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openCountry(b.dataset.open);});
-  $$('#main [data-country]').forEach(b=>b.onclick=()=>openCountry(b.dataset.country));
-};
-
-/* ---------- ÜLKE DETAY MODALI ---------- */
-function openCountry(id){
-  const c=G.countries[id];const p=player();
-  const rl=relationLabel(c.relation);
-  const wasRunning=G.running; if(wasRunning)pauseGame();
-
-  const topSectors=SECTOR_KEYS.map(k=>({k,v:c.sectors[k]})).sort((a,b)=>b.v-a.v).slice(0,3);
-  const trading=hasTreaty(c.id,'trade')||hasTreaty(c.id,'fta');
-  const allied=hasTreaty(c.id,'alliance');
-  const sanctioned=G.sanctions.some(s=>s.on===c.id);
-
-  openModal(`${c.fl} ${c.name}`, `
-    <div class="flex between center mb">
-      <span class="pill ${rl.cls}">${rl.t} · İlişki ${c.relation>0?'+':''}${c.relation.toFixed(0)}</span>
-      <span class="tiny muted">${c.gov}</span>
-    </div>
-    <div class="grid c3 mb" style="gap:8px">
-      <div class="stat" style="padding:9px"><div class="lab">GSYİH</div><div class="num" style="font-size:16px">$${c.gdp.toFixed(2)}T</div></div>
-      <div class="stat" style="padding:9px"><div class="lab">Büyüme</div><div class="num ${sign(c.gdpGrowth)}" style="font-size:16px">${pct(c.gdpGrowth)}</div></div>
-      <div class="stat" style="padding:9px"><div class="lab">Askeri Güç</div><div class="num" style="font-size:16px">${c.mil}</div></div>
-    </div>
-    <div class="mb">
-      <div class="k tiny" style="margin-bottom:5px">GÜÇLÜ SEKTÖRLER</div>
-      ${topSectors.map(s=>`<span class="pill trade" style="margin-right:5px">${SECTORS[s.k].ic} ${SECTORS[s.k].name} ${s.v.toFixed(0)}</span>`).join('')}
-    </div>
-    <div class="k tiny" style="margin:12px 0 8px">DİPLOMATİK SEÇENEKLER</div>
-    <div class="flex wrap gap" id="diploActs"></div>
-    <div class="help mt" style="margin-top:14px">Askeri müdahale son çaredir: muazzam maliyet, istikrar kaybı, uluslararası yaptırım ve uzun vadeli kayıplar getirir.</div>
-  `);
-
-  const acts=[];
-  // ticaret
-  if(!trading && c.relation>-40) acts.push({t:'🤝 Ticaret Anlaşması',cls:'',fn:()=>{
-    const cost=p.gdp*1000*0.002;
-    G.treaties.push({with:c.id,type:'trade',since:dateStr()});
-    changeRelation(c.id,20,'trade');
-    toast(`${c.name} ile ticaret anlaşması`,'good');addFeed('🤝',`${c.fl} ${c.name} ile ticaret anlaşması imzalandı.`,'good');
-    reopen(id);
-  }});
-  // serbest ticaret (daha güçlü)
-  if(trading && !hasTreaty(c.id,'fta') && c.relation>30) acts.push({t:'🚢 Serbest Ticaret Bölgesi',cls:'',fn:()=>{
-    G.treaties.push({with:c.id,type:'fta',since:dateStr()});
-    changeRelation(c.id,15,'fta');toast('Serbest ticaret bölgesi kuruldu','good');reopen(id);
-  }});
-  // ittifak
-  if(!allied && c.relation>=55) acts.push({t:'⭐ İttifak Kur',cls:'primary',fn:()=>{
-    G.treaties.push({with:c.id,type:'alliance',since:dateStr()});
-    changeRelation(c.id,15,'alliance');toast(`${c.name} artık müttefik!`,'good');addFeed('⭐',`${c.fl} ${c.name} ile ittifak kuruldu.`,'good');reopen(id);
-  }});
-  // saldırmazlık
-  if(!hasTreaty(c.id,'nonaggr') && c.relation>-30) acts.push({t:'🕊️ Saldırmazlık Paktı',cls:'',fn:()=>{
-    G.treaties.push({with:c.id,type:'nonaggr',since:dateStr()});changeRelation(c.id,10);toast('Saldırmazlık paktı','good');reopen(id);
-  }});
-  // dış yardım (ilişki al)
-  acts.push({t:'💵 Dış Yardım Gönder',cls:'',fn:()=>{
-    const cost=p.gdp*1000*0.003;
-    if(p.treasury<cost){toast('Yetersiz hazine','bad');return;}
-    p.treasury-=cost;changeRelation(c.id,12,'aid');toast(`${c.name}'a yardım gönderildi`,'good');reopen(id);
-  }});
-  // yaptırım
-  if(!sanctioned) acts.push({t:'🚫 Yaptırım Uygula',cls:'danger',fn:()=>{
-    G.sanctions.push({on:c.id,since:dateStr()});
-    changeRelation(c.id,-30,'sanction');
-    c.gdpGrowth-=rnd(0.5,1.5);
-    // misilleme riski
-    if(Math.random()<0.5){changeRelation(c.id,-10);player().gdpGrowth-=rnd(0.2,0.6);
-      addFeed('🚫',`${c.fl} ${c.name} yaptırımlarına misilleme yaptı.`,'bad');}
-    toast(`${c.name}'a yaptırım`,'warn');addFeed('🚫',`${c.fl} ${c.name}'a yaptırım uygulandı.`,'warn');reopen(id);
-  }});
-  else acts.push({t:'✅ Yaptırımı Kaldır',cls:'',fn:()=>{
-    G.sanctions=G.sanctions.filter(s=>s.on!==c.id);changeRelation(c.id,15);toast('Yaptırım kaldırıldı','good');reopen(id);
-  }});
-  // askeri müdahale (çok pahalı, çok riskli)
-  if(c.relation<-30) acts.push({t:'⚔️ Askeri Müdahale',cls:'danger',fn:()=>confirmWar(id)});
-
-  $('#diploActs').innerHTML=acts.map((a,i)=>`<button class="btn sm ${a.cls}" data-act="${i}">${a.t}</button>`).join('');
-  $$('#diploActs [data-act]').forEach(b=>b.onclick=()=>{acts[+b.dataset.act].fn();});
-
-  // modal kapanınca devam
-  const obs=()=>{ if(!$('#modalBg').classList.contains('show')){ if(wasRunning&&!decisionQueue.length)resumeGame(); document.removeEventListener('click',obs);} };
-}
-function reopen(id){render();setTimeout(()=>openCountry(id),30);}
-
-function confirmWar(id){
-  const c=G.countries[id];const p=player();
-  const cost=p.gdp*1000*0.15; // GSYİH'nin %15'i — devasa
-  openModal('⚔️ Askeri Müdahale — Onay', `
-    <p style="color:var(--red);font-weight:600;margin-bottom:10px">Bu çok ağır sonuçlar doğurur.</p>
-    <p style="font-size:12px;line-height:1.7;color:var(--ink)">
-      ${c.fl} ${c.name} askeri gücü <b>${c.mil}</b>, seninki <b>${p.mil}</b>.<br><br>
-      Tahmini maliyet: <b class="neg">${money(cost*1e9)}</b><br>
-      Sonuçlar: hazine boşalır, istikrar ve halk desteği çöker, müttefik ülkeler sana yaptırım uygular, küresel ticaret hacmin düşer. Başarı bile pahalıdır.
-    </p>
-    <div class="flex gap mt" style="margin-top:16px">
-      <button class="btn danger" id="warGo" ${p.treasury<cost*0.5?'disabled':''}>Saldırıyı Onayla</button>
-      <button class="btn" onclick="closeModal()">Vazgeç</button>
-    </div>
-    ${p.treasury<cost*0.5?'<div class="help mt">Hazine bu operasyon için çok yetersiz.</div>':''}
-  `);
-  const go=$('#warGo'); if(go)go.onclick=()=>{
-    p.treasury-=cost;
-    const win=p.mil + rnd(-20,20) > c.mil;
-    // herkes tepki gösterir
-    Object.values(G.countries).forEach(o=>{if(o.id!==G.playerId)changeRelation(o.id,-rnd(15,30),'war');});
-    G.approval=clamp(G.approval-rnd(15,30),3,97);
-    p.stab=clamp(p.stab-rnd(15,25),5,95);
-    p.gdpGrowth-=rnd(2,4);
-    // müttefikleri yaptırım uygular
-    Object.values(G.countries).forEach(o=>{if(o.id!==G.playerId && o.relation< -40 && !G.sanctions.some(s=>s.on===o.id && s.by==='ai')){G.sanctions.push({on:G.playerId,by:o.id,ai:true,since:dateStr()});}});
-    if(win){
-      changeRelation(c.id,-60);c.gdp*=0.85;c.stab-=20;
-      addFeed('⚔️',`${c.fl} ${c.name}'a karşı askeri operasyon "başarılı" oldu — ama bedeli ağır.`,'bad');
-      toast('Operasyon başarılı ama maliyet yıkıcı','warn');
-    }else{
-      p.gdp*=0.92;p.mil-=10;
-      addFeed('⚔️',`${c.fl} ${c.name}'a karşı operasyon başarısız — ağır kayıplar.`,'bad');
-      toast('Operasyon başarısız!','bad');
-    }
-    closeModal();render();
-  };
-}
-
-/* ---------- POLİTİKA (slider'lar) ---------- */
-function pagePolicy(){
-  const pol=G.policy;
-  const sliders=[
-    {k:'taxRate',l:'Vergi Oranı',min:5,max:55,suf:'%',hint:'Yüksek vergi gelir getirir ama büyümeyi ve desteği baskılar.'},
-    {k:'interestRate',l:'Faiz Oranı',min:0,max:30,suf:'%',hint:'Yüksek faiz enflasyonu düşürür, büyümeyi yavaşlatır.'},
-    {k:'tariff',l:'Gümrük Tarifesi',min:0,max:40,suf:'%',hint:'Gümrük yerli sanayiyi korur ama ticareti kısar.'},
-    {k:'tradeOpen',l:'Ticaret Açıklığı',min:10,max:100,suf:'%',hint:'Açıklık büyümeyi besler, dış şoklara açar.'},
-    {k:'militarySpend',l:'Askeri Harcama',min:2,max:40,suf:'%',hint:'Askeri güç caydırıcıdır ama bütçeyi ve desteği yer.'},
-    {k:'welfare',l:'Refah / Sosyal',min:2,max:45,suf:'%',hint:'Sosyal harcama halk desteğini artırır.'},
-    {k:'rnd',l:'Ar-Ge',min:0,max:25,suf:'%',hint:'Ar-Ge uzun vadeli büyüme ve teknoloji sağlar.'},
-    {k:'infraSpend',l:'Altyapı',min:2,max:30,suf:'%',hint:'Altyapı üretkenliği ve büyümeyi destekler.'},
-  ];
-  return `
-  <div class="eyebrow">DEVLET POLİTİKASI</div>
-  <h2 class="page-title">Politika Kaldıraçları</h2>
-  <div class="page-sub">Bütçe ve makro ayarları yönet. Her ayar büyüme, enflasyon, destek ve hazineyi etkiler. Değişiklikler anında işler.</div>
-  <div class="card">
-    <div class="card-b">
-      ${sliders.map(s=>`
-        <div class="slider-row">
-          <label title="${s.hint}">${s.l}</label>
-          <input type="range" min="${s.min}" max="${s.max}" value="${pol[s.k]}" data-pol="${s.k}">
-          <span class="val" id="val_${s.k}">${pol[s.k]}${s.suf}</span>
-        </div>
-        <div class="help" style="margin:-2px 0 8px 140px">${s.hint}</div>
-      `).join('')}
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-h"><h3>Politika Etkisi (tahmini)</h3></div>
-    <div class="card-b">
-      <div class="row"><span class="k">Beklenen büyüme baskısı</span><span class="v ${policyGrowthHint()>=0?'pos':'neg'}">${pct(policyGrowthHint())}</span></div>
-      <div class="row"><span class="k">Enflasyon eğilimi</span><span class="v">${G.policy.interestRate>10?'aşağı':'yukarı'}</span></div>
-      <div class="row"><span class="k">Bütçe yönü</span><span class="v">${(G.policy.taxRate+G.policy.tariff)/2 > (G.policy.militarySpend+G.policy.welfare+G.policy.infraSpend+G.policy.rnd)/2?'fazla eğilimi':'açık eğilimi'}</span></div>
-    </div>
-  </div>
-  `;
-}
-function policyGrowthHint(){
-  const pol=G.policy;
-  return (pol.infraSpend-8)*0.04+(pol.rnd-5)*0.05+(pol.tradeOpen-55)*0.012-(pol.taxRate-22)*0.018;
-}
-function bindPolicy(){
-  $$('#main [data-pol]').forEach(inp=>{
-    inp.oninput=()=>{
-      G.policy[inp.dataset.pol]=+inp.value;
-      const suf=$('#val_'+inp.dataset.pol).textContent.replace(/[\d.-]/g,'');
-      $('#val_'+inp.dataset.pol).textContent=inp.value+(suf||'');
-    };
-    inp.onchange=()=>{render();};
-  });
-}
-
-/* ---------- DÜNYA (sıralamalar) ---------- */
-function pageWorld(){
-  const list=Object.values(G.countries).slice().sort((a,b)=>b.gdp-a.gdp);
-  const rank=list.findIndex(c=>c.id===G.playerId)+1;
-  return `
-  <div class="eyebrow">KÜRESEL TABLO</div>
-  <h2 class="page-title">Dünya Sıralaması</h2>
-  <div class="page-sub">Sen ${list.length} ülke arasında GSYİH bakımından <b style="color:var(--accent)">#${rank}</b> sıradasın. Hedef: zirveye tırman.</div>
-  <div class="card">
-    <div class="card-h"><h3>Ekonomik Güç Sıralaması</h3></div>
-    <div class="card-b" style="padding:0">
-      <div class="scrollx"><table>
-        <tr><th>#</th><th>Ülke</th><th>GSYİH</th><th>Büyüme</th><th>Tekno.</th><th>Askeri</th><th>İstikrar</th></tr>
-        ${list.map((c,i)=>{
-          const me=c.id===G.playerId;
-          return `<tr class="${me?'':'clk'}" ${me?'':`data-open="${c.id}"`} style="${me?'background:rgba(255,120,71,.08)':''}">
-            <td><b>${i+1}</b></td>
-            <td><span class="flag">${c.fl}</span>${c.name}${me?' <span class="pill" style="background:var(--accent);color:#1a0e08">SEN</span>':''}</td>
-            <td>$${c.gdp.toFixed(2)}T</td>
-            <td class="${sign(c.gdpGrowth)}">${pct(c.gdpGrowth)}</td>
-            <td>${c.tech}</td><td>${c.mil}</td>
-            <td>${c.stab.toFixed(0)}</td>
-          </tr>`;
-        }).join('')}
-      </table></div>
-    </div>
-  </div>
-  `;
-}
-
-/* ============================================================
-   ÜLKE SEÇİM EKRANI & BAŞLATMA
-   ============================================================ */
-function buildSelect(){
-  const grid=$('#selGrid');
-  grid.innerHTML=COUNTRY_DATA.slice().sort((a,b)=>b.gdp-a.gdp).map(c=>{
-    const top=SECTOR_KEYS.map(k=>({k,v:c.sectors[k]})).sort((a,b)=>b.v-a.v)[0];
-    return `<div class="cc" data-pick="${c.id}">
-      <div class="diff ${c.diff}">${c.diff==='easy'?'Kolay':c.diff==='med'?'Orta':'Zor'}</div>
-      <div class="ch"><span class="fl">${c.fl}</span><div><div class="nm">${c.name}</div><div class="tag">${c.gov}</div></div></div>
-      <div class="crow"><span class="k">GSYİH</span><span>$${c.gdp.toFixed(2)}T</span></div>
-      <div class="crow"><span class="k">Nüfus</span><span>${c.pop}M</span></div>
-      <div class="crow"><span class="k">Güçlü yön</span><span>${SECTORS[top.k].ic} ${SECTORS[top.k].name}</span></div>
-      <div class="crow"><span class="k">Borç/GSYİH</span><span>${c.debt}%</span></div>
-    </div>`;
-  }).join('');
-  $$('#selGrid [data-pick]').forEach(el=>el.onclick=()=>startGame(el.dataset.pick));
-}
-
-function startGame(id){
-  G=newState(id);
-  addFeed('🏛️',`${player().fl} ${player().name} yönetimini devraldın. Göreve başla.`,'');
-  $('#selectScreen').style.display='none';
-  $('#app').style.display='flex';
-  render();
-}
-
-/* ---------- kontrol butonları ---------- */
-$('#btnPause').onclick=()=>toggleRun();
-$('#spd1').onclick=()=>setSpeed(1);
-$('#spd2').onclick=()=>setSpeed(2);
-$('#spd3').onclick=()=>setSpeed(4);
-
-/* başlat */
-buildSelect();
-
+window.addEventListener('hashchange', function() {
+const slug = location.hash.slice(1);
+if (slug && GAMES[slug]) openGame(slug);
+else showHome();
+});
+// On load: check if URL already has a hash (e.g. clickingame.com/#fish-farm)
+(function() {
+const slug = location.hash.slice(1);
+if (slug && GAMES[slug]) openGame(slug);
+})();
 </script>
 </body>
 </html>
